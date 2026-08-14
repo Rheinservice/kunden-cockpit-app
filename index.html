@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Kunden-Cockpit – M&amp;I-RheinService</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%B9%3C/text%3E%3C/svg%3E" />
+<link rel="icon" href="logo.png" />
 <meta name="theme-color" content="#0B2545" />
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -19,8 +19,9 @@
     --ink: #16202E;
     --ink-soft: #57626E;
     --brand: #0B2545;
-    --brand-dark: #081A33;
     --brand-contrast: #FFFFFF;
+    --brand-surface: #0B2545;
+    --brand-surface-contrast: #FFFFFF;
     --accent: #A8791E;
     --accent-soft: #F4E8CF;
     --accent-ink: #7A5C15;
@@ -39,7 +40,7 @@
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #081420; --surface: #102438; --surface-2: #15304A; --border: #1E3A56;
-      --ink: #ECEAE2; --ink-soft: #9BAEBF; --brand: #A8C6EE; --brand-dark: #7DA6D9;
+      --ink: #ECEAE2; --ink-soft: #9BAEBF; --brand: #B7C6DC;
       --brand-contrast: #081420; --accent: #E3B458; --accent-soft: #2B2312; --accent-ink: #F0D394;
       --danger: #E29088; --danger-soft: #33201F; --success: #82CBA3; --success-soft: #163329;
       --shadow-s: 0 1px 2px rgba(0,0,0,0.35); --shadow-m: 0 10px 28px -14px rgba(0,0,0,0.65);
@@ -62,7 +63,7 @@
   /* ---- Login ---- */
   .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .login-card { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-l); padding: 28px 24px; box-shadow: var(--shadow-m); }
-  .login-badge { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: var(--brand); color: var(--accent); border: 2px solid var(--accent); margin: 0 auto 16px; }
+  .login-badge { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: var(--brand-surface); color: var(--accent); border: 2px solid var(--accent); margin: 0 auto 16px; }
   .login-card h1 { text-align: center; font-size: 1.2rem; color: var(--brand); }
   .login-card p.sub { text-align: center; color: var(--accent); font-size: 0.78rem; margin: 3px 0 22px; }
   .login-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
@@ -71,16 +72,17 @@
   .login-field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .login-error { background: var(--danger-soft); color: var(--danger); font-size: 0.8rem; padding: 9px 12px; border-radius: var(--r-s); margin-bottom: 14px; display: none; }
   .login-error.show { display: block; }
-  .login-submit { width: 100%; padding: 12px; border: none; border-radius: var(--r-s); background: var(--brand); color: var(--brand-contrast); font-weight: 700; font-size: 0.9rem; }
+  .login-submit { width: 100%; padding: 12px; border: none; border-radius: var(--r-s); background: var(--brand-surface); color: var(--brand-surface-contrast); font-weight: 700; font-size: 0.9rem; }
   .login-submit[disabled] { opacity: 0.6; }
 
-  .header { position: sticky; top: 0; z-index: 20; padding: calc(12px + var(--safe-t)) 16px 12px; background: var(--brand); color: var(--brand-contrast); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .header { position: sticky; top: 0; z-index: 20; padding: calc(12px + var(--safe-t)) 16px 12px; background: var(--brand-surface); color: var(--brand-surface-contrast); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .badge { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; background: var(--brand-dark); color: var(--accent); border: 1.5px solid var(--accent); flex-shrink: 0; }
+  .badge { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; background: var(--brand-surface); color: var(--accent); border: 1.5px solid var(--accent); flex-shrink: 0; overflow: hidden; }
+  .badge img { width: 100%; height: 100%; object-fit: cover; }
   .brand-text h1 { font-size: 1.05rem; line-height: 1.15; }
   .brand-text p { margin: 1px 0 0; font-size: 0.72rem; color: var(--accent); letter-spacing: 0.02em; }
   .header-actions { display: flex; align-items: center; gap: 2px; }
-  .icon-btn { background: transparent; border: none; color: var(--brand-contrast); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .icon-btn { background: transparent; border: none; color: var(--brand-surface-contrast); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
   .icon-btn:active { background: rgba(255,255,255,0.14); }
   .icon-btn.add-desktop { display: none; }
   @media (min-width: 720px) { .icon-btn.add-desktop { display: flex; } }
@@ -108,7 +110,7 @@
   .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
   .chips::-webkit-scrollbar { display: none; }
   .chip { flex: 0 0 auto; padding: 7px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); }
-  .chip[aria-pressed="true"] { background: var(--brand); color: var(--brand-contrast); border-color: var(--brand); }
+  .chip[aria-pressed="true"] { background: var(--brand-surface); color: var(--brand-surface-contrast); border-color: var(--brand-surface); }
   .sort-select { padding: 9px 12px; border-radius: var(--r-m); border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-size: 0.82rem; font-weight: 600; }
 
   .banner { margin: 10px 16px 0; padding: 10px 12px; border-radius: var(--r-s); font-size: 0.82rem; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -147,10 +149,10 @@
   .badge-status { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 5px 11px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
   .dot { width: 6px; height: 6px; border-radius: 50%; }
 
-  .fab { position: fixed; right: 18px; bottom: calc(76px + var(--safe-b)); z-index: 30; width: 58px; height: 58px; border-radius: 50%; border: none; background: var(--brand); color: var(--accent); box-shadow: var(--shadow-m); display: flex; align-items: center; justify-content: center; }
+  .fab { position: fixed; right: 18px; bottom: calc(76px + var(--safe-b)); z-index: 30; width: 58px; height: 58px; border-radius: 50%; border: none; background: var(--brand-surface); color: var(--accent); box-shadow: var(--shadow-m); display: flex; align-items: center; justify-content: center; }
   .fab svg { width: 26px; height: 26px; }
   .fab:active { transform: scale(0.94); }
-  @media (min-width: 720px) { .fab { display: none; } }
+  @media (min-width: 720px) { #fabAdd.fab { display: none; } }
 
   .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; background: var(--surface); border-top: 1px solid var(--border); padding-bottom: var(--safe-b); }
   .tabbar::-webkit-scrollbar { display: none; }
@@ -162,13 +164,15 @@
   .app-main { display: block; min-height: 100%; }
   @media (min-width: 900px) {
     #app:not([hidden]) { display: flex; }
-    .sidebar-nav { display: flex; flex-direction: column; width: 220px; flex-shrink: 0; background: var(--brand); color: #fff; padding: 18px 0; height: 100vh; position: sticky; top: 0; overflow-y: auto; }
+    .sidebar-nav { display: flex; flex-direction: column; width: 220px; flex-shrink: 0; background: var(--brand-surface); color: #fff; padding: 18px 0; height: 100vh; position: sticky; top: 0; overflow-y: auto; }
     .app-main { flex: 1; min-width: 0; }
     .tabbar { display: none; }
-    .fab { display: none; }
+    #fabAdd.fab { display: none; }
+    .fab { right: 32px; bottom: 32px; }
   }
   .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.14); margin-bottom: 8px; }
-  .sidebar-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--brand); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .sidebar-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--brand-surface); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; overflow: hidden; }
+  .sidebar-mark img { width: 100%; height: 100%; object-fit: cover; }
   .sidebar-brand b { font-size: 12.5px; letter-spacing: 0.03em; }
   .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; color: rgba(255,255,255,0.75); background: none; border: none; border-left: 3px solid transparent; font-size: 0.82rem; font-weight: 600; text-align: left; cursor: pointer; width: 100%; }
   .sidebar-link svg.icn { width: 18px; height: 18px; flex-shrink: 0; }
@@ -186,9 +190,9 @@
   .cal-cell { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: var(--r-s); background: var(--surface); border: 1px solid var(--border); font-size: 0.78rem; color: var(--ink); position: relative; }
   .cal-cell.other-month { opacity: 0.35; }
   .cal-cell.today { border-color: var(--accent); font-weight: 700; }
-  .cal-cell.selected { background: var(--brand); color: var(--brand-contrast); border-color: var(--brand); }
+  .cal-cell.selected { background: var(--brand-surface); color: var(--brand-surface-contrast); border-color: var(--brand-surface); }
   .cal-cell .cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
-  .cal-cell.selected .cal-dot { background: var(--brand-contrast); }
+  .cal-cell.selected .cal-dot { background: var(--brand-surface-contrast); }
   .agenda { padding: 14px 16px calc(140px + var(--safe-b)); }
   .agenda-group { margin-bottom: 20px; }
   .agenda-group h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand); margin-bottom: 8px; }
@@ -198,7 +202,7 @@
   .agenda-title { font-weight: 700; font-size: 0.85rem; }
   .agenda-sub { font-size: 0.76rem; color: var(--ink-soft); }
 
-  .toast { position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); transform: translateX(-50%); background: var(--brand); color: var(--brand-contrast); font-size: 0.78rem; font-weight: 600; padding: 9px 16px; border-radius: 999px; box-shadow: var(--shadow-m); z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+  .toast { position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); transform: translateX(-50%); background: var(--brand-surface); color: var(--brand-surface-contrast); font-size: 0.78rem; font-weight: 600; padding: 9px 16px; border-radius: 999px; box-shadow: var(--shadow-m); z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
   .toast.show { opacity: 1; }
   .toast.err { background: var(--danger); }
 
@@ -225,7 +229,7 @@
   .sheet-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 18px calc(14px + var(--safe-b)); border-top: 1px solid var(--border); flex-shrink: 0; }
   .btn { border-radius: var(--r-s); padding: 11px 18px; font-size: 0.86rem; font-weight: 700; border: none; }
   .btn-ghost { background: transparent; color: var(--ink-soft); }
-  .btn-primary { background: var(--brand); color: var(--brand-contrast); }
+  .btn-primary { background: var(--brand-surface); color: var(--brand-surface-contrast); }
   .btn-danger { background: var(--danger); color: white; }
   .confirm .sheet { max-width: 360px; }
   .confirm p, .confirm .confirm-body { padding: 0 18px; color: var(--ink-soft); font-size: 0.84rem; margin: -4px 0 4px; }
@@ -257,7 +261,7 @@
   .job-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--surface-2); border-radius: var(--r-m); padding: 12px; }
   .job-form input { border: 1px solid var(--border); border-radius: var(--r-s); padding: 9px 10px; background: var(--surface); color: var(--ink); width: 100%; font-size: 0.85rem; }
   .job-form .full { grid-column: 1 / -1; }
-  .job-form button { grid-column: 1 / -1; border: none; border-radius: var(--r-s); padding: 10px; background: var(--brand); color: var(--brand-contrast); font-weight: 700; font-size: 0.84rem; }
+  .job-form button { grid-column: 1 / -1; border: none; border-radius: var(--r-s); padding: 10px; background: var(--brand-surface); color: var(--brand-surface-contrast); font-weight: 700; font-size: 0.84rem; }
   .job-list { display: flex; flex-direction: column; gap: 10px; }
   .job-empty { font-size: 0.8rem; color: var(--ink-soft); text-align: center; padding: 16px; }
   .job-row { border: 1px solid var(--border); border-radius: var(--r-m); padding: 11px 12px; display: flex; flex-direction: column; gap: 7px; }
@@ -341,7 +345,7 @@
 
 <div id="loginScreen" class="login-wrap">
   <div class="login-card">
-    <div class="login-badge">M&amp;I</div>
+    <div class="login-badge"><img src="logo.png" alt="M&amp;I-RheinService" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" /></div>
     <h1 id="loginHeading">Kunden-Cockpit</h1>
     <p class="sub" id="loginSub">M&amp;I-RheinService GbR</p>
     <div class="login-error" id="loginError"></div>
@@ -355,7 +359,7 @@
 
 <div id="app" hidden>
   <nav class="sidebar-nav" id="sidebarNav">
-    <div class="sidebar-brand"><div class="sidebar-mark">M&amp;I</div><b>KUNDEN-COCKPIT</b></div>
+    <div class="sidebar-brand"><div class="sidebar-mark"><img src="logo.png" alt="M&amp;I-RheinService" /></div><b>KUNDEN-COCKPIT</b></div>
     <button type="button" class="sidebar-link" id="sbTabDashboard" aria-selected="true">
       <svg class="icn" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
       Start
@@ -401,7 +405,7 @@
   <div class="app-main">
   <header class="header">
     <div class="brand">
-      <div class="badge">M&amp;I</div>
+      <div class="badge"><img src="logo.png" alt="M&amp;I-RheinService" /></div>
       <div class="brand-text">
         <h1>Kunden-Cockpit</h1>
         <p>M&amp;I-RheinService GbR</p>
@@ -1652,12 +1656,58 @@
   document.getElementById("deleteClose").addEventListener("click", closeDelete);
   document.getElementById("deleteCancel").addEventListener("click", closeDelete);
   delOverlay.addEventListener("click", function (e) { if (e.target === delOverlay) closeDelete(); });
+
+  function chunkArray(arr, size) {
+    var out = [];
+    for (var i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+    return out;
+  }
+  function batchDeleteRefs(refs) {
+    return chunkArray(refs, 450).reduce(function (p, group) {
+      return p.then(function () {
+        if (group.length === 0) return null;
+        var batch = db.batch();
+        group.forEach(function (ref) { batch.delete(ref); });
+        return batch.commit();
+      });
+    }, Promise.resolve());
+  }
+  function deleteSubcollection(ref) {
+    return ref.get().then(function (snap) { return batchDeleteRefs(snap.docs.map(function (d) { return d.ref; })); });
+  }
+  function deleteCustomerCascade(customerId) {
+    var custRef = db.collection("customers").doc(customerId);
+    return custRef.collection("objekte").get().then(function (propsSnap) {
+      var propRefs = propsSnap.docs.map(function (d) { return d.ref; });
+      return Promise.all(propRefs.map(function (propRef) {
+        return Promise.all([
+          deleteSubcollection(propRef.collection("auftraege")),
+          deleteSubcollection(propRef.collection("wiederkehrend"))
+        ]);
+      })).then(function () { return batchDeleteRefs(propRefs); });
+    }).then(function () {
+      return deleteSubcollection(custRef.collection("dokumente"));
+    }).then(function () {
+      return deleteSubcollection(custRef.collection("wiedervorlagen"));
+    }).then(function () {
+      return custRef.collection("dateien").get().then(function (snap) {
+        var files = snap.docs.map(function (d) { return d.data(); });
+        var refs = snap.docs.map(function (d) { return d.ref; });
+        return Promise.all(files.map(function (f) {
+          return f.storagePath ? storage.ref(f.storagePath).delete().catch(function () {}) : Promise.resolve();
+        })).then(function () { return batchDeleteRefs(refs); });
+      });
+    }).then(function () {
+      return custRef.delete();
+    });
+  }
   document.getElementById("deleteConfirm").addEventListener("click", function () {
     if (!deleteTarget) return;
     var id = deleteTarget.id;
     closeDelete();
-    db.collection("customers").doc(id).delete()
-      .then(function () { showToast("Gelöscht"); })
+    showToast("Kunde wird vollständig gelöscht…");
+    deleteCustomerCascade(id)
+      .then(function () { showToast("Kunde und alle zugehörigen Daten gelöscht"); })
       .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
   });
 
