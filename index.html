@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <style>
   :root {
     --bg: #F8F7F3;
@@ -485,7 +486,23 @@
   </div>
 
   <div id="myJobsView" hidden>
+    <div class="agenda-group" id="myCustomersWrap" hidden>
+      <h3>Meine Kunden</h3>
+      <div id="myCustomersList"></div>
+    </div>
     <div class="agenda" id="myJobsList"></div>
+
+    <div class="agenda-group">
+      <h3>Material bestellen</h3>
+      <form id="myMaterialOrderForm" class="detail-form" style="padding:0 16px 12px;">
+        <label class="field"><span>Artikel</span><select name="materialId" required></select></label>
+        <label class="field"><span>Menge</span><input name="menge" type="number" min="1" step="1" value="1" required /></label>
+        <label class="field"><span>Kunde (optional)</span><select name="customerId"><option value="">Kein Bezug</option></select></label>
+        <label class="field full"><span>Notiz</span><input name="notiz" placeholder="z. B. dringend, bis Freitag" /></label>
+        <button type="submit" class="btn btn-primary" style="margin-top:6px;">Bestellung senden</button>
+      </form>
+      <div class="list" id="myMaterialOrdersList"></div>
+    </div>
   </div>
 
   <div id="catalogView" hidden>
@@ -501,6 +518,10 @@
   <div id="materialView" hidden>
     <button type="button" class="view-back">← Mehr</button>
     <div class="stats" id="materialStats"></div>
+    <div id="materialOrdersWrap" hidden>
+      <h3 style="padding:14px 16px 6px;">Offene Bestellungen von Mitarbeitern</h3>
+      <div class="list" id="materialOrdersList"></div>
+    </div>
     <div id="materialFilterBanner"></div>
     <div class="list" id="materialList"></div>
     <button class="fab" id="fabAddMaterial" aria-label="Neues Material">
@@ -532,6 +553,7 @@
     <div class="chips" id="docsChips">
       <button type="button" class="chip" data-doctype="Alle">Alle</button>
       <button type="button" class="chip" data-doctype="Angebot">Angebote</button>
+      <button type="button" class="chip" data-doctype="Kostenvoranschlag">Kostenvoranschläge</button>
       <button type="button" class="chip" data-doctype="Rechnung">Rechnungen</button>
     </div>
     <div class="list" id="docsGlobalList"></div>
@@ -674,9 +696,22 @@
           <div class="related-body">
             <div style="display:flex;gap:6px;margin-bottom:10px;">
               <button type="button" class="btn btn-ghost" id="newOfferBtn" style="padding:6px 10px;font-size:0.72rem;">+ Angebot</button>
+              <button type="button" class="btn btn-ghost" id="newEstimateBtn" style="padding:6px 10px;font-size:0.72rem;">+ Kostenvoranschlag</button>
               <button type="button" class="btn btn-ghost" id="newInvoiceBtn" style="padding:6px 10px;font-size:0.72rem;">+ Rechnung</button>
             </div>
             <div class="job-list" id="docList"></div>
+          </div>
+        </details>
+
+        <details class="related-list">
+          <summary><span>Dateien</span><span class="rl-count" id="rlDateienCount"></span><span class="rl-chev">⌄</span></summary>
+          <div class="related-body">
+            <label class="btn btn-ghost" style="display:inline-block;padding:6px 10px;font-size:0.72rem;margin-bottom:10px;cursor:pointer;">
+              + Datei hochladen
+              <input type="file" id="dateiUploadInput" style="display:none;" />
+            </label>
+            <span id="dateiUploadStatus" style="font-size:0.72rem;color:var(--ink-soft);margin-left:8px;"></span>
+            <div class="job-list" id="dateienList"></div>
           </div>
         </details>
 
@@ -1154,6 +1189,7 @@
   firebase.initializeApp(firebaseConfig);
   var auth = firebase.auth();
   var db = firebase.firestore();
+  var storage = firebase.storage();
   db.settings({ experimentalAutoDetectLongPolling: true, useFetchStreams: false });
 
   var TIP_KEY = "mi-kunden-cockpit-tip-dismissed";
@@ -1237,10 +1273,18 @@
   var employeesUnsub = null;
   var editingEmployeeId = null;
   var deleteEmployeeTarget = null;
+  var OWNER_EMAILS = ["info@mi-rheinservice.de"];
   var currentRole = null;
   var myMitarbeiterId = null;
   var myJobs = [];
   var myJobsUnsub = null;
+  var myMitarbeiterName = "";
+  var myCustomers = {};
+  var myCustomerUnsubs = {};
+  var myMaterialCatalog = [];
+  var myMaterialUnsub = null;
+  var myOrders = [];
+  var myOrdersUnsub = null;
   var services = [];
   var servicesUnsub = null;
   var editingServiceId = null;
@@ -1252,6 +1296,8 @@
   var deleteMaterialTarget = null;
   var currentCostPerUnit = null;
   var materialFilterLow = false;
+  var materialOrders = [];
+  var materialOrdersUnsub = null;
   var vehicles = [];
   var vehiclesUnsub = null;
   var editingVehicleId = null;
@@ -1352,6 +1398,13 @@
     }, function () {
       setBanner("Material konnte nicht geladen werden.");
     });
+    materialOrdersUnsub = db.collection("materialbestellungen").onSnapshot(function (snap) {
+      materialOrders = snap.docs.map(function (d) { return d.data(); });
+      renderMaterial();
+      renderDashboard();
+    }, function () {
+      setBanner("Material-Bestellungen konnten nicht geladen werden.");
+    });
     currentAbsencesUnsub = db.collectionGroup("abwesenheiten").onSnapshot(function (snap) {
       var today = new Date().toISOString().slice(0, 10);
       currentAbsences = {};
@@ -1403,6 +1456,7 @@
     if (employeesUnsub) { employeesUnsub(); employeesUnsub = null; }
     if (servicesUnsub) { servicesUnsub(); servicesUnsub = null; }
     if (materialUnsub) { materialUnsub(); materialUnsub = null; }
+    if (materialOrdersUnsub) { materialOrdersUnsub(); materialOrdersUnsub = null; }
     if (currentAbsencesUnsub) { currentAbsencesUnsub(); currentAbsencesUnsub = null; }
     if (allDocumentsUnsub) { allDocumentsUnsub(); allDocumentsUnsub = null; }
     if (vehiclesUnsub) { vehiclesUnsub(); vehiclesUnsub = null; }
@@ -1681,7 +1735,7 @@
   }
   function closeJobCompleteDialog(revert) {
     jobCompleteOverlay.classList.remove("open");
-    if (revert && pendingComplete) pendingComplete.sel.value = pendingComplete.previousValue;
+    if (revert && pendingComplete && pendingComplete.sel) pendingComplete.sel.value = pendingComplete.previousValue;
     pendingComplete = null;
   }
   document.getElementById("jobCompleteClose").addEventListener("click", function () { closeJobCompleteDialog(true); });
@@ -1718,6 +1772,8 @@
   var returningBalance = null;
   var followups = [];
   var followupsUnsub = null;
+  var dateien = [];
+  var dateienUnsub = null;
   var allFollowups = [];
   var allFollowupsUnsub = null;
   var pendingMaterialBillingRefs = [];
@@ -1738,6 +1794,13 @@
       colors: {
         Entwurf: { bg: "#EEF0F2", fg: "#5B6470" }, Offen: { bg: "#F4E8CF", fg: "#8A6A1A" }, Bezahlt: { bg: "#E4F0E9", fg: "#1F7A4D" },
         "Überfällig": { bg: "#F5E7E6", fg: "#A5433A" }, Storniert: { bg: "#EEF0F2", fg: "#5B6470" }
+      }
+    },
+    Kostenvoranschlag: {
+      options: ["Entwurf", "Versendet", "Bestätigt", "Abgelehnt", "Abgelaufen"],
+      colors: {
+        Entwurf: { bg: "#EEF0F2", fg: "#5B6470" }, Versendet: { bg: "#F4E8CF", fg: "#8A6A1A" },
+        "Bestätigt": { bg: "#E4F0E9", fg: "#1F7A4D" }, Abgelehnt: { bg: "#F5E7E6", fg: "#A5433A" }, Abgelaufen: { bg: "#F5E7E6", fg: "#A5433A" }
       }
     }
   };
@@ -1958,6 +2021,15 @@
     }, function () {
       document.getElementById("followupList").innerHTML = '<div class="job-empty">Wiedervorlagen konnten nicht geladen werden.</div>';
     });
+    dateien = [];
+    renderDateien();
+    if (dateienUnsub) dateienUnsub();
+    dateienUnsub = db.collection("customers").doc(c.id).collection("dateien").onSnapshot(function (snap) {
+      dateien = snap.docs.map(function (d) { return d.data(); });
+      renderDateien();
+    }, function () {
+      document.getElementById("dateienList").innerHTML = '<div class="job-empty">Dateien konnten nicht geladen werden.</div>';
+    });
     detailOverlay.classList.add("open");
   }
   function closeDetail() {
@@ -1968,6 +2040,7 @@
     if (docsUnsub) { docsUnsub(); docsUnsub = null; }
     if (customerMovementsUnsub) { customerMovementsUnsub(); customerMovementsUnsub = null; }
     if (followupsUnsub) { followupsUnsub(); followupsUnsub = null; }
+    if (dateienUnsub) { dateienUnsub(); dateienUnsub = null; }
     detailCustomer = null;
     expandedPropId = null;
   }
@@ -2212,7 +2285,7 @@
   mwstInput.addEventListener("input", recomputeTotals);
 
   function suggestDocNumber(type) {
-    var prefix = type === "Angebot" ? "AN" : "RE";
+    var prefix = type === "Angebot" ? "AN" : type === "Kostenvoranschlag" ? "KV" : "RE";
     var year = new Date().getFullYear();
     var n = docs.filter(function (d) { return d.typ === type; }).length + 1;
     return prefix + "-" + year + "-" + (n < 10 ? "00" + n : n < 100 ? "0" + n : n);
@@ -2223,9 +2296,9 @@
     editingDocId = existingDoc ? existingDoc.id : null;
     docTitle.textContent = (editingDocId ? "Bearbeiten: " : "Neu: ") + type;
     docForm.elements.status.innerHTML = DOC_STATUS[type].options.map(function (o) { return '<option>' + o + '</option>'; }).join("");
-    document.querySelector("#gueltigFaelligLabel span").textContent = type === "Angebot" ? "Gültig bis" : "Fällig am";
-    document.getElementById("leistungszeitraumLabel").hidden = type === "Angebot";
-    document.querySelector("#leistungsortLabel span").textContent = type === "Angebot" ? "Objekt" : "Leistungsort";
+    document.querySelector("#gueltigFaelligLabel span").textContent = type === "Rechnung" ? "Fällig am" : "Gültig bis";
+    document.getElementById("leistungszeitraumLabel").hidden = type !== "Rechnung";
+    document.querySelector("#leistungsortLabel span").textContent = type === "Rechnung" ? "Leistungsort" : "Objekt";
     if (existingDoc) {
       docForm.elements.nummer.value = existingDoc.nummer || "";
       docForm.elements.status.value = existingDoc.status || DOC_STATUS[type].options[0];
@@ -2240,7 +2313,7 @@
     } else {
       docForm.reset();
       docForm.elements.datum.value = new Date().toISOString().slice(0, 10);
-      docForm.elements.nummer.value = type === "Angebot" ? suggestDocNumber(type) : "";
+      docForm.elements.nummer.value = type !== "Rechnung" ? suggestDocNumber(type) : "";
       docForm.elements.leistungsort.value = detailCustomer ? (detailCustomer.address || "") : "";
       mwstInput.value = 0;
       currentPositions = [emptyPosition()];
@@ -2254,7 +2327,7 @@
     docOverlay.classList.add("open");
   }
   function closeDocForm() { docOverlay.classList.remove("open"); editingDocId = null; pendingMaterialBillingRefs = []; }
-  var DOC_PATH_STAGES = { Angebot: ["Entwurf", "Versendet", "Angenommen"], Rechnung: ["Entwurf", "Offen", "Bezahlt"] };
+  var DOC_PATH_STAGES = { Angebot: ["Entwurf", "Versendet", "Angenommen"], Rechnung: ["Entwurf", "Offen", "Bezahlt"], Kostenvoranschlag: ["Entwurf", "Versendet", "Bestätigt"] };
   function renderDocPath(type, currentStatus) {
     var stages = DOC_PATH_STAGES[type] || [];
     var idx = stages.indexOf(currentStatus);
@@ -2285,6 +2358,7 @@
   });
 
   document.getElementById("newOfferBtn").addEventListener("click", function () { if (detailCustomer) openDocForm("Angebot", null); });
+  document.getElementById("newEstimateBtn").addEventListener("click", function () { if (detailCustomer) openDocForm("Kostenvoranschlag", null); });
   document.getElementById("newInvoiceBtn").addEventListener("click", function () { if (detailCustomer) openDocForm("Rechnung", null); });
   document.getElementById("docClose").addEventListener("click", closeDocForm);
   document.getElementById("docCancel").addEventListener("click", closeDocForm);
@@ -2499,8 +2573,33 @@
     document.getElementById("printArea").innerHTML = html;
     window.print();
   }
+  function printKostenvoranschlag(d) {
+    var c = detailCustomer;
+    var metaBox = metaBoxHtml([
+      { l: "Datum", v: fmtDate(d.datum) },
+      { l: "Gültig bis", v: d.gueltigFaellig ? fmtDate(d.gueltigFaellig) : "–" },
+      { l: "Objekt", v: d.leistungsort ? esc(d.leistungsort) : "–" }
+    ]);
+    var html = '<div style="padding:44px;font-family:Arial,Helvetica,sans-serif;color:#17212B;max-width:720px;margin:0 auto;">' +
+      docHeaderHtml(d) +
+      '<div style="display:flex;justify-content:space-between;gap:24px;font-size:13px;margin-bottom:24px;">' +
+      '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Kostenvoranschlag für</div>' + esc(c.name) + (c.address ? '<br/>' + esc(c.address) : '') + '</div>' +
+      '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Ersteller</div>' +
+      esc(COMPANY.name) + '<br/>' + esc(COMPANY.owners) + '<br/>' + esc(COMPANY.address) + '</div></div>' +
+      metaBox +
+      '<div style="font-size:13px;margin-bottom:16px;">Auf Grundlage der Besichtigung/Ihrer Angaben veranschlagen wir folgende Kosten:</div>' +
+      positionsTableHtml(d) +
+      totalsHtml(d, "Voraussichtliche Kosten") +
+      '<div style="font-size:12px;color:#667085;margin-top:18px;font-style:italic;">Unverbindlicher Kostenvoranschlag. Abweichungen vom tatsächlichen Aufwand werden vorab angekündigt.</div>' +
+      (d.notizen ? '<div style="margin-top:18px;font-size:12px;color:#667085;white-space:pre-wrap;">' + esc(d.notizen) + '</div>' : "") +
+      companyFooter() + '</div>';
+    document.getElementById("printArea").innerHTML = html;
+    window.print();
+  }
   function printDocument(d) {
-    if (d.typ === "Angebot") printOffer(d); else printInvoice(d);
+    if (d.typ === "Angebot") printOffer(d);
+    else if (d.typ === "Kostenvoranschlag") printKostenvoranschlag(d);
+    else printInvoice(d);
   }
   function daysBetween(fromStr, toStr) {
     var a = new Date(fromStr + "T00:00:00"), b = new Date(toStr + "T00:00:00");
@@ -3377,7 +3476,32 @@
       return '<div class="stat"><div class="lbl">' + s.l + '</div><div class="val"' + (s.l.indexOf("Mindest") >= 0 && low > 0 ? ' style="color:var(--danger)"' : '') + '>' + s.v + '</div></div>';
     }).join("");
   }
+  function renderMaterialOrders() {
+    var wrap = document.getElementById("materialOrdersWrap");
+    var el = document.getElementById("materialOrdersList");
+    var open = materialOrders.filter(function (o) { return o.status !== "Beliefert"; })
+      .sort(function (a, b) { return (a.erstelltAm && b.erstelltAm) ? a.erstelltAm.toMillis() - b.erstelltAm.toMillis() : 0; });
+    if (open.length === 0) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    el.innerHTML = open.map(function (o) {
+      var metaParts = [o.mitarbeiterName, o.customerName].filter(Boolean).map(esc).join(" · ");
+      return '<div class="card" data-id="' + o.id + '" style="cursor:default;">' +
+        '<div class="card-top"><div><div class="card-name">' + esc(o.materialName) + ' · ' + (o.menge || 0) + '</div>' +
+        (metaParts ? '<div class="card-type">' + metaParts + '</div>' : "") + '</div></div>' +
+        (o.notiz ? '<div class="services">' + esc(o.notiz) + '</div>' : "") +
+        '<div class="card-foot"><div></div><button type="button" class="btn btn-primary mat-order-done" data-id="' + o.id + '" style="padding:6px 10px;font-size:0.72rem;">Beliefert</button></div></div>';
+    }).join("");
+  }
+  document.getElementById("materialOrdersList").addEventListener("click", function (e) {
+    var btn = e.target.closest(".mat-order-done");
+    if (!btn) return;
+    db.collection("materialbestellungen").doc(btn.dataset.id)
+      .update({ status: "Beliefert", erledigtAm: firebase.firestore.FieldValue.serverTimestamp() })
+      .then(function () { showToast("Bestellung als beliefert markiert"); })
+      .catch(function (err) { setBanner("Konnte nicht aktualisiert werden: " + err.message); });
+  });
   function renderMaterial() {
+    renderMaterialOrders();
     renderMaterialStats();
     var banner = document.getElementById("materialFilterBanner");
     banner.innerHTML = materialFilterLow ?
@@ -3721,6 +3845,68 @@
       db.collection("customers").doc(detailCustomer.id).collection("wiedervorlagen").doc(delBtn.dataset.id).delete()
         .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
     }
+  });
+
+  // ---- Dateien (Kundendokumente) ----
+  function fmtBytes(n) {
+    if (!n) return "0 KB";
+    var kb = n / 1024;
+    return kb < 1024 ? Math.round(kb) + " KB" : (kb / 1024).toFixed(1) + " MB";
+  }
+  function renderDateien() {
+    var el = document.getElementById("dateienList");
+    document.getElementById("rlDateienCount").textContent = dateien.length ? dateien.length : "";
+    if (dateien.length === 0) { el.innerHTML = '<div class="job-empty">Noch keine Dateien hochgeladen.</div>'; return; }
+    var sorted = dateien.slice().sort(function (a, b) { return (b.uploadedAm || "").localeCompare(a.uploadedAm || ""); });
+    el.innerHTML = sorted.map(function (f) {
+      return '<div class="job-row" data-id="' + f.id + '">' +
+        '<div class="job-row-top"><div><div class="job-title"><a href="' + esc(f.url) + '" target="_blank" rel="noopener">' + esc(f.name) + '</a></div>' +
+        '<div class="job-meta">' + fmtBytes(f.groesse) + (f.uploadedBy ? ' · ' + esc(f.uploadedBy) : '') + '</div></div>' +
+        '<button type="button" class="datei-del" data-id="' + f.id + '" aria-label="Datei löschen">' + icon("trash") + '</button></div></div>';
+    }).join("");
+  }
+  document.getElementById("dateiUploadInput").addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    if (!file || !detailCustomer) return;
+    var statusEl = document.getElementById("dateiUploadStatus");
+    var fileId = uid();
+    var storagePath = "customers/" + detailCustomer.id + "/dateien/" + fileId + "-" + file.name;
+    statusEl.textContent = "Lädt hoch…";
+    var task = storage.ref(storagePath).put(file);
+    task.on("state_changed", function (snap) {
+      var pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+      statusEl.textContent = "Lädt hoch… " + pct + "%";
+    }, function (err) {
+      statusEl.textContent = "";
+      setBanner("Upload fehlgeschlagen: " + err.message);
+    }, function () {
+      task.snapshot.ref.getDownloadURL().then(function (url) {
+        var data = {
+          id: fileId, name: file.name, storagePath: storagePath, url: url,
+          groesse: file.size, uploadedBy: currentUserEmail, uploadedAm: new Date().toISOString()
+        };
+        return db.collection("customers").doc(detailCustomer.id).collection("dateien").doc(fileId).set(data);
+      }).then(function () {
+        statusEl.textContent = "";
+        e.target.value = "";
+        showToast("Datei hochgeladen");
+      }).catch(function (err) {
+        statusEl.textContent = "";
+        setBanner("Datei konnte nicht gespeichert werden: " + err.message);
+      });
+    });
+  });
+  document.getElementById("dateienList").addEventListener("click", function (e) {
+    var delBtn = e.target.closest(".datei-del");
+    if (!delBtn || !detailCustomer) return;
+    var f = dateien.find(function (d) { return d.id === delBtn.dataset.id; });
+    if (!f) return;
+    var ref = db.collection("customers").doc(detailCustomer.id).collection("dateien").doc(f.id);
+    var storageRef = f.storagePath ? storage.ref(f.storagePath) : null;
+    (storageRef ? storageRef.delete().catch(function () {}) : Promise.resolve())
+      .then(function () { return ref.delete(); })
+      .then(function () { showToast("Datei gelöscht"); })
+      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
   });
 
   // ---- Fuhrpark (Fahrzeuge & Maschinen) ----
@@ -4182,10 +4368,115 @@
     myJobsUnsub = db.collectionGroup("auftraege").where("mitarbeiterId", "==", mitarbeiterId).onSnapshot(function (snap) {
       myJobs = snap.docs.map(function (d) { return d.data(); });
       renderMyJobs();
+      syncMyCustomers();
     }, function () {
       document.getElementById("myJobsList").innerHTML = '<div class="empty"><div class="t">Aufträge konnten nicht geladen werden</div></div>';
     });
   }
+  function syncMyCustomers() {
+    var ids = {};
+    myJobs.forEach(function (j) { if (j.customerId) ids[j.customerId] = true; });
+    Object.keys(myCustomerUnsubs).forEach(function (id) {
+      if (!ids[id]) { myCustomerUnsubs[id](); delete myCustomerUnsubs[id]; delete myCustomers[id]; }
+    });
+    Object.keys(ids).forEach(function (id) {
+      if (myCustomerUnsubs[id]) return;
+      myCustomerUnsubs[id] = db.collection("customers").doc(id).onSnapshot(function (snap) {
+        if (snap.exists) myCustomers[id] = snap.data();
+        renderMyCustomers();
+      });
+    });
+    renderMyCustomers();
+  }
+  function stopMyCustomers() {
+    Object.keys(myCustomerUnsubs).forEach(function (id) { myCustomerUnsubs[id](); });
+    myCustomerUnsubs = {};
+    myCustomers = {};
+  }
+  function renderMyCustomers() {
+    var wrap = document.getElementById("myCustomersWrap");
+    var el = document.getElementById("myCustomersList");
+    var ids = Object.keys(myCustomers);
+    if (ids.length === 0) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    el.innerHTML = ids.map(function (id) {
+      var c = myCustomers[id];
+      var contactLine = (c.contactName || c.phone) ? '<div class="row">' + icon("phone") + '<span>' +
+        [esc(c.contactName), c.phone ? '<a href="tel:' + esc(String(c.phone).replace(/\s+/g, "")) + '">' + esc(c.phone) + '</a>' : ""].filter(Boolean).join(" · ") + '</span></div>' : "";
+      var addrLine = c.address ? '<div class="row">' + icon("building") + '<span>' + esc(c.address) + '</span> <a class="maps-link" href="' + mapsUrl(c.address) + '" target="_blank" rel="noopener">' + icon("maps") + ' Route</a></div>' : "";
+      var svcLine = c.services ? '<div class="services">' + esc(c.services) + (c.turnus ? " · " + esc(c.turnus) : "") + '</div>' : "";
+      return '<div class="card"><div class="card-top"><div class="card-name">' + esc(c.name) + '</div></div>' + addrLine + contactLine + svcLine + '</div>';
+    }).join("");
+    populateMyMaterialSelect();
+  }
+  function subscribeMyMaterial(mitarbeiterId) {
+    myMaterialUnsub = db.collection("material").onSnapshot(function (snap) {
+      myMaterialCatalog = snap.docs.map(function (d) { return d.data(); });
+      populateMyMaterialSelect();
+    });
+    myOrdersUnsub = db.collection("materialbestellungen").where("mitarbeiterId", "==", mitarbeiterId).onSnapshot(function (snap) {
+      myOrders = snap.docs.map(function (d) { return d.data(); });
+      renderMyMaterialOrders();
+    });
+  }
+  function stopMyMaterial() {
+    if (myMaterialUnsub) { myMaterialUnsub(); myMaterialUnsub = null; }
+    if (myOrdersUnsub) { myOrdersUnsub(); myOrdersUnsub = null; }
+    myMaterialCatalog = [];
+    myOrders = [];
+  }
+  function populateMyMaterialSelect() {
+    var form = document.getElementById("myMaterialOrderForm");
+    var sorted = myMaterialCatalog.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); });
+    form.elements.materialId.innerHTML = sorted.map(function (m) {
+      return '<option value="' + m.id + '">' + esc(m.name) + (m.unit ? " (" + esc(m.unit) + ")" : "") + '</option>';
+    }).join("");
+    var custSel = form.elements.customerId;
+    var current = custSel.value;
+    custSel.innerHTML = '<option value="">Kein Bezug</option>' + Object.keys(myCustomers).map(function (id) {
+      return '<option value="' + id + '">' + esc(myCustomers[id].name) + '</option>';
+    }).join("");
+    custSel.value = current;
+  }
+  function renderMyMaterialOrders() {
+    var el = document.getElementById("myMaterialOrdersList");
+    if (myOrders.length === 0) { el.innerHTML = ""; return; }
+    var sorted = myOrders.slice().sort(function (a, b) {
+      return (a.erstelltAm && b.erstelltAm) ? b.erstelltAm.toMillis() - a.erstelltAm.toMillis() : 0;
+    });
+    el.innerHTML = sorted.map(function (o) {
+      var badge = o.status === "Beliefert" ?
+        '<span class="badge-status" style="background:var(--success-soft);color:var(--success)">Beliefert</span>' :
+        '<span class="badge-status" style="background:var(--warn-soft,#F4E8CF);color:#8A6A1A">Offen</span>';
+      return '<div class="card" style="cursor:default;"><div class="card-top"><div class="card-name">' + esc(o.materialName) + ' · ' + (o.menge || 0) + '</div>' + badge + '</div>' +
+        (o.customerName ? '<div class="card-type">' + esc(o.customerName) + '</div>' : "") +
+        (o.notiz ? '<div class="services">' + esc(o.notiz) + '</div>' : "") + '</div>';
+    }).join("");
+  }
+  document.getElementById("myMaterialOrderForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var form = e.target;
+    var materialId = form.elements.materialId.value;
+    var mat = myMaterialCatalog.find(function (m) { return m.id === materialId; });
+    if (!mat) return;
+    var customerId = form.elements.customerId.value;
+    var cust = customerId ? myCustomers[customerId] : null;
+    var data = {
+      id: uid(), materialId: materialId, materialName: mat.name,
+      menge: parseInt(form.elements.menge.value, 10) || 1,
+      mitarbeiterId: myMitarbeiterId, mitarbeiterName: myMitarbeiterName,
+      customerId: customerId || "", customerName: cust ? cust.name : "",
+      notiz: form.elements.notiz.value.trim(), status: "Offen",
+      erstelltAm: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    db.collection("materialbestellungen").doc(data.id).set(data)
+      .then(function () {
+        showToast("Bestellung gesendet");
+        form.reset();
+        form.elements.menge.value = 1;
+      })
+      .catch(function (err) { setBanner("Bestellung konnte nicht gesendet werden: " + err.message); });
+  });
   function renderMyJobs() {
     var el = document.getElementById("myJobsList");
     if (myJobs.length === 0) {
@@ -4203,30 +4494,30 @@
       var heading = dateKey === "Ohne Datum" ? "Ohne Datum" :
         new Date(dateKey + "T00:00:00").toLocaleDateString("de-DE", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
       var items = jobsForDate.map(function (j) {
-        var select = jobStatusSelect(j).replace("class=\"job-status-select\"",
-          "class=\"job-status-select\" data-cust=\"" + j.customerId + "\" data-prop=\"" + j.propertyId + "\"");
-        var confirmedLine = (j.status === "Erledigt" && j.erledigtVon) ?
+        var isDone = j.status === "Erledigt";
+        var confirmedLine = (isDone && j.erledigtVon) ?
           '<div class="job-confirmed">✓ Erledigt von ' + esc(j.erledigtVon) + (j.erledigtAm ? " am " + fmtDateTime(j.erledigtAm) : "") + '</div>' : "";
+        var completeBtn = isDone ? "" :
+          '<button type="button" class="btn btn-primary my-job-complete" data-job="' + j.id + '" data-cust="' + j.customerId + '" data-prop="' + j.propertyId + '" style="margin-left:8px;padding:6px 12px;font-size:0.78rem;">Erledigt melden</button>';
+        var mapsBtn = j.propertyAddress ?
+          '<a class="btn btn-ghost" href="' + mapsUrl(j.propertyAddress) + '" target="_blank" rel="noopener" style="margin-left:8px;padding:6px 12px;font-size:0.78rem;">' + icon("maps") + ' Route</a>' : "";
         return '<div class="agenda-item" style="cursor:default;">' +
           '<div class="agenda-time">' + (j.uhrzeit ? j.uhrzeit + " Uhr" : "Ganztägig") + '</div>' +
           '<div class="agenda-title">' + esc(j.titel) + '</div>' +
           '<div class="agenda-sub">' + esc(j.customerName || "") + (j.propertyName ? " · " + esc(j.propertyName) : "") + (j.propertyAddress ? " · " + esc(j.propertyAddress) : "") + '</div>' +
-          confirmedLine + '<div class="job-actions" style="margin-top:6px;">' + jobStatusBadge(j.status || "Offen") + select + '</div></div>';
+          confirmedLine + '<div class="job-actions" style="margin-top:6px;">' + jobStatusBadge(j.status || "Offen") + completeBtn + mapsBtn + '</div></div>';
       }).join("");
       return '<div class="agenda-group"><h3>' + heading + '</h3>' + items + '</div>';
     }).join("");
   }
-  document.getElementById("myJobsList").addEventListener("change", function (e) {
-    var sel = e.target.closest(".job-status-select");
-    if (!sel) return;
-    var jobId = sel.dataset.job, custId = sel.dataset.cust, propId = sel.dataset.prop;
+  document.getElementById("myJobsList").addEventListener("click", function (e) {
+    var btn = e.target.closest(".my-job-complete");
+    if (!btn) return;
+    var jobId = btn.dataset.job, custId = btn.dataset.cust, propId = btn.dataset.prop;
     var job = myJobs.find(function (j) { return j.id === jobId; });
     if (!job) return;
     var ref = db.collection("customers").doc(custId).collection("objekte").doc(propId).collection("auftraege").doc(jobId);
-    if (sel.value === "Erledigt") { openJobCompleteDialog(job, ref, sel); return; }
-    var update = jobStatusUpdate(job, sel.value);
-    ref.update(update)
-      .catch(function (err) { setBanner("Status konnte nicht geändert werden: " + err.message); });
+    openJobCompleteDialog(job, ref, null);
   });
 
   // ---- Login / Registrierung ----
@@ -4277,41 +4568,77 @@
     }
   });
 
+  function activateOwnerView() {
+    currentRole = "Gesellschafter";
+    loginScreen.hidden = true;
+    appEl.hidden = false;
+    document.querySelector(".tabbar").hidden = false;
+    document.getElementById("sidebarNav").hidden = false;
+    document.getElementById("headerAdd").hidden = false;
+    document.getElementById("helpBtn").hidden = false;
+    document.querySelector(".brand-text h1").textContent = "Kunden-Cockpit";
+    showView("dashboard");
+    render();
+    renderDashboard();
+    startSync();
+  }
+
+  function activateEmployeeView(mitarbeiterId, mitarbeiterName) {
+    currentRole = "Mitarbeiter";
+    myMitarbeiterId = mitarbeiterId;
+    myMitarbeiterName = mitarbeiterName || currentUserEmail;
+    loginScreen.hidden = true;
+    appEl.hidden = false;
+    document.querySelector(".tabbar").hidden = true;
+    document.getElementById("sidebarNav").hidden = true;
+    document.getElementById("headerAdd").hidden = true;
+    document.getElementById("helpBtn").hidden = true;
+    document.querySelector(".brand-text h1").textContent = "Meine Aufträge";
+    showView("myJobs");
+    subscribeMyJobs(myMitarbeiterId);
+    subscribeMyMaterial(myMitarbeiterId);
+  }
+
+  function denyAccess(message) {
+    stopSync();
+    if (myJobsUnsub) { myJobsUnsub(); myJobsUnsub = null; }
+    stopMyCustomers();
+    stopMyMaterial();
+    currentRole = null;
+    auth.signOut();
+    loginError.textContent = message;
+    loginError.classList.add("show");
+  }
+
   auth.onAuthStateChanged(function (user) {
     if (user) {
       currentUserEmail = user.email || "";
-      currentRole = "Inhaber";
-      loginScreen.hidden = true;
-      appEl.hidden = false;
-      document.querySelector(".tabbar").hidden = false;
-      document.getElementById("sidebarNav").hidden = false;
-      document.getElementById("headerAdd").hidden = false;
-      document.getElementById("helpBtn").hidden = false;
-      document.querySelector(".brand-text h1").textContent = "Kunden-Cockpit";
-      showView("dashboard");
-      render();
-      renderDashboard();
-      startSync();
-      // Rollen-Prüfung läuft im Hintergrund und blockiert die Anmeldung nicht mehr,
-      // damit eine hängende/blockierte Firestore-Verbindung nie den Login verhindert.
+      var isOwnerEmail = OWNER_EMAILS.indexOf(currentUserEmail.toLowerCase()) !== -1;
+      if (isOwnerEmail) {
+        activateOwnerView();
+        return;
+      }
       db.collection("nutzer").doc(user.uid).get().then(function (docSnap) {
-        if (docSnap.exists && docSnap.data().rolle === "Mitarbeiter") {
-          var nutzer = docSnap.data();
-          currentRole = "Mitarbeiter";
-          myMitarbeiterId = nutzer.mitarbeiterId;
-          stopSync();
-          document.querySelector(".tabbar").hidden = true;
-          document.getElementById("sidebarNav").hidden = true;
-          document.getElementById("headerAdd").hidden = true;
-          document.getElementById("helpBtn").hidden = true;
-          document.querySelector(".brand-text h1").textContent = "Meine Aufträge";
-          showView("myJobs");
-          subscribeMyJobs(myMitarbeiterId);
+        if (!docSnap.exists) { denyAccess("Kein Zugriff für dieses Konto. Bitte über Ihren Einladungslink registrieren."); return; }
+        var nutzer = docSnap.data();
+        if (nutzer.rolle === "Gesellschafter") { activateOwnerView(); return; }
+        if (nutzer.rolle === "Mitarbeiter" && nutzer.mitarbeiterId) {
+          db.collection("mitarbeiter").doc(nutzer.mitarbeiterId).get().then(function (empSnap) {
+            if (empSnap.exists && empSnap.data().status === "Aktiv") {
+              activateEmployeeView(nutzer.mitarbeiterId, empSnap.data().name);
+            } else {
+              denyAccess("Ihr Zugang wurde gesperrt. Bitte wenden Sie sich an Ihren Arbeitgeber.");
+            }
+          }).catch(function () { denyAccess("Zugriff konnte nicht geprüft werden."); });
+          return;
         }
-      }).catch(function () { /* Rollenprüfung fehlgeschlagen — Standardansicht bleibt aktiv */ });
+        denyAccess("Kein Zugriff für dieses Konto.");
+      }).catch(function () { denyAccess("Zugriff konnte nicht geprüft werden."); });
     } else {
       stopSync();
       if (myJobsUnsub) { myJobsUnsub(); myJobsUnsub = null; }
+      stopMyCustomers();
+      stopMyMaterial();
       customers = [];
       allProperties = {};
       calendarJobs = [];

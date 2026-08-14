@@ -1,50 +1,133 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+
+    function isOwnerEmail() {
+      return isSignedIn() && request.auth.token.email in ['info@mi-rheinservice.de'];
+    }
+
+    function nutzerDoc() {
+      return get(/databases/$(database)/documents/nutzer/$(request.auth.uid)).data;
+    }
+
+    function isNutzerOwner() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/nutzer/$(request.auth.uid))
+        && nutzerDoc().rolle == "Gesellschafter";
+    }
+
+    function isOwner() {
+      return isOwnerEmail() || isNutzerOwner();
+    }
+
+    function myMitarbeiterId() {
+      return nutzerDoc().mitarbeiterId;
+    }
+
+    function isActiveEmployee() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/nutzer/$(request.auth.uid))
+        && nutzerDoc().rolle == "Mitarbeiter"
+        && exists(/databases/$(database)/documents/mitarbeiter/$(myMitarbeiterId()))
+        && get(/databases/$(database)/documents/mitarbeiter/$(myMitarbeiterId())).data.status == "Aktiv";
+    }
+
+    function isAssignedToMe() {
+      return resource.data.mitarbeiterId == myMitarbeiterId();
+    }
+
+    // ---- Kunden & Objekte ----
     match /customers/{customerId} {
-      allow read, write: if request.auth != null;
+      allow read: if isOwner() || isActiveEmployee();
+      allow write: if isOwner();
+
+      match /objekte/{propertyId} {
+        allow read: if isOwner() || isActiveEmployee();
+        allow write: if isOwner();
+
+        match /auftraege/{jobId} {
+          allow read: if isOwner() || (isActiveEmployee() && isAssignedToMe());
+          allow create, delete: if isOwner();
+          allow update: if isOwner() || (
+            isActiveEmployee() && isAssignedToMe() && resource.data.status != "Erledigt" &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'erledigtVon', 'erledigtAm'])
+          );
+        }
+
+        match /wiederkehrend/{templateId} {
+          allow read, write: if isOwner();
+        }
+      }
+
+      match /dokumente/{docId} {
+        allow read, write: if isOwner();
+      }
+
+      match /dateien/{fileId} {
+        allow read, write: if isOwner();
+      }
+
+      match /wiedervorlagen/{followupId} {
+        allow read, write: if isOwner();
+      }
     }
-    match /{path=**}/auftraege/{jobId} {
-      allow read, write: if request.auth != null;
-    }
-    match /{path=**}/objekte/{propertyId} {
-      allow read, write: if request.auth != null;
-    }
-    match /{path=**}/dokumente/{docId} {
-      allow read, write: if request.auth != null;
-    }
+
+    // ---- Mitarbeiter ----
     match /mitarbeiter/{employeeId} {
-      allow read, write: if request.auth != null;
+      allow read: if isOwner() || (isActiveEmployee() && employeeId == myMitarbeiterId());
+      allow write: if isOwner();
+
+      match /abwesenheiten/{absenceId} {
+        allow read, write: if isOwner();
+      }
     }
-    match /{path=**}/abwesenheiten/{absenceId} {
-      allow read, write: if request.auth != null;
-    }
-    match /{path=**}/wiederkehrend/{templateId} {
-      allow read, write: if request.auth != null;
-    }
+
+    // ---- Nutzer (Auth-Profile) ----
     match /nutzer/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow create: if isSignedIn() && request.auth.uid == uid && (
+        (isOwnerEmail() && request.resource.data.rolle == "Gesellschafter") ||
+        (request.resource.data.rolle == "Mitarbeiter" && request.resource.data.mitarbeiterId is string && request.resource.data.mitarbeiterId != "")
+      );
+      allow update, delete: if false;
     }
+
+    // ---- Katalog & Lager ----
     match /services/{serviceId} {
-      allow read, write: if request.auth != null;
+      allow read: if isOwner() || isActiveEmployee();
+      allow write: if isOwner();
     }
+
     match /material/{materialId} {
-      allow read, write: if request.auth != null;
+      allow read: if isOwner() || isActiveEmployee();
+      allow write: if isOwner();
+
+      match /bewegungen/{movementId} {
+        allow read, write: if isOwner();
+      }
     }
-    match /{path=**}/bewegungen/{movementId} {
-      allow read, write: if request.auth != null;
+
+    match /materialbestellungen/{orderId} {
+      allow read: if isOwner() || (isActiveEmployee() && isAssignedToMe());
+      allow create: if isOwner() || (
+        isActiveEmployee() &&
+        request.resource.data.mitarbeiterId == myMitarbeiterId() &&
+        request.resource.data.status == "Offen"
+      );
+      allow update, delete: if isOwner();
     }
-    match /{path=**}/wiedervorlagen/{followupId} {
-      allow read, write: if request.auth != null;
-    }
+
+    // ---- Sonstiges (nur Gesellschafter) ----
     match /ressourcen/{resourceId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isOwner();
     }
     match /tickets/{ticketId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isOwner();
     }
     match /schluessel/{keyId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isOwner();
     }
   }
 }
