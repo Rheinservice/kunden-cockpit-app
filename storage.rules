@@ -15,5 +15,9 @@ service firebase.storage {
     match /customers/{customerId}/dateien/{fileName} {
       allow read, write: if isOwner();
     }
+
+    match /unzugeordnet/dateien/{fileName} {
+      allow read, write: if isOwner();
+    }
   }
 }

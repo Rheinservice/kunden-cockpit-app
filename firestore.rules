@@ -62,7 +62,10 @@ service cloud.firestore {
       }
 
       match /dokumente/{docId} {
-        allow read, write: if isOwner();
+        allow read: if isOwner();
+        allow create: if isOwner();
+        allow update, delete: if isOwner() &&
+          !(resource.data.typ == "Rechnung" && resource.data.status == "Storniert");
       }
 
       match /dateien/{fileId} {
@@ -117,6 +120,17 @@ service cloud.firestore {
         request.resource.data.status == "Offen"
       );
       allow update, delete: if isOwner();
+    }
+
+    // ---- Dokumentencenter: nicht zugeordnete Uploads ----
+    match /unzugeordnete_dokumente/{fileId} {
+      allow read, write: if isOwner();
+    }
+
+    // ---- Änderungsprotokoll (Audit-Log, unveränderlich) ----
+    match /aenderungsprotokoll/{entryId} {
+      allow read, create: if isOwner();
+      allow update, delete: if false;
     }
 
     // ---- Sonstiges (nur Gesellschafter) ----

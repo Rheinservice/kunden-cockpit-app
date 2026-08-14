@@ -125,8 +125,9 @@
   .empty .t { font-weight: 700; color: var(--brand); font-size: 0.95rem; }
   .empty .s { color: var(--ink-soft); font-size: 0.82rem; margin-top: 4px; }
 
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-l); padding: 14px; display: flex; flex-direction: column; gap: 9px; box-shadow: var(--shadow-s); cursor: pointer; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-l); padding: 14px; display: flex; flex-direction: column; gap: 9px; box-shadow: var(--shadow-s); cursor: pointer; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
   .card:active { background: var(--surface-2); }
+  @media (hover: hover) { .card:hover { border-color: var(--accent); box-shadow: var(--shadow-m); } }
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .card-name { font-weight: 700; font-size: 0.95rem; color: var(--brand); font-family: Georgia, serif; }
   .card-type { font-size: 0.74rem; color: var(--ink-soft); margin-top: 1px; }
@@ -227,10 +228,13 @@
   .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .field textarea { resize: vertical; min-height: 64px; }
   .sheet-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 18px calc(14px + var(--safe-b)); border-top: 1px solid var(--border); flex-shrink: 0; }
-  .btn { border-radius: var(--r-s); padding: 11px 18px; font-size: 0.86rem; font-weight: 700; border: none; }
-  .btn-ghost { background: transparent; color: var(--ink-soft); }
+  .btn { border-radius: var(--r-s); padding: 11px 18px; font-size: 0.86rem; font-weight: 700; border: none; transition: opacity 0.15s ease, transform 0.1s ease; }
+  .btn:active { transform: scale(0.97); }
+  .btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--border); }
   .btn-primary { background: var(--brand-surface); color: var(--brand-surface-contrast); }
   .btn-danger { background: var(--danger); color: white; }
+  .btn-sm { padding: 6px 10px; font-size: 0.72rem; border-radius: var(--r-s); }
+  .section-title { font-size: 0.78rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.03em; margin: 0; }
   .confirm .sheet { max-width: 360px; }
   .confirm p, .confirm .confirm-body { padding: 0 18px; color: var(--ink-soft); font-size: 0.84rem; margin: -4px 0 4px; }
   .confirm strong { color: var(--ink); }
@@ -259,12 +263,13 @@
   .path-step.current { background: var(--accent); color: var(--brand-contrast); }
   .section-head h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand); }
   .job-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--surface-2); border-radius: var(--r-m); padding: 12px; }
-  .job-form input { border: 1px solid var(--border); border-radius: var(--r-s); padding: 9px 10px; background: var(--surface); color: var(--ink); width: 100%; font-size: 0.85rem; }
+  .job-form input, .job-form select { border: 1px solid var(--border); border-radius: var(--r-s); padding: 9px 10px; background: var(--surface); color: var(--ink); width: 100%; font-size: 0.85rem; }
   .job-form .full { grid-column: 1 / -1; }
   .job-form button { grid-column: 1 / -1; border: none; border-radius: var(--r-s); padding: 10px; background: var(--brand-surface); color: var(--brand-surface-contrast); font-weight: 700; font-size: 0.84rem; }
   .job-list { display: flex; flex-direction: column; gap: 10px; }
   .job-empty { font-size: 0.8rem; color: var(--ink-soft); text-align: center; padding: 16px; }
-  .job-row { border: 1px solid var(--border); border-radius: var(--r-m); padding: 11px 12px; display: flex; flex-direction: column; gap: 7px; }
+  .job-row { border: 1px solid var(--border); border-radius: var(--r-m); padding: 11px 12px; display: flex; flex-direction: column; gap: 7px; background: var(--surface); transition: border-color 0.15s ease; }
+  .job-row:hover { border-color: var(--accent); }
   .job-row-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .job-title { font-weight: 700; font-size: 0.85rem; color: var(--ink); }
   .job-meta { font-size: 0.74rem; color: var(--ink-soft); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -274,6 +279,9 @@
   .recurring-generate, .recurring-toggle { flex: 1; min-width: 100px; border: 1px solid var(--border); background: var(--surface); color: var(--brand); border-radius: var(--r-s); padding: 7px 8px; font-size: 0.74rem; font-weight: 700; }
   .mat-return { flex-shrink: 0; border: 1px solid var(--border); background: var(--surface); color: var(--brand); border-radius: var(--r-s); padding: 7px 10px; font-size: 0.74rem; font-weight: 700; }
   .mat-bill { flex: 1; border: 1px solid var(--accent); background: var(--accent-soft, var(--surface-2)); color: var(--accent-ink, var(--brand)); border-radius: var(--r-s); padding: 7px 10px; font-size: 0.74rem; font-weight: 700; }
+  .mat-movements { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px; }
+  .mat-movement-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; }
+  .mat-mov-edit { flex-shrink: 0; background: none; border: 1px solid var(--border); border-radius: var(--r-s); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--brand); }
   .job-del { background: transparent; border: none; color: var(--ink-soft); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .job-del:active { background: var(--surface-2); color: var(--danger); }
 
@@ -396,6 +404,10 @@
     <button type="button" class="sidebar-link" id="sbTabDocs" aria-selected="false">
       <svg class="icn" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Belege
+    </button>
+    <button type="button" class="sidebar-link" id="sbTabDokumente" aria-selected="false">
+      <svg class="icn" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Dokumente
     </button>
     <button type="button" class="sidebar-link" id="sbTabKeys" aria-selected="false">
       <svg class="icn" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5L18 5l2.5 2.5L18 10"/></svg>
@@ -563,6 +575,27 @@
     <div class="list" id="docsGlobalList"></div>
   </div>
 
+  <div id="dokumenteView" hidden>
+    <button type="button" class="view-back">← Mehr</button>
+    <div class="stats" id="dokumenteStats"></div>
+    <div class="chips" id="dokumenteChips">
+      <button type="button" class="chip" data-doctype="Alle">Alle</button>
+      <button type="button" class="chip" data-doctype="ZuordnungErforderlich">Zuordnung erforderlich</button>
+    </div>
+    <div class="job-form" id="dokumenteFilterForm" style="padding:0 16px 10px;">
+      <select id="dokFilterKunde"><option value="">Alle Kunden</option></select>
+      <select id="dokFilterJahr"><option value="">Alle Jahre</option></select>
+      <select id="dokFilterStatus"><option value="">Alle Status</option></select>
+    </div>
+    <div id="dokumenteDropzone" style="margin:0 16px 12px;border:2px dashed var(--border);border-radius:var(--r-m);padding:20px;text-align:center;color:var(--ink-soft);font-size:0.82rem;">
+      Datei hierher ziehen (Desktop) oder
+      <label class="btn btn-primary btn-sm" style="display:inline-block;cursor:pointer;margin-left:4px;">
+        Datei auswählen<input type="file" id="dokumenteUploadInput" accept="application/pdf,image/jpeg,image/png,image/heic,.doc,.docx,.odt" style="display:none;" />
+      </label>
+    </div>
+    <div class="list" id="dokumenteList"></div>
+  </div>
+
   <div id="keysView" hidden>
     <button type="button" class="view-back">← Mehr</button>
     <div class="stats" id="keysStats"></div>
@@ -593,6 +626,10 @@
       <button type="button" class="more-card" data-view="docs">
         <svg class="icn" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <div class="more-card-text"><strong>Belege</strong><span>Alle Angebote &amp; Rechnungen</span></div>
+      </button>
+      <button type="button" class="more-card" data-view="dokumente">
+        <svg class="icn" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="more-card-text"><strong>Dokumente</strong><span>Hochgeladene Belege &amp; Verträge, alle Kunden</span></div>
       </button>
       <button type="button" class="more-card" data-view="keys">
         <svg class="icn" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5L18 5l2.5 2.5L18 10"/></svg>
@@ -699,9 +736,9 @@
           <summary><span>Angebote &amp; Rechnungen</span><span class="rl-count" id="rlDocsCount"></span><span class="rl-chev">⌄</span></summary>
           <div class="related-body">
             <div style="display:flex;gap:6px;margin-bottom:10px;">
-              <button type="button" class="btn btn-ghost" id="newOfferBtn" style="padding:6px 10px;font-size:0.72rem;">+ Angebot</button>
-              <button type="button" class="btn btn-ghost" id="newEstimateBtn" style="padding:6px 10px;font-size:0.72rem;">+ Kostenvoranschlag</button>
-              <button type="button" class="btn btn-ghost" id="newInvoiceBtn" style="padding:6px 10px;font-size:0.72rem;">+ Rechnung</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="newOfferBtn">+ Angebot</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="newEstimateBtn">+ Kostenvoranschlag</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="newInvoiceBtn">+ Rechnung</button>
             </div>
             <div class="job-list" id="docList"></div>
           </div>
@@ -712,7 +749,7 @@
           <div class="related-body">
             <label class="btn btn-ghost" style="display:inline-block;padding:6px 10px;font-size:0.72rem;margin-bottom:10px;cursor:pointer;">
               + Datei hochladen
-              <input type="file" id="dateiUploadInput" style="display:none;" />
+              <input type="file" id="dateiUploadInput" accept="application/pdf,image/jpeg,image/png,image/heic,.doc,.docx,.odt" style="display:none;" />
             </label>
             <span id="dateiUploadStatus" style="font-size:0.72rem;color:var(--ink-soft);margin-left:8px;"></span>
             <div class="job-list" id="dateienList"></div>
@@ -975,6 +1012,66 @@
       <div class="sheet-foot">
         <button type="button" class="btn btn-ghost" id="materialReturnCancel">Abbrechen</button>
         <button type="button" class="btn btn-primary" id="materialReturnConfirm">Zurückbuchen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="importPreviewOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2>Import-Vorschau</h2>
+        <button id="importPreviewClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="detail-body">
+        <p id="importPreviewFileName" style="font-size:0.85rem;font-weight:700;color:var(--brand);word-break:break-all;"></p>
+        <p id="importPreviewBadge" style="font-size:0.72rem;color:var(--accent-ink,var(--accent));font-weight:700;"></p>
+        <div class="job-form">
+          <label class="field"><span>Dokumenttyp</span><select id="importPreviewTyp"></select></label>
+          <label class="field"><span>Kunde</span><select id="importPreviewKunde"><option value="">Zuordnung erforderlich</option></select></label>
+          <label class="field"><span>Objekt (optional)</span><select id="importPreviewObjekt"><option value="">Kein Objekt</option></select></label>
+          <label class="field"><span>Externe Dokumentnummer</span><input id="importPreviewExtNr" placeholder="z. B. RE-2026-005" /></label>
+          <label class="field"><span>Dokumentdatum</span><input id="importPreviewDatum" type="date" /></label>
+          <label class="field"><span>Betrag (optional)</span><input id="importPreviewBetrag" type="number" step="0.01" min="0" /></label>
+          <label class="field full"><span>Notiz</span><input id="importPreviewNotiz" /></label>
+        </div>
+        <p id="importPreviewZuordnungHint" style="font-size:0.76rem;color:var(--danger);"></p>
+      </div>
+      <div class="sheet-foot">
+        <button type="button" class="btn btn-ghost" id="importPreviewCancel">Abbrechen</button>
+        <button type="button" class="btn btn-primary" id="importPreviewConfirm">Import bestätigen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay confirm" id="protectedEditOverlay">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Bereits verbuchte Rechnung bearbeiten</h2>
+        <button id="protectedEditClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <p id="protectedEditInfo" style="font-size:0.85rem;color:var(--ink-soft);"></p>
+      <label class="field full"><span>Änderungsgrund (Pflicht, wird protokolliert)</span><input id="protectedEditGrund" type="text" required /></label>
+      <div class="sheet-foot">
+        <button type="button" class="btn btn-ghost" id="protectedEditCancel">Abbrechen</button>
+        <button type="button" class="btn btn-primary" id="protectedEditConfirm">Änderung bestätigen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay confirm" id="movementEditOverlay">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Buchung korrigieren</h2>
+        <button id="movementEditClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <p id="movementEditInfo" style="font-size:0.85rem;color:var(--ink-soft);"></p>
+      <label class="field full"><span>Menge</span><input id="movementEditMenge" type="number" min="0.01" step="0.01" /></label>
+      <label class="field full"><span>Notiz</span><input id="movementEditNotiz" type="text" /></label>
+      <label class="field full"><span>Änderungsgrund (Pflicht, wird protokolliert)</span><input id="movementEditGrund" type="text" required /></label>
+      <div class="sheet-foot" style="flex-wrap:wrap;">
+        <button type="button" class="btn btn-ghost" id="movementEditCancel">Abbrechen</button>
+        <button type="button" class="btn btn-danger" id="movementEditDelete">Buchung löschen</button>
+        <button type="button" class="btn btn-primary" id="movementEditSave">Änderung speichern</button>
       </div>
     </div>
   </div>
@@ -1249,11 +1346,102 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
+  function logAenderung(entityPath, aktion, vorher, nachher, grund) {
+    var entry = {
+      id: uid(), entityPath: entityPath, aktion: aktion,
+      vorher: vorher || null, nachher: nachher || null, grund: grund || "",
+      benutzer: currentUserEmail, zeitpunkt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    return db.collection("aenderungsprotokoll").doc(entry.id).set(entry)
+      .catch(function (err) { console.error("Audit-Log fehlgeschlagen:", err); });
+  }
+
+  // ---- Dokumentencenter: Import-Abstraktionsschicht ----
+  // Kein OCR-/Document-AI-Anbieter angebunden. Diese Services laufen im manuellen Modus
+  // (Klassifizierung nur per Dateiname-Heuristik, Extraktion liefert leere Felder) und
+  // sind bewusst so geschnitten, dass extract() später durch einen echten Anbieter
+  // (z. B. via Cloud Function) ersetzt werden kann, ohne die Aufrufer anzufassen.
+  var DOKUMENT_TYPEN = ["Rechnung", "Angebot", "Kostenvoranschlag", "Beleg", "Gutschrift", "Lieferschein", "Vertrag", "Leistungsverzeichnis", "Auftragsbestaetigung", "Sonstiges"];
+  var DOKUMENT_TYP_LABEL = {
+    Rechnung: "Rechnung", Angebot: "Angebot", Kostenvoranschlag: "Kostenvoranschlag", Beleg: "Beleg",
+    Gutschrift: "Gutschrift", Lieferschein: "Lieferschein", Vertrag: "Vertrag",
+    Leistungsverzeichnis: "Leistungsverzeichnis", Auftragsbestaetigung: "Auftragsbestätigung", Sonstiges: "Sonstiges"
+  };
+
+  var DocumentClassificationService = {
+    classify: function (fileName) {
+      var name = (fileName || "").toLowerCase();
+      var rules = [
+        ["Kostenvoranschlag", ["kostenvoranschlag", "kva", "kv-"]],
+        ["Rechnung", ["rechnung", "invoice", "re-"]],
+        ["Angebot", ["angebot", "offer", "an-"]],
+        ["Gutschrift", ["gutschrift", "credit", "storno"]],
+        ["Lieferschein", ["lieferschein", "delivery"]],
+        ["Auftragsbestaetigung", ["auftragsbest", "bestaetigung", "confirmation"]],
+        ["Leistungsverzeichnis", ["leistungsverzeichnis", "lv-"]],
+        ["Vertrag", ["vertrag", "contract"]],
+        ["Beleg", ["beleg", "quittung", "receipt", "bon"]]
+      ];
+      for (var i = 0; i < rules.length; i++) {
+        for (var j = 0; j < rules[i][1].length; j++) {
+          if (name.indexOf(rules[i][1][j]) !== -1) return { documentType: rules[i][0], confidence: "low" };
+        }
+      }
+      return { documentType: null, confidence: "none" };
+    }
+  };
+
+  var DocumentExtractionService = {
+    // Platzhalter für spätere OCR-/Document-AI-Anbindung. Liefert heute immer den
+    // manuellen Zustand - der Aufrufer zeigt dem Nutzer dann ein leeres, editierbares Formular.
+    extract: function (file, documentType) {
+      return Promise.resolve({ status: "manual", fields: {} });
+    }
+  };
+
+  var DocumentImportService = {
+    matchCustomers: function (fileName) {
+      var name = (fileName || "").toLowerCase();
+      if (!name) return [];
+      return customers.filter(function (c) { return c.name && name.indexOf(c.name.toLowerCase().replace(/\s+/g, "")) !== -1; });
+    },
+    upload: function (file, customerId) {
+      var fileId = uid();
+      var storagePath = (customerId ? "customers/" + customerId : "unzugeordnet") + "/dateien/" + fileId + "-" + file.name;
+      var ref = storage.ref(storagePath);
+      return ref.put(file).then(function () { return ref.getDownloadURL(); }).then(function (url) {
+        return { fileId: fileId, storagePath: storagePath, url: url };
+      });
+    },
+    buildDraft: function (file, uploadResult, presetCustomerId) {
+      var classification = DocumentClassificationService.classify(file.name);
+      return DocumentExtractionService.extract(file, classification.documentType).then(function (extraction) {
+        var matches = presetCustomerId ? [] : DocumentImportService.matchCustomers(file.name);
+        return {
+          id: uploadResult.fileId, name: file.name, storagePath: uploadResult.storagePath, url: uploadResult.url,
+          mimeType: file.type || "", groesse: file.size,
+          documentType: classification.documentType || "Sonstiges", classificationConfidence: classification.confidence,
+          source: "manual_upload", extractionStatus: extraction.status,
+          customerId: presetCustomerId || (matches.length === 1 ? matches[0].id : ""),
+          customerMatches: matches, externalNumber: "", documentDate: "", amount: null,
+          status: "Neu", objectId: "", orderId: "", notiz: "",
+          uploadedBy: currentUserEmail, uploadedAm: new Date().toISOString()
+        };
+      });
+    }
+  };
+
   function fmtDate(v) {
     if (!v) return "";
     var d = new Date(v + "T00:00:00");
     if (isNaN(d.getTime())) return "";
     return d.toLocaleDateString("de-DE");
+  }
+  function isWithinDays(isoTimestamp, days) {
+    if (!isoTimestamp) return false;
+    var d = new Date(isoTimestamp);
+    if (isNaN(d.getTime())) return false;
+    return (Date.now() - d.getTime()) <= days * 86400000;
   }
 
   var customers = [];
@@ -1300,6 +1488,7 @@
   var deleteMaterialTarget = null;
   var currentCostPerUnit = null;
   var materialFilterLow = false;
+  var expandedMatGroups = {};
   var materialOrders = [];
   var materialOrdersUnsub = null;
   var vehicles = [];
@@ -1319,6 +1508,14 @@
   var currentAbsencesUnsub = null;
   var allDocuments = [];
   var allDocumentsUnsub = null;
+  var allDateien = [];
+  var allDateienUnsub = null;
+  var allUnzugeordnete = [];
+  var allUnzugeordneteUnsub = null;
+  var dokFilterTyp = "Alle";
+  var dokFilterKunde = "";
+  var dokFilterJahr = "";
+  var dokFilterStatus = "";
   var detailEmployee = null;
   var absences = [];
   var absencesUnsub = null;
@@ -1430,6 +1627,21 @@
       markOverdueInvoices();
       markExpiredOffers();
     }, function () { setBanner("Dashboard-Daten konnten nicht geladen werden."); });
+    allDateienUnsub = db.collectionGroup("dateien").onSnapshot(function (snap) {
+      allDateien = snap.docs.map(function (d) {
+        var data = d.data();
+        data.linked = true;
+        if (!data.customerId) data.customerId = d.ref.parent.parent.id;
+        return data;
+      });
+      renderDashboard();
+      if (activeView === "dokumente") renderDokumente();
+    }, function () { setBanner("Dokumente konnten nicht geladen werden."); });
+    allUnzugeordneteUnsub = db.collection("unzugeordnete_dokumente").onSnapshot(function (snap) {
+      allUnzugeordnete = snap.docs.map(function (d) { var data = d.data(); data.linked = false; return data; });
+      renderDashboard();
+      if (activeView === "dokumente") renderDokumente();
+    }, function () { setBanner("Nicht zugeordnete Dokumente konnten nicht geladen werden."); });
     vehiclesUnsub = db.collection("ressourcen").onSnapshot(function (snap) {
       vehicles = snap.docs.map(function (d) { return d.data(); });
       renderVehicles();
@@ -1463,6 +1675,8 @@
     if (materialOrdersUnsub) { materialOrdersUnsub(); materialOrdersUnsub = null; }
     if (currentAbsencesUnsub) { currentAbsencesUnsub(); currentAbsencesUnsub = null; }
     if (allDocumentsUnsub) { allDocumentsUnsub(); allDocumentsUnsub = null; }
+    if (allDateienUnsub) { allDateienUnsub(); allDateienUnsub = null; }
+    if (allUnzugeordneteUnsub) { allUnzugeordneteUnsub(); allUnzugeordneteUnsub = null; }
     if (vehiclesUnsub) { vehiclesUnsub(); vehiclesUnsub = null; }
     if (ticketsUnsub) { ticketsUnsub(); ticketsUnsub = null; }
     if (keysUnsub) { keysUnsub(); keysUnsub = null; }
@@ -1979,7 +2193,7 @@
           '<button type="submit">Auftrag hinzufügen</button>' +
           '</form>' +
           '<div class="job-list">' + jobsHtml(jobs) + '</div>' +
-          '<div class="section-head" style="margin-top:4px;"><h3 style="font-size:0.78rem;color:var(--brand);text-transform:uppercase;letter-spacing:0.03em;">Wiederkehrende Aufträge</h3></div>' +
+          '<div class="section-head" style="margin-top:4px;"><h3 class="section-title">Wiederkehrende Aufträge</h3></div>' +
           '<form class="job-form recurring-form" data-prop="' + p.id + '">' +
           '<input name="titel" class="full" placeholder="z. B. Treppenhausreinigung" required />' +
           '<select name="rhythmus">' + RHYTHMEN.map(function (r) { return '<option>' + r + '</option>'; }).join("") + '</select>' +
@@ -2054,6 +2268,7 @@
       document.getElementById("docList").innerHTML = '<div class="job-empty">Angebote/Rechnungen konnten nicht geladen werden.</div>';
     });
     customerMovements = [];
+    expandedMatGroups = {};
     renderDetailMaterial();
     if (customerMovementsUnsub) customerMovementsUnsub();
     customerMovementsUnsub = db.collectionGroup("bewegungen").where("customerId", "==", c.id).onSnapshot(function (snap) {
@@ -2376,7 +2591,30 @@
     renderDocPath(type, docForm.elements.status.value);
     docOverlay.classList.add("open");
   }
-  function closeDocForm() { docOverlay.classList.remove("open"); editingDocId = null; pendingMaterialBillingRefs = []; }
+  function closeDocForm() { docOverlay.classList.remove("open"); editingDocId = null; pendingMaterialBillingRefs = []; pendingProtectedEdit = null; }
+
+  var pendingProtectedEdit = null;
+  var protectedEditOverlay = document.getElementById("protectedEditOverlay");
+  function openProtectedEdit(doc) {
+    pendingProtectedEdit = { doc: doc, grund: "" };
+    document.getElementById("protectedEditInfo").textContent =
+      "Sie bearbeiten eine bereits " + doc.status + "e Rechnung (" + (doc.nummer || doc.id) + "). Diese Änderung wird protokolliert.";
+    document.getElementById("protectedEditGrund").value = "";
+    protectedEditOverlay.classList.add("open");
+  }
+  function closeProtectedEdit() { protectedEditOverlay.classList.remove("open"); pendingProtectedEdit = null; }
+  document.getElementById("protectedEditClose").addEventListener("click", closeProtectedEdit);
+  document.getElementById("protectedEditCancel").addEventListener("click", closeProtectedEdit);
+  protectedEditOverlay.addEventListener("click", function (e) { if (e.target === protectedEditOverlay) closeProtectedEdit(); });
+  document.getElementById("protectedEditConfirm").addEventListener("click", function () {
+    if (!pendingProtectedEdit) return;
+    var grund = document.getElementById("protectedEditGrund").value.trim();
+    if (!grund) { showToast("Bitte einen Änderungsgrund angeben", true); return; }
+    pendingProtectedEdit.grund = grund;
+    var doc = pendingProtectedEdit.doc;
+    protectedEditOverlay.classList.remove("open");
+    openDocForm(doc.typ, doc);
+  });
   var DOC_PATH_STAGES = { Angebot: ["Entwurf", "Versendet", "Angenommen"], Rechnung: ["Entwurf", "Offen", "Bezahlt"], Kostenvoranschlag: ["Entwurf", "Versendet", "Bestätigt"] };
   function renderDocPath(type, currentStatus) {
     var stages = DOC_PATH_STAGES[type] || [];
@@ -2435,6 +2673,7 @@
       mwstSatz: mwstSatz, netto: netto, brutto: brutto, notizen: docForm.elements.notizen.value.trim()
     };
     var billingRefs = pendingMaterialBillingRefs.slice();
+    var protectedGrund = (pendingProtectedEdit && previousDoc && pendingProtectedEdit.doc.id === previousDoc.id) ? pendingProtectedEdit.grund : null;
     db.collection("customers").doc(detailCustomer.id).collection("dokumente").doc(data.id).set(data)
       .then(function () {
         showToast("Gespeichert");
@@ -2442,6 +2681,9 @@
           var batch = db.batch();
           billingRefs.forEach(function (ref) { batch.update(ref, { berechnet: true }); });
           batch.commit().catch(function () {});
+        }
+        if (protectedGrund) {
+          logAenderung("customers/" + detailCustomer.id + "/dokumente/" + data.id, "update", previousDoc, data, protectedGrund);
         }
         closeDocForm();
         if (docType === "Angebot" && status === "Angenommen" && !(previousDoc && previousDoc.convertedToInvoiceId)) {
@@ -2462,11 +2704,14 @@
       var convertedInvoice = d.convertedToInvoiceId ? docs.find(function (x) { return x.id === d.convertedToInvoiceId; }) : null;
       var mahnstufe = d.mahnstufe || 0;
       var canMahnen = d.typ === "Rechnung" && d.status !== "Bezahlt" && d.status !== "Storniert" && d.gueltigFaellig && d.gueltigFaellig < today && mahnstufe < 2;
+      var isStorniert = d.typ === "Rechnung" && d.status === "Storniert";
+      var isProtectedRechnung = d.typ === "Rechnung" && d.status !== "Entwurf" && !isStorniert;
+      var lockedHint = isStorniert ? '<div class="job-meta" style="color:var(--danger);">Storniert · schreibgeschützt</div>' : "";
       return '<div class="job-row" data-id="' + d.id + '">' +
         '<div class="doc-row-top"><div><div class="job-title">' + esc(d.typ) + ' ' + esc(d.nummer || "") + '</div>' +
         '<div class="job-meta">' + fmtDate(d.datum) + ' · ' + fmtEUR(d.brutto) +
         (convertedInvoice ? ' · → Rechnung ' + esc(convertedInvoice.nummer || "") : "") +
-        (mahnstufe > 0 ? ' · ' + mahnstufe + '. Mahnstufe' : "") + '</div></div>' +
+        (mahnstufe > 0 ? ' · ' + mahnstufe + '. Mahnstufe' : "") + '</div>' + lockedHint + '</div>' +
         '<span class="badge-status" style="background:' + colorInfo.bg + ';color:' + colorInfo.fg + '">' + esc(d.status) + '</span></div>' +
         '<div class="doc-actions">' +
         (d.typ === "Angebot" && d.status === "Angenommen" && !d.convertedToInvoiceId ?
@@ -2476,8 +2721,8 @@
         (d.typ === "Rechnung" && d.status !== "Storniert" ?
           '<button type="button" class="doc-storno" data-doc="' + d.id + '" aria-label="Stornieren">' + icon("ban") + '</button>' : "") +
         '<button type="button" class="doc-print" data-doc="' + d.id + '" aria-label="Als PDF drucken">' + icon("print") + '</button>' +
-        '<button type="button" class="doc-edit" data-doc="' + d.id + '" aria-label="Bearbeiten">' + icon("pencil") + '</button>' +
-        '<button type="button" class="doc-del" data-doc="' + d.id + '" aria-label="Löschen">' + icon("trash") + '</button>' +
+        (isStorniert ? "" : '<button type="button" class="doc-edit" data-doc="' + d.id + '" aria-label="Bearbeiten">' + icon("pencil") + '</button>') +
+        (isStorniert || isProtectedRechnung ? "" : '<button type="button" class="doc-del" data-doc="' + d.id + '" aria-label="Löschen">' + icon("trash") + '</button>') +
         '</div></div>';
     }).join("");
   }
@@ -2764,7 +3009,15 @@
         .catch(function (err) { setBanner("Mahnstufe konnte nicht gespeichert werden: " + err.message); });
       return;
     }
-    if (editBtn) { var d1 = docs.find(function (x) { return x.id === editBtn.dataset.doc; }); if (d1) openDocForm(d1.typ, d1); }
+    if (editBtn) {
+      var d1 = docs.find(function (x) { return x.id === editBtn.dataset.doc; });
+      if (!d1) return;
+      if (d1.typ === "Rechnung" && d1.status !== "Entwurf" && d1.status !== "Storniert") {
+        openProtectedEdit(d1);
+      } else {
+        openDocForm(d1.typ, d1);
+      }
+    }
     else if (delBtn) {
       if (!detailCustomer) return;
       db.collection("customers").doc(detailCustomer.id).collection("dokumente").doc(delBtn.dataset.doc).delete()
@@ -2880,13 +3133,14 @@
     openDetail(cust);
   });
 
-  var MORE_VIEWS = ["catalog", "material", "vehicles", "tickets", "docs", "keys"];
+  var MORE_VIEWS = ["catalog", "material", "vehicles", "tickets", "docs", "dokumente", "keys"];
   var VIEW_TO_RENDER = {
     catalog: function () { renderCatalog(); },
     material: function () { renderMaterial(); },
     vehicles: function () { renderVehicles(); },
     tickets: function () { renderTickets(); },
     docs: function () { renderDocsChips(); renderDocsGlobal(); },
+    dokumente: function () { renderDokumenteChips(); renderDokumenteFilters(); renderDokumente(); },
     keys: function () { renderKeys(); }
   };
   function showView(view) {
@@ -2902,6 +3156,7 @@
     document.getElementById("vehiclesView").hidden = view !== "vehicles";
     document.getElementById("ticketsView").hidden = view !== "tickets";
     document.getElementById("docsView").hidden = view !== "docs";
+    document.getElementById("dokumenteView").hidden = view !== "dokumente";
     document.getElementById("keysView").hidden = view !== "keys";
     document.getElementById("tabDashboard").setAttribute("aria-selected", view === "dashboard");
     document.getElementById("tabCustomers").setAttribute("aria-selected", view === "customers");
@@ -2917,6 +3172,7 @@
     document.getElementById("sbTabVehicles").setAttribute("aria-selected", view === "vehicles");
     document.getElementById("sbTabTickets").setAttribute("aria-selected", view === "tickets");
     document.getElementById("sbTabDocs").setAttribute("aria-selected", view === "docs");
+    document.getElementById("sbTabDokumente").setAttribute("aria-selected", view === "dokumente");
     document.getElementById("sbTabKeys").setAttribute("aria-selected", view === "keys");
   }
   document.getElementById("tabDashboard").addEventListener("click", function () { showView("dashboard"); renderDashboard(); });
@@ -2956,6 +3212,20 @@
       var target = due.length ? customers.find(function (c) { return c.id === due[0].customerId; }) : null;
       if (target) { showView("customers"); openDetail(target); }
       else { showView("customers"); }
+    } else if (key === "dokZuordnung") {
+      dokFilterTyp = "ZuordnungErforderlich";
+      showView("dokumente");
+      renderDokumenteChips();
+      renderDokumenteFilters();
+      renderDokumente();
+    } else if (key === "dokNeu") {
+      dokFilterTyp = "Alle";
+      dokFilterStatus = "Neu";
+      showView("dokumente");
+      renderDokumenteChips();
+      renderDokumenteFilters();
+      document.getElementById("dokFilterStatus").value = "Neu";
+      renderDokumente();
     }
   }
   document.getElementById("dashStats").addEventListener("click", function (e) {
@@ -2991,6 +3261,7 @@
   document.getElementById("sbTabVehicles").addEventListener("click", function () { showView("vehicles"); renderVehicles(); });
   document.getElementById("sbTabTickets").addEventListener("click", function () { showView("tickets"); renderTickets(); });
   document.getElementById("sbTabDocs").addEventListener("click", function () { showView("docs"); renderDocsChips(); renderDocsGlobal(); });
+  document.getElementById("sbTabDokumente").addEventListener("click", function () { showView("dokumente"); renderDokumenteChips(); renderDokumenteFilters(); renderDokumente(); });
   document.getElementById("sbTabKeys").addEventListener("click", function () { showView("keys"); renderKeys(); });
   var helpOverlay = document.getElementById("helpOverlay");
   document.getElementById("helpBtn").addEventListener("click", function () { helpOverlay.classList.add("open"); });
@@ -3048,6 +3319,19 @@
     if (empMatches.length) groups.push({ title: "Team", html: rowsFor(empMatches, function (m) {
       return '<div class="job-row search-hit" data-kind="team"><div class="job-title">' + esc(m.name) + '</div><div class="job-meta">' + esc(m.position || "") + '</div></div>';
     }) });
+    var dokMatches = combinedDokumente().filter(function (f) {
+      return (f.name || "").toLowerCase().indexOf(q) !== -1 ||
+        (f.externalNumber || "").toLowerCase().indexOf(q) !== -1 ||
+        (DOKUMENT_TYP_LABEL[f.documentType] || "").toLowerCase().indexOf(q) !== -1 ||
+        (f.status || "").toLowerCase().indexOf(q) !== -1 ||
+        (f.resolvedCustomerName || "").toLowerCase().indexOf(q) !== -1 ||
+        (f.documentDate || "").indexOf(q) !== -1 ||
+        (f.amount != null && String(f.amount).indexOf(q) !== -1);
+    });
+    if (dokMatches.length) groups.push({ title: "Dokumente", html: rowsFor(dokMatches, function (f) {
+      return '<div class="job-row search-hit" data-kind="dokument"><div class="job-title">' + esc(f.name) + '</div><div class="job-meta">' +
+        esc(DOKUMENT_TYP_LABEL[f.documentType] || "") + (f.resolvedCustomerName ? ' · ' + esc(f.resolvedCustomerName) : "") + '</div></div>';
+    }) });
     if (groups.length === 0) { el.innerHTML = '<div class="job-empty">Keine Treffer für „' + esc(q) + '".</div>'; return; }
     el.innerHTML = groups.map(function (g) {
       return '<div class="section-head" style="margin-top:10px;"><h3 style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--brand);">' + g.title + '</h3></div><div class="job-list">' + g.html + '</div>';
@@ -3070,6 +3354,7 @@
     else if (kind === "vehicles") { showView("vehicles"); renderVehicles(); }
     else if (kind === "keys") { showView("keys"); renderKeys(); }
     else if (kind === "team") { showView("team"); renderTeam(); }
+    else if (kind === "dokument") { showView("dokumente"); renderDokumenteChips(); renderDokumenteFilters(); renderDokumente(); }
   });
 
   // ---- Team/Mitarbeiter ----
@@ -3105,7 +3390,7 @@
       return '<div class="card" data-id="' + m.id + '">' +
         '<div class="card-top"><div><div class="card-name">' + esc(m.name) + '</div><div class="card-type">' + esc(m.position) + '</div></div>' + empStatusBadge(m.status) + '</div>' +
         contactLine + mailLine + absLine +
-        '<div class="card-foot"><button type="button" class="btn btn-ghost emp-invite" data-id="' + m.id + '" style="padding:6px 10px;font-size:0.72rem;">Login-Link</button>' +
+        '<div class="card-foot"><button type="button" class="btn btn-ghost btn-sm emp-invite" data-id="' + m.id + '">Login-Link</button>' +
         '<div class="actions">' +
         '<button type="button" class="emp-edit" data-id="' + m.id + '" aria-label="Bearbeiten">' + icon("pencil") + '</button>' +
         '<button type="button" class="emp-del" data-id="' + m.id + '" aria-label="Löschen">' + icon("trash") + '</button>' +
@@ -3227,6 +3512,10 @@
     var openTickets = tickets.filter(function (t) { return t.status !== "Erledigt"; }).length;
     var overdueTickets = tickets.filter(function (t) { return t.status !== "Erledigt" && t.frist && t.frist < today; }).length;
     var lostKeys = keys.filter(function (k) { return k.status === "Verloren"; }).length;
+    var alleDokumente = combinedDokumente();
+    var dokZuordnung = alleDokumente.filter(function (f) { return !f.customerId; }).length;
+    var dokNeu = alleDokumente.filter(function (f) { return f.status === "Neu"; }).length;
+    var dokDieseWoche = alleDokumente.filter(function (f) { return isWithinDays(f.uploadedAm, 7); }).length;
 
     var items = [
       { l: "Aktive Kunden", v: activeCustomers.length, key: "activeCustomers" },
@@ -3235,7 +3524,9 @@
       { l: "Material unter Mindestbestand", v: lowStock, warn: lowStock > 0, key: "lowStock" },
       { l: "Prüfung/Wartung fällig", v: dueVehicles, warn: dueVehicles > 0, key: "dueVehicles" },
       { l: "Offene Tickets", v: openTickets, warn: overdueTickets > 0, key: "openTickets" },
-      { l: "Verlorene Schlüssel", v: lostKeys, warn: lostKeys > 0, key: "lostKeys" }
+      { l: "Verlorene Schlüssel", v: lostKeys, warn: lostKeys > 0, key: "lostKeys" },
+      { l: "Dokumente: Zuordnung erforderlich", v: dokZuordnung, warn: dokZuordnung > 0, key: "dokZuordnung" },
+      { l: "Dokumente neu (7 Tage)", v: dokDieseWoche, key: "dokNeu" }
     ];
     document.getElementById("dashStats").innerHTML = items.map(function (s) {
       return '<div class="stat' + (s.key ? " clickable" : "") + '"' + (s.key ? ' data-key="' + s.key + '"' : "") + '><div class="lbl">' + s.l + '</div><div class="val"' + (s.warn ? ' style="color:var(--danger)"' : "") + '>' + s.v + '</div></div>';
@@ -3254,7 +3545,9 @@
       { l: "Schlüssel verloren", v: lostKeys, key: "lostKeys" },
       { l: "Rechnungen überfällig", v: overdueInvoices, key: "revenue" },
       { l: "Angebote laufen bald ab (14 Tage)", v: expiringOffers, key: "openOffers" },
-      { l: "Wiedervorlagen fällig", v: dueFollowups, key: "followups" }
+      { l: "Wiedervorlagen fällig", v: dueFollowups, key: "followups" },
+      { l: "Dokumente ohne Kundenzuordnung", v: dokZuordnung, key: "dokZuordnung" },
+      { l: "Dokumente nicht geprüft", v: dokNeu, key: "dokNeu" }
     ].filter(function (t) { return t.v > 0; });
     var todoCard = document.getElementById("todoCard");
     if (todoItems.length === 0) {
@@ -3539,7 +3832,7 @@
         '<div class="card-top"><div><div class="card-name">' + esc(o.materialName) + ' · ' + (o.menge || 0) + '</div>' +
         (metaParts ? '<div class="card-type">' + metaParts + '</div>' : "") + '</div></div>' +
         (o.notiz ? '<div class="services">' + esc(o.notiz) + '</div>' : "") +
-        '<div class="card-foot"><div></div><button type="button" class="btn btn-primary mat-order-done" data-id="' + o.id + '" style="padding:6px 10px;font-size:0.72rem;">Beliefert</button></div></div>';
+        '<div class="card-foot"><div></div><button type="button" class="btn btn-primary btn-sm mat-order-done" data-id="' + o.id + '">Beliefert</button></div></div>';
     }).join("");
   }
   document.getElementById("materialOrdersList").addEventListener("click", function (e) {
@@ -3793,11 +4086,23 @@
       var betragLine = b.offenerBetrag > 0 ? '<div class="job-meta">Noch nicht berechnet: ' + fmtEUR(b.offenerBetrag) + '</div>' : "";
       var billBtn = b.offenerBetrag > 0 ?
         '<button type="button" class="mat-bill" data-material="' + b.materialId + '" data-name="' + esc(b.materialName) + '" data-betrag="' + b.offenerBetrag + '">In Rechnung übernehmen</button>' : "";
+      var expanded = !!expandedMatGroups[b.materialId];
+      var movementsForMaterial = customerMovements.filter(function (mv) { return mv.materialId === b.materialId; })
+        .slice().sort(function (x, y) { return (y.datum || "").localeCompare(x.datum || ""); });
+      var movementsHtml = expanded ? '<div class="mat-movements">' + movementsForMaterial.map(function (mv) {
+        return '<div class="mat-movement-row" data-id="' + mv.id + '" data-material="' + mv.materialId + '">' +
+          '<div><div class="job-meta">' + fmtDate(mv.datum) + ' · ' + esc(mv.typ) + ' · ' + (mv.menge || 0).toLocaleString("de-DE", { maximumFractionDigits: 2 }) + ' ' + esc(mv.unit || "") + '</div>' +
+          (mv.notiz ? '<div class="job-meta">' + esc(mv.notiz) + '</div>' : "") + '</div>' +
+          '<button type="button" class="mat-mov-edit" data-id="' + mv.id + '" data-material="' + mv.materialId + '" aria-label="Bearbeiten">' + icon("pencil") + '</button>' +
+          '</div>';
+      }).join("") + '</div>' : "";
       return '<div class="job-row" data-material="' + b.materialId + '">' +
         '<div class="job-row-top"><div><div class="job-title">' + esc(b.materialName) + '</div>' +
         '<div class="job-meta">' + b.menge.toLocaleString("de-DE", { maximumFractionDigits: 2 }) + ' ' + esc(b.unit || "") + ' · zuletzt ' + fmtDate(b.lastDate) + '</div>' + betragLine + '</div>' +
         '<button type="button" class="mat-return" data-material="' + b.materialId + '" data-menge="' + b.menge + '" data-name="' + esc(b.materialName) + '" data-unit="' + esc(b.unit || "") + '">Rückgabe</button>' +
-        '</div>' + (billBtn ? '<div class="job-actions">' + billBtn + '</div>' : '') + '</div>';
+        '</div>' + (billBtn ? '<div class="job-actions">' + billBtn + '</div>' : '') +
+        '<button type="button" class="mat-toggle-movements" data-material="' + b.materialId + '" style="background:none;border:none;color:var(--brand);font-size:0.72rem;font-weight:700;padding:6px 0 0;cursor:pointer;">' +
+        (expanded ? "Buchungen ausblenden" : "Alle Buchungen anzeigen") + '</button>' + movementsHtml + '</div>';
     }).join("");
   }
   var materialReturnOverlay = document.getElementById("materialReturnOverlay");
@@ -3814,6 +4119,18 @@
       openDocForm("Rechnung", null);
       currentPositions = [{ bezeichnung: "Material: " + materialName, menge: 1, preis: betrag, einheit: "Pauschal" }];
       renderPosRows();
+      return;
+    }
+    var toggleBtn = e.target.closest(".mat-toggle-movements");
+    if (toggleBtn) {
+      var matId = toggleBtn.dataset.material;
+      expandedMatGroups[matId] = !expandedMatGroups[matId];
+      renderDetailMaterial();
+      return;
+    }
+    var movEditBtn = e.target.closest(".mat-mov-edit");
+    if (movEditBtn) {
+      openMovementEdit(movEditBtn.dataset.material, movEditBtn.dataset.id);
       return;
     }
     var btn = e.target.closest(".mat-return");
@@ -3849,6 +4166,73 @@
       showToast("Zurückgebucht");
       closeMaterialReturn();
     }).catch(function (err) { showToast(err.message || "Rückbuchung fehlgeschlagen", true); });
+  });
+
+  // ---- Material-Bewegungen korrigieren (Audit-pflichtig) ----
+  var editingMovement = null;
+  var movementEditOverlay = document.getElementById("movementEditOverlay");
+  function movementStockEffect(mv) { return (mv.typ === "Rückgabe" ? 1 : -1) * (mv.menge || 0); }
+  function openMovementEdit(materialId, movementId) {
+    var mv = customerMovements.find(function (m) { return m.materialId === materialId && m.id === movementId; });
+    if (!mv) return;
+    editingMovement = { materialId: materialId, movementId: movementId, original: mv };
+    document.getElementById("movementEditInfo").textContent = esc(mv.materialName) + " · " + esc(mv.typ) + " · " + fmtDate(mv.datum);
+    document.getElementById("movementEditMenge").value = mv.menge || 0;
+    document.getElementById("movementEditNotiz").value = mv.notiz || "";
+    document.getElementById("movementEditGrund").value = "";
+    movementEditOverlay.classList.add("open");
+  }
+  function closeMovementEdit() { movementEditOverlay.classList.remove("open"); editingMovement = null; }
+  document.getElementById("movementEditClose").addEventListener("click", closeMovementEdit);
+  document.getElementById("movementEditCancel").addEventListener("click", closeMovementEdit);
+  movementEditOverlay.addEventListener("click", function (e) { if (e.target === movementEditOverlay) closeMovementEdit(); });
+  document.getElementById("movementEditSave").addEventListener("click", function () {
+    if (!editingMovement) return;
+    var grund = document.getElementById("movementEditGrund").value.trim();
+    if (!grund) { showToast("Bitte einen Änderungsgrund angeben", true); return; }
+    var neueMenge = parseFloat(document.getElementById("movementEditMenge").value);
+    if (!(neueMenge > 0)) { showToast("Ungültige Menge", true); return; }
+    var neueNotiz = document.getElementById("movementEditNotiz").value.trim();
+    var original = editingMovement.original;
+    var delta = movementStockEffect({ typ: original.typ, menge: neueMenge }) - movementStockEffect(original);
+    var matRef = db.collection("material").doc(editingMovement.materialId);
+    var movRef = matRef.collection("bewegungen").doc(editingMovement.movementId);
+    db.runTransaction(function (tx) {
+      return tx.get(matRef).then(function (snap) {
+        var current = snap.data();
+        var neuerBestand = (current.quantity || 0) + delta;
+        if (neuerBestand < 0) throw new Error("Menge übersteigt den verfügbaren Lagerbestand.");
+        tx.update(matRef, { quantity: neuerBestand });
+        tx.update(movRef, { menge: neueMenge, notiz: neueNotiz });
+      });
+    }).then(function () {
+      return logAenderung("material/" + editingMovement.materialId + "/bewegungen/" + editingMovement.movementId, "update",
+        { menge: original.menge, notiz: original.notiz || "" }, { menge: neueMenge, notiz: neueNotiz }, grund);
+    }).then(function () {
+      showToast("Buchung korrigiert");
+      closeMovementEdit();
+    }).catch(function (err) { showToast(err.message || "Korrektur fehlgeschlagen", true); });
+  });
+  document.getElementById("movementEditDelete").addEventListener("click", function () {
+    if (!editingMovement) return;
+    var grund = document.getElementById("movementEditGrund").value.trim();
+    if (!grund) { showToast("Bitte einen Änderungsgrund angeben", true); return; }
+    var original = editingMovement.original;
+    var matRef = db.collection("material").doc(editingMovement.materialId);
+    var movRef = matRef.collection("bewegungen").doc(editingMovement.movementId);
+    db.runTransaction(function (tx) {
+      return tx.get(matRef).then(function (snap) {
+        var current = snap.data();
+        tx.update(matRef, { quantity: (current.quantity || 0) - movementStockEffect(original) });
+        tx.delete(movRef);
+      });
+    }).then(function () {
+      return logAenderung("material/" + editingMovement.materialId + "/bewegungen/" + editingMovement.movementId, "delete",
+        { typ: original.typ, menge: original.menge, notiz: original.notiz || "" }, null, grund);
+    }).then(function () {
+      showToast("Buchung gelöscht");
+      closeMovementEdit();
+    }).catch(function (err) { showToast(err.message || "Löschen fehlgeschlagen", true); });
   });
 
   // ---- Wiedervorlage ----
@@ -3909,41 +4293,116 @@
     if (dateien.length === 0) { el.innerHTML = '<div class="job-empty">Noch keine Dateien hochgeladen.</div>'; return; }
     var sorted = dateien.slice().sort(function (a, b) { return (b.uploadedAm || "").localeCompare(a.uploadedAm || ""); });
     el.innerHTML = sorted.map(function (f) {
+      var typLabel = DOKUMENT_TYP_LABEL[f.documentType] || f.documentType || "";
       return '<div class="job-row" data-id="' + f.id + '">' +
         '<div class="job-row-top"><div><div class="job-title"><a href="' + esc(f.url) + '" target="_blank" rel="noopener">' + esc(f.name) + '</a></div>' +
-        '<div class="job-meta">' + fmtBytes(f.groesse) + (f.uploadedBy ? ' · ' + esc(f.uploadedBy) : '') + '</div></div>' +
+        '<div class="job-meta">' + (typLabel ? esc(typLabel) + ' · ' : '') + fmtBytes(f.groesse) + (f.uploadedBy ? ' · ' + esc(f.uploadedBy) : '') + '</div></div>' +
         '<button type="button" class="datei-del" data-id="' + f.id + '" aria-label="Datei löschen">' + icon("trash") + '</button></div></div>';
     }).join("");
+  }
+  function startDocumentUpload(file, presetCustomerId, statusElId) {
+    var statusEl = statusElId ? document.getElementById(statusElId) : null;
+    if (statusEl) statusEl.textContent = "Lädt hoch…";
+    DocumentImportService.upload(file, presetCustomerId).then(function (uploadResult) {
+      return DocumentImportService.buildDraft(file, uploadResult, presetCustomerId);
+    }).then(function (draft) {
+      if (statusEl) statusEl.textContent = "";
+      openImportPreview(draft);
+    }).catch(function (err) {
+      if (statusEl) statusEl.textContent = "";
+      setBanner("Upload fehlgeschlagen: " + err.message);
+    });
   }
   document.getElementById("dateiUploadInput").addEventListener("change", function (e) {
     var file = e.target.files[0];
     if (!file || !detailCustomer) return;
-    var statusEl = document.getElementById("dateiUploadStatus");
-    var fileId = uid();
-    var storagePath = "customers/" + detailCustomer.id + "/dateien/" + fileId + "-" + file.name;
-    statusEl.textContent = "Lädt hoch…";
-    var task = storage.ref(storagePath).put(file);
-    task.on("state_changed", function (snap) {
-      var pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-      statusEl.textContent = "Lädt hoch… " + pct + "%";
-    }, function (err) {
-      statusEl.textContent = "";
-      setBanner("Upload fehlgeschlagen: " + err.message);
-    }, function () {
-      task.snapshot.ref.getDownloadURL().then(function (url) {
-        var data = {
-          id: fileId, name: file.name, storagePath: storagePath, url: url,
-          groesse: file.size, uploadedBy: currentUserEmail, uploadedAm: new Date().toISOString()
-        };
-        return db.collection("customers").doc(detailCustomer.id).collection("dateien").doc(fileId).set(data);
-      }).then(function () {
-        statusEl.textContent = "";
-        e.target.value = "";
-        showToast("Datei hochgeladen");
-      }).catch(function (err) {
-        statusEl.textContent = "";
-        setBanner("Datei konnte nicht gespeichert werden: " + err.message);
-      });
+    startDocumentUpload(file, detailCustomer.id, "dateiUploadStatus");
+    e.target.value = "";
+  });
+
+  // ---- Import-Vorschau (Pflichtschritt vor jedem Speichern eines importierten Dokuments) ----
+  var pendingImportDraft = null;
+  var importPreviewOverlay = document.getElementById("importPreviewOverlay");
+  function populateImportPreviewSelects() {
+    var typSel = document.getElementById("importPreviewTyp");
+    typSel.innerHTML = DOKUMENT_TYPEN.map(function (t) { return '<option value="' + t + '">' + esc(DOKUMENT_TYP_LABEL[t]) + '</option>'; }).join("");
+    var custSel = document.getElementById("importPreviewKunde");
+    custSel.innerHTML = '<option value="">Zuordnung erforderlich</option>' +
+      customers.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
+        .map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + '</option>'; }).join("");
+  }
+  function openImportPreview(draft) {
+    pendingImportDraft = draft;
+    populateImportPreviewSelects();
+    document.getElementById("importPreviewFileName").textContent = draft.name;
+    document.getElementById("importPreviewBadge").textContent = draft.classificationConfidence === "low" ?
+      "Dokumenttyp automatisch geschätzt (Dateiname) – bitte prüfen" : "Kein Dokumenttyp erkannt – bitte auswählen";
+    document.getElementById("importPreviewTyp").value = draft.documentType;
+    document.getElementById("importPreviewKunde").value = draft.customerId || "";
+    populateImportPreviewObjekte(draft.customerId || "");
+    document.getElementById("importPreviewExtNr").value = draft.externalNumber || "";
+    document.getElementById("importPreviewDatum").value = draft.documentDate || "";
+    document.getElementById("importPreviewBetrag").value = draft.amount != null ? draft.amount : "";
+    document.getElementById("importPreviewNotiz").value = draft.notiz || "";
+    var hint = document.getElementById("importPreviewZuordnungHint");
+    hint.textContent = draft.customerMatches && draft.customerMatches.length > 1 ?
+      "Mehrere mögliche Kunden anhand des Dateinamens gefunden – bitte manuell auswählen." : "";
+    importPreviewOverlay.classList.add("open");
+  }
+  function populateImportPreviewObjekte(customerId) {
+    var objSel = document.getElementById("importPreviewObjekt");
+    objSel.innerHTML = '<option value="">Kein Objekt</option>';
+    if (!customerId) return;
+    db.collection("customers").doc(customerId).collection("objekte").get().then(function (snap) {
+      objSel.innerHTML = '<option value="">Kein Objekt</option>' +
+        snap.docs.map(function (d) { return '<option value="' + d.id + '">' + esc(d.data().name) + '</option>'; }).join("");
+    });
+  }
+  document.getElementById("importPreviewKunde").addEventListener("change", function (e) {
+    populateImportPreviewObjekte(e.target.value);
+  });
+  function discardPendingImport() {
+    if (pendingImportDraft && pendingImportDraft.storagePath && !pendingImportDraft.isPersisted) {
+      storage.ref(pendingImportDraft.storagePath).delete().catch(function () {});
+    }
+    pendingImportDraft = null;
+    importPreviewOverlay.classList.remove("open");
+  }
+  document.getElementById("importPreviewClose").addEventListener("click", discardPendingImport);
+  document.getElementById("importPreviewCancel").addEventListener("click", discardPendingImport);
+  importPreviewOverlay.addEventListener("click", function (e) { if (e.target === importPreviewOverlay) discardPendingImport(); });
+  document.getElementById("importPreviewConfirm").addEventListener("click", function () {
+    if (!pendingImportDraft) return;
+    var draft = pendingImportDraft;
+    var customerId = document.getElementById("importPreviewKunde").value;
+    var cust = customerId ? customers.find(function (c) { return c.id === customerId; }) : null;
+    var final = {
+      id: draft.id, name: draft.name, storagePath: draft.storagePath, url: draft.url,
+      mimeType: draft.mimeType, groesse: draft.groesse,
+      documentType: document.getElementById("importPreviewTyp").value,
+      source: draft.source, extractionStatus: draft.extractionStatus,
+      externalNumber: document.getElementById("importPreviewExtNr").value.trim(),
+      documentDate: document.getElementById("importPreviewDatum").value,
+      amount: document.getElementById("importPreviewBetrag").value ? parseFloat(document.getElementById("importPreviewBetrag").value) : null,
+      status: customerId ? "Zugeordnet" : "Neu",
+      customerId: customerId, customerName: cust ? cust.name : "",
+      objectId: document.getElementById("importPreviewObjekt").value, orderId: "",
+      notiz: document.getElementById("importPreviewNotiz").value.trim(),
+      uploadedBy: draft.uploadedBy, uploadedAm: draft.uploadedAm
+    };
+    var ref = customerId ?
+      db.collection("customers").doc(customerId).collection("dateien").doc(final.id) :
+      db.collection("unzugeordnete_dokumente").doc(final.id);
+    ref.set(final).then(function () {
+      if (customerId) {
+        return db.collection("unzugeordnete_dokumente").doc(final.id).delete().catch(function () {});
+      }
+    }).then(function () {
+      pendingImportDraft = null;
+      importPreviewOverlay.classList.remove("open");
+      showToast("Dokument importiert");
+    }).catch(function (err) {
+      setBanner("Import fehlgeschlagen: " + err.message);
     });
   });
   document.getElementById("dateienList").addEventListener("click", function (e) {
@@ -4277,6 +4736,131 @@
     if (!cust) return;
     showView("customers");
     openDetail(cust);
+  });
+
+  // ---- Dokumentencenter (Hub über alle Kunden) ----
+  var DOK_STATUS_KEYS = ["Neu", "Zugeordnet", "Geprüft", "Archiviert"];
+  function combinedDokumente() {
+    return allDateien.concat(allUnzugeordnete).map(function (f) {
+      var cust = f.customerId ? customers.find(function (c) { return c.id === f.customerId; }) : null;
+      var obj = f.objectId ? allProperties[f.objectId] : null;
+      f.resolvedCustomerName = cust ? cust.name : (f.customerName || "");
+      f.resolvedObjectName = obj ? obj.name : "";
+      return f;
+    });
+  }
+  function renderDokumenteChips() {
+    document.querySelectorAll("#dokumenteChips .chip").forEach(function (chip) {
+      chip.setAttribute("aria-pressed", chip.dataset.doctype === dokFilterTyp);
+    });
+  }
+  function renderDokumenteFilters() {
+    var kundeSel = document.getElementById("dokFilterKunde");
+    var current = kundeSel.value;
+    kundeSel.innerHTML = '<option value="">Alle Kunden</option>' +
+      customers.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
+        .map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + '</option>'; }).join("");
+    kundeSel.value = current;
+    var jahre = {};
+    combinedDokumente().forEach(function (f) {
+      var y = (f.documentDate || f.uploadedAm || "").slice(0, 4);
+      if (y) jahre[y] = true;
+    });
+    var jahrSel = document.getElementById("dokFilterJahr");
+    var currentJahr = jahrSel.value;
+    jahrSel.innerHTML = '<option value="">Alle Jahre</option>' +
+      Object.keys(jahre).sort().reverse().map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join("");
+    jahrSel.value = currentJahr;
+    var statusSel = document.getElementById("dokFilterStatus");
+    var currentStatus = statusSel.value;
+    statusSel.innerHTML = '<option value="">Alle Status</option>' +
+      DOK_STATUS_KEYS.map(function (s) { return '<option value="' + s + '">' + s + '</option>'; }).join("");
+    statusSel.value = currentStatus;
+  }
+  function renderDokumente() {
+    var all = combinedDokumente();
+    var filtered = all.filter(function (f) {
+      if (dokFilterTyp === "ZuordnungErforderlich" && f.customerId) return false;
+      if (dokFilterTyp !== "Alle" && dokFilterTyp !== "ZuordnungErforderlich" && f.documentType !== dokFilterTyp) return false;
+      if (dokFilterKunde && f.customerId !== dokFilterKunde) return false;
+      if (dokFilterJahr && (f.documentDate || f.uploadedAm || "").slice(0, 4) !== dokFilterJahr) return false;
+      if (dokFilterStatus && f.status !== dokFilterStatus) return false;
+      return true;
+    });
+    var offeneZuordnung = all.filter(function (f) { return !f.customerId; }).length;
+    document.getElementById("dokumenteStats").innerHTML = [
+      { l: "Dokumente gesamt", v: all.length },
+      { l: "Zuordnung erforderlich", v: offeneZuordnung, warn: offeneZuordnung > 0 },
+      { l: "Diese Woche", v: all.filter(function (f) { return isWithinDays(f.uploadedAm, 7); }).length }
+    ].map(function (s) {
+      return '<div class="stat"><div class="lbl">' + s.l + '</div><div class="val"' + (s.warn ? ' style="color:var(--danger)"' : "") + '>' + s.v + '</div></div>';
+    }).join("");
+    var el = document.getElementById("dokumenteList");
+    if (filtered.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="t">Keine Dokumente gefunden</div><div class="s">Datei oben hochladen oder Filter zurücksetzen.</div></div>';
+      return;
+    }
+    var sorted = filtered.slice().sort(function (a, b) { return (b.uploadedAm || "").localeCompare(a.uploadedAm || ""); });
+    el.innerHTML = sorted.map(function (f) {
+      var typLabel = DOKUMENT_TYP_LABEL[f.documentType] || f.documentType || "Sonstiges";
+      var metaParts = [f.resolvedCustomerName, f.resolvedObjectName, f.externalNumber ? "Nr. " + f.externalNumber : "", f.documentDate ? fmtDate(f.documentDate) : "", f.amount != null ? fmtEUR(f.amount) : ""].filter(Boolean).map(esc).join(" · ");
+      var zuordnungBadge = !f.customerId ? '<span class="badge-status" style="background:var(--danger-soft);color:var(--danger)">Zuordnung erforderlich</span>' : '<span class="badge-status" style="background:var(--surface-2);color:var(--ink-soft)">' + esc(f.status || "Neu") + '</span>';
+      return '<div class="card" data-id="' + f.id + '" data-linked="' + f.linked + '" data-customer="' + (f.customerId || "") + '" style="cursor:default;">' +
+        '<div class="card-top"><div><div class="card-name"><a href="' + esc(f.url) + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">' + esc(f.name) + '</a></div>' +
+        '<div class="card-type">' + esc(typLabel) + '</div></div>' + zuordnungBadge + '</div>' +
+        (metaParts ? '<div class="card-type">' + metaParts + '</div>' : "") +
+        '<div class="card-foot"><div></div><div class="actions">' +
+        (!f.customerId ? '<button type="button" class="dok-zuordnen" data-id="' + f.id + '" aria-label="Zuordnen">' + icon("convert") + '</button>' : "") +
+        '<button type="button" class="dok-del" data-id="' + f.id + '" data-linked="' + f.linked + '" data-customer="' + (f.customerId || "") + '" aria-label="Löschen">' + icon("trash") + '</button>' +
+        '</div></div></div>';
+    }).join("");
+  }
+  document.getElementById("dokumenteChips").addEventListener("click", function (e) {
+    var chip = e.target.closest(".chip"); if (!chip) return;
+    dokFilterTyp = chip.dataset.doctype;
+    renderDokumenteChips();
+    renderDokumente();
+  });
+  document.getElementById("dokFilterKunde").addEventListener("change", function (e) { dokFilterKunde = e.target.value; renderDokumente(); });
+  document.getElementById("dokFilterJahr").addEventListener("change", function (e) { dokFilterJahr = e.target.value; renderDokumente(); });
+  document.getElementById("dokFilterStatus").addEventListener("change", function (e) { dokFilterStatus = e.target.value; renderDokumente(); });
+  document.getElementById("dokumenteList").addEventListener("click", function (e) {
+    var delBtn = e.target.closest(".dok-del");
+    if (delBtn) {
+      var f = combinedDokumente().find(function (x) { return x.id === delBtn.dataset.id; });
+      if (!f) return;
+      var ref = f.customerId ?
+        db.collection("customers").doc(f.customerId).collection("dateien").doc(f.id) :
+        db.collection("unzugeordnete_dokumente").doc(f.id);
+      var storageRef = f.storagePath ? storage.ref(f.storagePath) : null;
+      (storageRef ? storageRef.delete().catch(function () {}) : Promise.resolve())
+        .then(function () { return ref.delete(); })
+        .then(function () { showToast("Dokument gelöscht"); })
+        .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      return;
+    }
+    var zuBtn = e.target.closest(".dok-zuordnen");
+    if (zuBtn) {
+      var f2 = allUnzugeordnete.find(function (x) { return x.id === zuBtn.dataset.id; });
+      if (!f2) return;
+      var draft2 = Object.assign({}, f2, { isPersisted: true });
+      openImportPreview(draft2);
+    }
+  });
+  var dokDropzone = document.getElementById("dokumenteDropzone");
+  document.getElementById("dokumenteUploadInput").addEventListener("change", function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    startDocumentUpload(file, null, null);
+    e.target.value = "";
+  });
+  dokDropzone.addEventListener("dragover", function (e) { e.preventDefault(); dokDropzone.style.borderColor = "var(--accent)"; });
+  dokDropzone.addEventListener("dragleave", function () { dokDropzone.style.borderColor = ""; });
+  dokDropzone.addEventListener("drop", function (e) {
+    e.preventDefault();
+    dokDropzone.style.borderColor = "";
+    var files = Array.prototype.slice.call(e.dataTransfer.files || []);
+    if (files.length) startDocumentUpload(files[0], null, null);
   });
 
   // ---- Schlüsselverwaltung ----
