@@ -439,6 +439,11 @@
     </div>
   </header>
 
+  <div id="previewBanner" hidden style="position:sticky;top:0;z-index:21;background:var(--accent);color:#1a1305;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:0.82rem;font-weight:700;">
+    <span>Vorschau: Ansicht als <span id="previewBannerName"></span> — Aktionen werden echt gespeichert.</span>
+    <button type="button" class="btn btn-primary btn-sm" id="previewBannerExit" style="flex-shrink:0;">Zurück zur Admin-Ansicht</button>
+  </div>
+
   <div class="sync-bar" id="syncBar" hidden></div>
 
   <div id="tip" class="tip" hidden>
@@ -3390,7 +3395,10 @@
       return '<div class="card" data-id="' + m.id + '">' +
         '<div class="card-top"><div><div class="card-name">' + esc(m.name) + '</div><div class="card-type">' + esc(m.position) + '</div></div>' + empStatusBadge(m.status) + '</div>' +
         contactLine + mailLine + absLine +
-        '<div class="card-foot"><button type="button" class="btn btn-ghost btn-sm emp-invite" data-id="' + m.id + '">Login-Link</button>' +
+        '<div class="card-foot"><div style="display:flex;gap:6px;">' +
+        '<button type="button" class="btn btn-ghost btn-sm emp-invite" data-id="' + m.id + '">Login-Link</button>' +
+        '<button type="button" class="btn btn-ghost btn-sm emp-preview" data-id="' + m.id + '">Vorschau</button>' +
+        '</div>' +
         '<div class="actions">' +
         '<button type="button" class="emp-edit" data-id="' + m.id + '" aria-label="Bearbeiten">' + icon("pencil") + '</button>' +
         '<button type="button" class="emp-del" data-id="' + m.id + '" aria-label="Löschen">' + icon("trash") + '</button>' +
@@ -3433,9 +3441,14 @@
     var editBtn = e.target.closest(".emp-edit");
     var delBtn = e.target.closest(".emp-del");
     var inviteBtn = e.target.closest(".emp-invite");
+    var previewBtn = e.target.closest(".emp-preview");
     var card = e.target.closest(".card");
     if (editBtn) { var m1 = employees.find(function (m) { return m.id === editBtn.dataset.id; }); if (m1) openEmployeeForm(m1); }
     else if (delBtn) { var m2 = employees.find(function (m) { return m.id === delBtn.dataset.id; }); if (m2) { deleteEmployeeTarget = m2; document.getElementById("employeeDeleteName").textContent = m2.name; document.getElementById("employeeDeleteOverlay").classList.add("open"); } }
+    else if (previewBtn) {
+      var m4 = employees.find(function (m) { return m.id === previewBtn.dataset.id; });
+      if (m4) enterEmployeePreview(m4);
+    }
     else if (inviteBtn) {
       var link = location.origin + location.pathname + "?invite=" + inviteBtn.dataset.id;
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -5233,6 +5246,41 @@
     subscribeMyMaterial(myMitarbeiterId);
   }
 
+  // ---- Admin-Vorschau: Ansicht als Mitarbeiter (echtes Konto bleibt Gesellschafter) ----
+  var previewMode = false;
+  function enterEmployeePreview(employee) {
+    previewMode = true;
+    myMitarbeiterId = employee.id;
+    myMitarbeiterName = employee.name;
+    document.getElementById("previewBannerName").textContent = employee.name;
+    document.getElementById("previewBanner").hidden = false;
+    document.querySelector(".tabbar").hidden = true;
+    document.getElementById("sidebarNav").hidden = true;
+    document.getElementById("headerAdd").hidden = true;
+    document.getElementById("helpBtn").hidden = true;
+    document.querySelector(".brand-text h1").textContent = "Vorschau: " + employee.name;
+    showView("myJobs");
+    subscribeMyJobs(employee.id);
+    subscribeMyMaterial(employee.id);
+  }
+  function exitEmployeePreview() {
+    previewMode = false;
+    if (myJobsUnsub) { myJobsUnsub(); myJobsUnsub = null; }
+    stopMyCustomers();
+    stopMyMaterial();
+    myMitarbeiterId = null;
+    myMitarbeiterName = "";
+    document.getElementById("previewBanner").hidden = true;
+    document.querySelector(".tabbar").hidden = false;
+    document.getElementById("sidebarNav").hidden = false;
+    document.getElementById("headerAdd").hidden = false;
+    document.getElementById("helpBtn").hidden = false;
+    document.querySelector(".brand-text h1").textContent = "Kunden-Cockpit";
+    showView("team");
+    renderTeam();
+  }
+  document.getElementById("previewBannerExit").addEventListener("click", exitEmployeePreview);
+
   function denyAccess(message) {
     stopSync();
     if (myJobsUnsub) { myJobsUnsub(); myJobsUnsub = null; }
@@ -5273,6 +5321,8 @@
       if (myJobsUnsub) { myJobsUnsub(); myJobsUnsub = null; }
       stopMyCustomers();
       stopMyMaterial();
+      previewMode = false;
+      document.getElementById("previewBanner").hidden = true;
       customers = [];
       allProperties = {};
       calendarJobs = [];
