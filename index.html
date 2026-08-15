@@ -276,6 +276,7 @@
   .job-row { border: 1px solid var(--border); border-radius: var(--r-m); padding: 11px 12px; display: flex; flex-direction: column; gap: 7px; background: var(--surface); transition: border-color 0.15s ease; }
   .job-row:hover { border-color: var(--accent); }
   .job-row:has(input[type="checkbox"]:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .info-btn { border: none; background: none; color: var(--accent); cursor: pointer; font-size: 0.9em; padding: 0 2px; line-height: 1; vertical-align: middle; }
   .job-row-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .job-title { font-weight: 700; font-size: 0.85rem; color: var(--ink); }
   .job-meta { font-size: 0.74rem; color: var(--ink-soft); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -693,6 +694,11 @@
 
   <div id="objektKalkView" hidden>
     <button type="button" class="view-back">← Mehr</button>
+    <div style="padding:14px 16px 0;">
+      <div style="font-size:0.78rem;color:var(--ink-soft);background:var(--surface-2);padding:10px 12px;border-radius:var(--r-m);">
+        Planungshilfe für die Preiskalkulation, keine Steuer- oder Rechtsberatung. Tippe auf ⓘ neben einer Kennzahl für eine Erklärung mit Rechenweg.
+      </div>
+    </div>
     <button type="button" class="btn btn-primary btn-sm" id="addObjectCalcBtn" style="margin:12px 16px;">+ Neue Kalkulation</button>
     <div class="list" id="objectCalcList"></div>
   </div>
@@ -1228,6 +1234,7 @@
         <div class="detail-body">
           <div class="job-form">
             <label class="field full"><span>Parameter</span><select name="schluessel"></select></label>
+            <div class="field full" id="taxParamHilfeText" style="font-size:0.76rem;color:var(--ink-soft);background:var(--surface-2);padding:8px 10px;border-radius:var(--r-s);"></div>
             <label class="field"><span>Wert</span><input name="wert" type="number" step="0.01" required /></label>
             <label class="field"><span>Gültig ab</span><input name="gueltigAb" type="date" required /></label>
             <label class="field full"><span>Quelle</span><input name="quelle" placeholder="z. B. § 19 UStG, Steuerberater am ..." required /></label>
@@ -4391,6 +4398,10 @@
   var editingTaxParamId = null;
   var taxParamForm = document.getElementById("taxParamForm");
   var taxParamOverlay = document.getElementById("taxParamOverlay");
+  function taxParamHilfe(key) { var d = TAX_PARAM_KEYS.find(function (t) { return t.key === key; }); return d ? d.hilfe : ""; }
+  function updateTaxParamHilfeText() {
+    document.getElementById("taxParamHilfeText").textContent = taxParamHilfe(taxParamForm.elements.schluessel.value) || "";
+  }
   function openTaxParamForm(p) {
     editingTaxParamId = (p && p.id) || null;
     document.getElementById("taxParamTitle").textContent = editingTaxParamId ? "Parameter bearbeiten" : "Neuer Parameter";
@@ -4404,8 +4415,10 @@
       taxParamForm.reset();
       taxParamForm.elements.gueltigAb.value = todayStr();
     }
+    updateTaxParamHilfeText();
     taxParamOverlay.classList.add("open");
   }
+  taxParamForm.elements.schluessel.addEventListener("change", updateTaxParamHilfeText);
   function closeTaxParamForm() { taxParamOverlay.classList.remove("open"); editingTaxParamId = null; }
   document.getElementById("taxParamClose").addEventListener("click", closeTaxParamForm);
   document.getElementById("taxParamCancel").addEventListener("click", closeTaxParamForm);
@@ -4438,9 +4451,17 @@
     if (taxParameters.length === 0) { el.innerHTML = '<div class="job-empty">Noch keine Parameter konfiguriert.</div>'; return; }
     var sorted = taxParameters.slice().sort(function (a, b) { return taxParamLabel(a.schluessel).localeCompare(taxParamLabel(b.schluessel), "de"); });
     el.innerHTML = sorted.map(function (p) {
+      var quelleHtml = p.quelle && /^https?:\/\//.test(p.quelle) ?
+        '<a href="' + esc(p.quelle) + '" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--accent);">Quelle öffnen ↗</a>' :
+        esc(p.quelle || "");
+      var altTage = p.gueltigAb ? daysBetween(p.gueltigAb, todayStr()) : null;
+      var altWarnung = altTage != null && altTage > 365 ?
+        '<span style="color:var(--danger);font-weight:700;">⚠ ggf. veraltet — bitte prüfen</span>' : "";
+      var hilfe = taxParamHilfe(p.schluessel);
       return '<div class="job-row" data-id="' + p.id + '">' +
         '<div class="job-row-top"><div><div class="job-title">' + esc(taxParamLabel(p.schluessel)) + '</div>' +
-        '<div class="job-meta">' + p.wert + esc(taxParamUnit(p.schluessel)) + ' · gültig ab ' + fmtDate(p.gueltigAb) + ' · ' + esc(p.quelle || "") + '</div></div>' +
+        '<div class="job-meta">' + p.wert + esc(taxParamUnit(p.schluessel)) + ' · gültig ab ' + fmtDate(p.gueltigAb) + ' · ' + quelleHtml + (altWarnung ? ' · ' + altWarnung : '') + '</div>' +
+        (hilfe ? '<div class="job-meta" style="margin-top:2px;">' + esc(hilfe) + '</div>' : '') + '</div>' +
         '<button type="button" class="param-del" data-id="' + p.id + '" aria-label="Löschen">' + icon("trash") + '</button></div></div>';
     }).join("");
   }
@@ -4484,11 +4505,18 @@
     { key: "private_kv_reserve_prozent", wert: 12, quelle: "Excel-Blatt Lohnrechner, GbR-Gesellschafter-Entnahme, Kalkulationsannahme" },
     { key: "private_altersvorsorge_reserve_prozent", wert: 5, quelle: "Excel-Blatt Lohnrechner, GbR-Gesellschafter-Entnahme, Kalkulationsannahme" }
   ];
+  function naechsterJan15() {
+    var heute = new Date();
+    var jahr = (heute.getMonth() === 0 && heute.getDate() <= 15) ? heute.getFullYear() : heute.getFullYear() + 1;
+    return jahr + "-01-15";
+  }
+  var PRUEF_ERINNERUNG_BEZEICHNUNG = "Steuer-/Lohnparameter jährlich prüfen";
   function seedTaxParamsFromExcel() {
     var vorhanden = {};
     taxParameters.forEach(function (p) { vorhanden[p.schluessel] = true; });
     var fehlend = EXCEL_TAX_PARAM_SEED.filter(function (s) { return !vorhanden[s.key]; });
-    if (fehlend.length === 0) { showToast("Alle Excel-Parameter sind bereits vorhanden"); return; }
+    var erinnerungFehlt = !taxDeadlines.some(function (d) { return d.bezeichnung === PRUEF_ERINNERUNG_BEZEICHNUNG; });
+    if (fehlend.length === 0 && !erinnerungFehlt) { showToast("Alle Excel-Parameter sind bereits vorhanden"); return; }
     var jetzt = new Date().toISOString();
     var batch = db.batch();
     fehlend.forEach(function (s) {
@@ -4499,11 +4527,23 @@
       };
       batch.set(db.collection("taxParameters").doc(data.id), data);
     });
+    if (erinnerungFehlt) {
+      var deadlineData = {
+        id: uid(), bezeichnung: PRUEF_ERINNERUNG_BEZEICHNUNG, faelligAm: naechsterJan15(), wiederkehrend: "jaehrlich",
+        notiz: "Mindestlohn, Sozialversicherungssätze, Gemeinkosten/Zielmarge usw. gegen die hinterlegten Quellen prüfen und bei Bedarf neue Parameter mit aktuellem Gültig-ab-Datum anlegen."
+      };
+      batch.set(db.collection("taxDeadlines").doc(deadlineData.id), deadlineData);
+    }
     batch.commit()
       .then(function () {
         return logAenderung("taxParameters", "seed", null, { anzahl: fehlend.length, schluessel: fehlend.map(function (s) { return s.key; }) }, "Excel-Werte importiert (Professionelle Preis- und Lohnkalkulation 2026)");
       })
-      .then(function () { showToast(fehlend.length + " Parameter aus der Excel-Kalkulation importiert"); })
+      .then(function () {
+        var teile = [];
+        if (fehlend.length > 0) teile.push(fehlend.length + " Parameter importiert");
+        if (erinnerungFehlt) teile.push("jährliche Prüf-Erinnerung angelegt");
+        showToast(teile.join(", "));
+      })
       .catch(function (err) { setBanner("Import fehlgeschlagen: " + err.message); });
   }
   document.getElementById("seedTaxParamsBtn").addEventListener("click", function () {
@@ -4601,8 +4641,10 @@
       summeReserven: summeReserven, entnahmeVerfuegbar: gewinnanteil - summeReserven
     };
   }
+  var entnahmeInfoTexts = [];
   function renderEntnahmeRechner() {
     var el = document.getElementById("entnahmeRechnerResult");
+    entnahmeInfoTexts.length = 0;
     var wertStr = document.getElementById("entnahmeGewinnanteil").value;
     var gewinnanteil = wertStr !== "" ? parseFloat(wertStr) : null;
     var r = berechneGesellschafterEntnahme(gewinnanteil);
@@ -4612,13 +4654,14 @@
       return;
     }
     el.innerHTML = rowsHTML([
-      ["Steuerreserve Einkommensteuer/Soli (" + r.steuerreserveProzent + " %)", fmtEUR(r.steuerreserve)],
-      ["Private KV/PV-Reserve (" + r.kvReserveProzent + " %)", fmtEUR(r.kvReserve)],
-      ["Private Altersvorsorge-Reserve (" + r.vorsorgeReserveProzent + " %)", fmtEUR(r.vorsorgeReserve)],
+      ["Steuerreserve Einkommensteuer/Soli (" + r.steuerreserveProzent + " %)", fmtEUR(r.steuerreserve), "Als Gesellschafter einer GbR gibt es kein Arbeitnehmergehalt mit automatischem Lohnsteuerabzug — der Gewinnanteil wird persönlich versteuert. Diese Rücklage (Gewinnanteil " + fmtEUR(r.gewinnanteil) + " × " + r.steuerreserveProzent + " %) legst du selbst zur Seite, damit bei der nächsten Steuererklärung genug Geld für Einkommensteuer und Soli da ist."],
+      ["Private KV/PV-Reserve (" + r.kvReserveProzent + " %)", fmtEUR(r.kvReserve), "Als Gesellschafter zahlst du deine Kranken-/Pflegeversicherung privat, nicht über die GbR — anders als bei einem Arbeitnehmer. Diese Rücklage deckt den Beitrag."],
+      ["Private Altersvorsorge-Reserve (" + r.vorsorgeReserveProzent + " %)", fmtEUR(r.vorsorgeReserve), "Ohne Arbeitgeber gibt es keine automatische Rentenversicherung — diese Rücklage ist ein Vorschlag, wie viel du für die eigene Altersvorsorge zurücklegen solltest."],
       ["Summe Rücklagen", fmtEUR(r.summeReserven)],
-      ["Entnahme verfügbar", fmtEUR(r.entnahmeVerfuegbar)]
-    ]) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Entnahme erst nach Steuer-/Vorsorgerücklagen planen. Keine Betriebsausgabe, keine Lohnabrechnung.</div>';
+      ["Entnahme verfügbar", fmtEUR(r.entnahmeVerfuegbar), "Was du dir von diesem Gewinnanteil auszahlen kannst, ohne dass später Geld für Steuer oder Vorsorge fehlt: " + fmtEUR(r.gewinnanteil) + " Gewinnanteil minus " + fmtEUR(r.summeReserven) + " Rücklagen = " + fmtEUR(r.entnahmeVerfuegbar) + "."]
+    ], entnahmeInfoTexts) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Entnahme erst nach Steuer-/Vorsorgerücklagen planen. Keine Betriebsausgabe, keine Lohnabrechnung.</div>';
   }
+  bindInfoButtons("entnahmeRechnerResult", entnahmeInfoTexts);
   document.getElementById("openEntnahmeRechnerBtn").addEventListener("click", function () {
     document.getElementById("entnahmeGewinnanteil").value = "";
     renderEntnahmeRechner();
@@ -4763,6 +4806,19 @@
       (parseFloat(f.verwaltungskostenMonatlich) || 0) + (parseFloat(f.sonstigePersonalkostenMonatlich) || 0);
     var gesamtkostenMonatlich = lohnnebenkosten != null ? monatsbrutto + lohnnebenkosten + sonstigeMonatlicheKosten : null;
 
+    // Mindestlohn-Prüfung: nur wenn die Parameter hinterlegt sind (keine erfundene Grenze).
+    var effektiverStundenlohn = monatsbrutto > 0 ? monatsbrutto / (wochenstunden * 4.33) : null;
+    var mindestlohnParam = getTaxParam("mindestlohn_gesetzlich");
+    var branchenmindestlohnParam = getTaxParam("branchenmindestlohn_gebaeudereinigung");
+    var mindestlohnWarnung = null;
+    if (effektiverStundenlohn != null) {
+      if (branchenmindestlohnParam && effektiverStundenlohn < branchenmindestlohnParam.wert) {
+        mindestlohnWarnung = "Der effektive Stundenlohn (" + fmtEUR(effektiverStundenlohn) + ") liegt unter dem Branchenmindestlohn Gebäudereinigung (" + fmtEUR(branchenmindestlohnParam.wert) + "/Std.).";
+      } else if (mindestlohnParam && effektiverStundenlohn < mindestlohnParam.wert) {
+        mindestlohnWarnung = "Der effektive Stundenlohn (" + fmtEUR(effektiverStundenlohn) + ") liegt unter dem gesetzlichen Mindestlohn (" + fmtEUR(mindestlohnParam.wert) + "/Std.).";
+      }
+    }
+
     var stundenProTag = wochenstunden / 5;
     var bezahlteStundenMonat = wochenstunden * 4.33;
     var ausfallStundenMonat = ((parseFloat(f.urlaubstageJahr) || 0) + (parseFloat(f.krankheitstageJahr) || 0) + (parseFloat(f.feiertageJahr) || 0)) / 12 * stundenProTag;
@@ -4820,7 +4876,8 @@
       kostenProEinsatz: kostenProEinsatz, einsatzstunden: einsatzstunden,
       kundenpreis: kundenpreis, gewinnBeiKundenpreis: gewinnBeiKundenpreis,
       agAnteilFehlt: agAnteilProzent == null,
-      lohnrechner: lohnrechner, lohnrechnerFehlendeParameter: lrFehlend
+      lohnrechner: lohnrechner, lohnrechnerFehlendeParameter: lrFehlend,
+      effektiverStundenlohn: effektiverStundenlohn, mindestlohnWarnung: mindestlohnWarnung
     };
   }
   function readEmployeeCalcForm() {
@@ -4828,31 +4885,49 @@
     Object.keys(emptyEmployeeCalc()).forEach(function (k) { if (employeeCalcForm.elements[k]) f[k] = employeeCalcForm.elements[k].value; });
     return f;
   }
-  function rowsHTML(rows) {
+  function rowsHTML(rows, infoArray) {
     return rows.map(function (row) {
-      return '<div class="row" style="justify-content:space-between;display:flex;padding:4px 0;border-bottom:1px solid var(--border);"><span>' + esc(row[0]) + '</span><strong style="color:var(--accent);">' + row[1] + '</strong></div>';
+      var infoHtml = "";
+      if (row[2] && infoArray) {
+        var idx = infoArray.length;
+        infoArray.push({ title: row[0], body: row[2] });
+        infoHtml = ' <button type="button" class="info-btn" data-info-idx="' + idx + '" aria-label="Erklärung">ⓘ</button>';
+      }
+      return '<div class="row" style="justify-content:space-between;display:flex;padding:4px 0;border-bottom:1px solid var(--border);"><span>' + esc(row[0]) + infoHtml + '</span><strong style="color:var(--accent);">' + row[1] + '</strong></div>';
     }).join("");
   }
+  function bindInfoButtons(containerId, infoArray) {
+    document.getElementById(containerId).addEventListener("click", function (e) {
+      var btn = e.target.closest(".info-btn");
+      if (!btn) return;
+      var info = infoArray[parseInt(btn.dataset.infoIdx, 10)];
+      if (info) showInfo(info.title, '<p style="color:var(--ink-soft);">' + esc(info.body) + '</p>');
+    });
+  }
+  var employeeCalcInfoTexts = [];
   function renderEmployeeCalcResult() {
     var f = readEmployeeCalcForm();
     var r = berechneMitarbeiterKosten(f);
     var el = document.getElementById("employeeCalcResult");
+    employeeCalcInfoTexts.length = 0;
     if (!r) { el.innerHTML = '<div class="job-empty">Bitte Wochenstunden angeben.</div>'; return; }
 
-    var html = '<h3 class="section-title" style="margin-bottom:8px;">Vollkosten je produktive Stunde</h3>';
+    var html = r.mindestlohnWarnung ?
+      '<div style="background:var(--danger-soft);color:var(--danger);padding:8px 10px;border-radius:var(--r-s);font-size:0.78rem;margin-bottom:12px;font-weight:700;">⚠ ' + esc(r.mindestlohnWarnung) + '</div>' : "";
+    html += '<h3 class="section-title" style="margin-bottom:8px;">Vollkosten je produktive Stunde</h3>';
     if (r.agAnteilFehlt) {
       html += '<div class="job-empty">Arbeitgeberanteil Sozialabgaben fehlt — bitte Wert aus dem Lohnbüro eintragen, um Gesamtkosten je Stunde zu berechnen.</div>';
     } else {
       var rows = [
         ["Monatliche Gesamtkosten", fmtEUR(r.gesamtkostenMonatlich)],
         ["Kosten pro bezahlter Stunde", fmtEUR(r.kostenProBezahlterStunde)],
-        ["Kosten pro produktiver Stunde", fmtEUR(r.kostenProProduktiverStunde)],
+        ["Kosten pro produktiver Stunde", fmtEUR(r.kostenProProduktiverStunde), "Produktive Stunden sind bezahlte Stunden minus Urlaub, Krankheit, Feiertage, Fahrtzeit und sonstige unproduktive Zeit. Beispiel: Monatliche Gesamtkosten " + fmtEUR(r.gesamtkostenMonatlich) + " geteilt durch " + r.produktiveStundenMonat.toFixed(1) + " produktive Stunden im Monat = " + fmtEUR(r.kostenProProduktiverStunde) + " je produktiver Stunde. Das ist die Untergrenze, unter der ihr keinen Gewinn macht."],
         ["Mindestverkaufspreis/Std.", fmtEUR(r.mindestpreis)],
-        ["Empfohlener Verkaufspreis/Std.", fmtEUR(r.empfohlenerPreis)],
+        ["Empfohlener Verkaufspreis/Std.", fmtEUR(r.empfohlenerPreis), "Kosten pro produktiver Stunde (" + fmtEUR(r.kostenProProduktiverStunde) + ") plus die gewünschte Gewinnmarge von " + (f.gewinnmargeProzent || 0) + " %. Das ist der Preis, den ihr diesem Mitarbeiter/dieser Mitarbeiterin entsprechend mindestens pro Stunde in Rechnung stellen solltet."],
         ["Kosten pro Einsatz (" + r.einsatzstunden + " Std.)", fmtEUR(r.kostenProEinsatz)]
       ];
       if (r.kundenpreis != null) rows.push(["Gewinn bei " + fmtEUR(r.kundenpreis) + "/Std.", fmtEUR(r.gewinnBeiKundenpreis)]);
-      html += rowsHTML(rows) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin:8px 0 0;">Annahme: Monatswerte auf Basis von 4,33 Wochen/Monat, Arbeitstage = Wochenstunden/5.</div>';
+      html += rowsHTML(rows, employeeCalcInfoTexts) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin:8px 0 0;">Annahme: Monatswerte auf Basis von 4,33 Wochen/Monat, Arbeitstage = Wochenstunden/5.</div>';
     }
 
     html += '<h3 class="section-title" style="margin:16px 0 8px;">Lohnrechner (Brutto → Netto, AG-Kosten)</h3>';
@@ -4870,15 +4945,16 @@
         ["KV-Zusatzbeitrag (AN)", fmtEUR(lr.anKvZusatz)],
         ["Lohnsteuer/sonstige Steuer", fmtEUR(lr.anLohnsteuer)],
         ["Sonstige Abzüge", fmtEUR(lr.anSonstige)],
-        ["Netto-Auszahlung (geschätzt)", fmtEUR(lr.nettoAuszahlung)],
+        ["Netto-Auszahlung (geschätzt)", fmtEUR(lr.nettoAuszahlung), "Was auf dem Konto des Mitarbeiters/der Mitarbeiterin ankommt: Bruttolohn " + fmtEUR(r.monatsbrutto) + " minus Kranken-, Renten-, Arbeitslosen- und Pflegeversicherung sowie Lohnsteuer. Ersetzt keine echte Lohnabrechnung."],
         ["Arbeitgeber Sozial-/Umlagekosten", fmtEUR(lr.agSozialUndUmlage)],
-        ["Arbeitgeber-Gesamtkosten", fmtEUR(lr.agGesamtkosten)],
-        ["Nettoquote", (lr.nettoquote * 100).toFixed(1) + " %"],
-        ["Kostenfaktor Arbeitgeber/Brutto", lr.kostenfaktorAgBrutto.toFixed(3) + "×"]
-      ]) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin:8px 0 0;">Planungshilfe, keine Lohnabrechnung. Für verbindliche Werte bitte Lohnbüro/Steuerberatung hinzuziehen.</div>';
+        ["Arbeitgeber-Gesamtkosten", fmtEUR(lr.agGesamtkosten), "Was dich als Arbeitgeber wirklich kostet — nicht nur der Bruttolohn: " + fmtEUR(r.monatsbrutto) + " Bruttolohn plus " + fmtEUR(lr.agSozialUndUmlage) + " Arbeitgeberanteil an Sozialversicherung und Umlagen = " + fmtEUR(lr.agGesamtkosten) + ". Diese Zahl solltest du für die Preiskalkulation im Objekt-Kalkulator verwenden, nicht den Bruttolohn."],
+        ["Nettoquote", (lr.nettoquote * 100).toFixed(1) + " %", "Wie viel Prozent vom Bruttolohn beim Mitarbeiter/bei der Mitarbeiterin tatsächlich ankommt. Bei " + (lr.nettoquote * 100).toFixed(1) + " % bleiben von jedem Brutto-Euro " + lr.nettoquote.toFixed(2) + " € netto übrig."],
+        ["Kostenfaktor Arbeitgeber/Brutto", lr.kostenfaktorAgBrutto.toFixed(3) + "×", "Multipliziert mit dem Bruttolohn ergibt das die tatsächlichen Arbeitgeberkosten. Faktor " + lr.kostenfaktorAgBrutto.toFixed(3) + " bedeutet: für jeden Euro Bruttolohn zahlst du insgesamt " + fmtEUR(lr.kostenfaktorAgBrutto) + "."]
+      ], employeeCalcInfoTexts) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin:8px 0 0;">Planungshilfe, keine Lohnabrechnung. Für verbindliche Werte bitte Lohnbüro/Steuerberatung hinzuziehen.</div>';
     }
     el.innerHTML = html;
   }
+  bindInfoButtons("employeeCalcResult", employeeCalcInfoTexts);
   var editingEmployeeCalcId = null;
   var employeeCalcForm = document.getElementById("employeeCalcForm");
   var employeeCalcOverlay = document.getElementById("employeeCalcOverlay");
@@ -4891,6 +4967,13 @@
       if (employeeCalcForm.elements[k]) employeeCalcForm.elements[k].value = data[k] != null ? data[k] : emptyEmployeeCalc()[k];
     });
     syncLohnArtFields();
+    var branchenMin = getTaxParam("branchenmindestlohn_gebaeudereinigung");
+    var gesetzMin = getTaxParam("mindestlohn_gesetzlich");
+    var minHinweis = branchenMin ? "mind. " + fmtEUR(branchenMin.wert) + "/Std. Branche" : (gesetzMin ? "mind. " + fmtEUR(gesetzMin.wert) + "/Std. gesetzlich" : "");
+    if (minHinweis) {
+      employeeCalcForm.elements.stundenlohn.placeholder = "z. B. " + minHinweis;
+      employeeCalcForm.elements.monatsbrutto.placeholder = "z. B. " + minHinweis + " × Wochenstunden × 4,33";
+    }
     renderEmployeeCalcResult();
     employeeCalcOverlay.classList.add("open");
   }
@@ -5041,27 +5124,30 @@
     f.ausgewaehlteLeistungen = Array.prototype.slice.call(document.querySelectorAll('#objectCalcServices input:checked')).map(function (cb) { return cb.value; });
     return f;
   }
+  var objectCalcInfoTexts = [];
   function renderObjectCalcResult() {
     var f = readObjectCalcForm();
     var r = berechneObjektKosten(f);
     var el = document.getElementById("objectCalcResult");
+    objectCalcInfoTexts.length = 0;
     if (!r) { el.innerHTML = '<div class="job-empty">Bitte Arbeitszeit pro Einsatz angeben.</div>'; return; }
     if (r.fehlt) { el.innerHTML = '<div class="job-empty">' + esc(r.fehlt) + '</div>'; return; }
+    var marge = parseFloat(f.gewinnmargeProzent) || 0;
     var warnLine = r.unterkalkuliert ?
       '<div style="background:var(--danger-soft);color:var(--danger);padding:8px 10px;border-radius:var(--r-s);font-size:0.78rem;margin-bottom:8px;font-weight:700;">⚠ Unterkalkulation: Ist-Preis (' + fmtEUR(r.istPreis) + ') liegt unter dem Mindestpreis (' + fmtEUR(r.mindestpreisProEinsatz) + ').</div>' : "";
     var kostenRows = [
       ["Personalkosten pro Einsatz", fmtEUR(r.personalkosten)],
       ["Sachkosten pro Einsatz (inkl. Fahrt)", fmtEUR(r.sachkosten)],
-      ["Gemeinkosten", fmtEUR(r.gemeinkosten)],
+      ["Gemeinkosten", fmtEUR(r.gemeinkosten), "Pauschale für Verwaltung, Software, Versicherung, Telefon und Fahrzeug-Grundkosten, die keinem einzelnen Einsatz direkt zuzuordnen sind. Berechnet aus Personal- plus Sachkosten (" + fmtEUR(r.personalkosten + r.sachkosten) + ") multipliziert mit dem hinterlegten Gemeinkosten-Prozentsatz = " + fmtEUR(r.gemeinkosten) + "."],
       ["Gesamtkosten pro Einsatz", fmtEUR(r.gesamtkosten)],
-      ["Mindestpreis bei Zielmarge (netto)", fmtEUR(r.mindestpreisProEinsatz)]
+      ["Mindestpreis bei Zielmarge (netto)", fmtEUR(r.mindestpreisProEinsatz), "Der Preis, den ihr mindestens verlangen müsst, damit nach Abzug aller Kosten noch " + marge + " % Gewinn übrig bleiben. Formel: Gesamtkosten ÷ (1 − Marge) = " + fmtEUR(r.gesamtkosten) + " ÷ (1 − " + marge + " %) = " + fmtEUR(r.mindestpreisProEinsatz) + ". Wichtig: Das ist NICHT Kosten mal (1 plus Marge) — die Marge bezieht sich auf den Verkaufspreis, nicht auf die Kosten, weil ein Kunde ja auch den Gewinn bezahlt."]
     ];
     var preisRows = [
       ["Empfohlener Preis pro Einsatz (netto)", fmtEUR(r.empfohlenerPreisProEinsatz)],
       ["Umsatzsteuer" + (r.istRegelbesteuerung ? " (" + r.ustSatz + " %)" : " (Kleinunternehmer)"), fmtEUR(r.ustProEinsatz)],
-      ["Kunden-Endsumme pro Einsatz", fmtEUR(r.kundenEndsummeProEinsatz)],
+      ["Kunden-Endsumme pro Einsatz", fmtEUR(r.kundenEndsummeProEinsatz), r.istRegelbesteuerung ? "Der Betrag, den der Kunde tatsächlich zahlt: Nettopreis (" + fmtEUR(r.empfohlenerPreisProEinsatz) + ") plus " + r.ustSatz + " % Umsatzsteuer = " + fmtEUR(r.kundenEndsummeProEinsatz) + "." : "Da aktuell die Kleinunternehmerregelung aktiv ist, wird keine Umsatzsteuer berechnet — der Kunde zahlt genau den Nettopreis."],
       ["Gewinn vor Steuer pro Einsatz", fmtEUR(r.gewinnVorSteuerProEinsatz)],
-      ["Gewinnmarge (Ist)", (r.gewinnmargeIst * 100).toFixed(1) + " %"],
+      ["Gewinnmarge (Ist)", (r.gewinnmargeIst * 100).toFixed(1) + " %", "Zeigt, wie viel Prozent vom tatsächlichen Verkaufspreis als Gewinn übrig bleibt: Gewinn (" + fmtEUR(r.gewinnVorSteuerProEinsatz) + ") ÷ Verkaufspreis (" + fmtEUR(r.empfohlenerPreisProEinsatz) + ") = " + (r.gewinnmargeIst * 100).toFixed(1) + " %. Weicht das von der Zielmarge ab, liegt das meist an Rabatt, Zuschlag oder Zahlungspauschale."],
       ["Effektiver Stundenpreis (Kunde)", r.effektiverStundenpreis != null ? fmtEUR(r.effektiverStundenpreis) : "–"]
     ];
     var hochrechnungRows = [
@@ -5072,11 +5158,12 @@
       ["Monatsgewinn vor Steuer (gesamt)", fmtEUR(r.monatsgewinnVorSteuer)]
     ];
     el.innerHTML = warnLine +
-      '<h3 class="section-title" style="margin-bottom:8px;">Kosten &amp; Mindestpreis</h3>' + rowsHTML(kostenRows) +
-      '<h3 class="section-title" style="margin:16px 0 8px;">Verkaufspreis pro Einsatz</h3>' + rowsHTML(preisRows) +
-      '<h3 class="section-title" style="margin:16px 0 8px;">Frequenz &amp; Hochrechnung</h3>' + rowsHTML(hochrechnungRows) +
+      '<h3 class="section-title" style="margin-bottom:8px;">Kosten &amp; Mindestpreis</h3>' + rowsHTML(kostenRows, objectCalcInfoTexts) +
+      '<h3 class="section-title" style="margin:16px 0 8px;">Verkaufspreis pro Einsatz</h3>' + rowsHTML(preisRows, objectCalcInfoTexts) +
+      '<h3 class="section-title" style="margin:16px 0 8px;">Frequenz &amp; Hochrechnung</h3>' + rowsHTML(hochrechnungRows, objectCalcInfoTexts) +
       '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Marge = Gewinn ÷ Verkaufspreis (nicht Kostenaufschlag). Mindestpreis = Gesamtkosten ÷ (1 − Zielmarge). Bei Frequenz „Einmalig\" sind Monats-/Jahrespreis und Monatsgewinn 0,00 € — das ist korrekt.</div>';
   }
+  bindInfoButtons("objectCalcResult", objectCalcInfoTexts);
   var editingObjectCalcId = null;
   var objectCalcForm = document.getElementById("objectCalcForm");
   var objectCalcOverlay = document.getElementById("objectCalcOverlay");
@@ -7179,7 +7266,9 @@
       { schluessel: "kilometersatz", wert: 0.7, gueltigAb: "2026-01-01" },
       { schluessel: "steuerreserve_est_gesellschafter_prozent", wert: 35, gueltigAb: "2026-01-01" },
       { schluessel: "private_kv_reserve_prozent", wert: 12, gueltigAb: "2026-01-01" },
-      { schluessel: "private_altersvorsorge_reserve_prozent", wert: 5, gueltigAb: "2026-01-01" }
+      { schluessel: "private_altersvorsorge_reserve_prozent", wert: 5, gueltigAb: "2026-01-01" },
+      { schluessel: "mindestlohn_gesetzlich", wert: 13.9, gueltigAb: "2026-01-01" },
+      { schluessel: "branchenmindestlohn_gebaeudereinigung", wert: 15.0, gueltigAb: "2026-01-01" }
     ];
     taxProfiles = [];
 
@@ -7192,6 +7281,12 @@
     assertClose("Lohnrechner: Netto-Auszahlung = 1.667,90€ (Excel-Beispiel)", lr && lr.lohnrechner && lr.lohnrechner.nettoAuszahlung, 1667.90, 0.01);
     assertClose("Lohnrechner: AG-Gesamtkosten = 3.263,52€ (Excel-Beispiel)", lr && lr.lohnrechner && lr.lohnrechner.agGesamtkosten, 3263.52, 0.01);
     assertClose("Lohnrechner: Nettoquote ≈ 64,15%", lr && lr.lohnrechner && lr.lohnrechner.nettoquote * 100, 64.15, 0.05);
+
+    // Mindestlohn-Warnung: greift nur wenn Parameter vorhanden und Lohn wirklich darunter liegt.
+    var mkUnterMin = berechneMitarbeiterKosten({ lohnArt: "monat", monatsbrutto: "2000", wochenstunden: "40" });
+    assertEqual("Mindestlohn: 2000€/40Std. -> Warnung (unter Branchenmindestlohn)", mkUnterMin && mkUnterMin.mindestlohnWarnung != null, true);
+    var mkUeberMin = berechneMitarbeiterKosten({ lohnArt: "monat", monatsbrutto: "3500", wochenstunden: "40" });
+    assertEqual("Mindestlohn: 3500€/40Std. -> keine Warnung (über Mindestlohn)", mkUeberMin && mkUeberMin.mindestlohnWarnung, null);
 
     // Objekt-Kalkulator: Excel-Beispiel (150m² × 0,68€ entspricht 18,828€/Std. AG-Kosten, 2 Std., 6€ Material, 8km Fahrt)
     // -> Gesamtkosten 56,6444€, Mindestpreis bei 20% Zielmarge 70,8055€ (exakt wie Excel H6/E17).
