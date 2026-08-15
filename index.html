@@ -413,6 +413,18 @@
       <svg class="icn" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5L18 5l2.5 2.5L18 10"/></svg>
       Schlüssel
     </button>
+    <button type="button" class="sidebar-link" id="sbTabSteuern" aria-selected="false">
+      <svg class="icn" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Steuern &amp; Rücklagen
+    </button>
+    <button type="button" class="sidebar-link" id="sbTabMitarbeiterKalk" aria-selected="false">
+      <svg class="icn" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Mitarbeiter-Kalkulator
+    </button>
+    <button type="button" class="sidebar-link" id="sbTabObjektKalk" aria-selected="false">
+      <svg class="icn" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+      Objekt-Kalkulator
+    </button>
   </nav>
   <div class="app-main">
   <header class="header">
@@ -455,6 +467,8 @@
 
   <div id="dashboardView" hidden>
     <div class="stats" id="dashStats"></div>
+    <h3 class="section-title" style="padding:0 16px;margin:14px 0 4px;">Steuern &amp; Rücklagen</h3>
+    <div class="stats" id="dashStatsSteuern"></div>
     <div class="todo-card" id="todoCard" hidden>
       <h3>Zu erledigen</h3>
       <div class="todo-list" id="todoList"></div>
@@ -601,6 +615,70 @@
     <div class="list" id="dokumenteList"></div>
   </div>
 
+  <div id="steuernView" hidden>
+    <button type="button" class="view-back">← Mehr</button>
+    <div style="padding:14px 16px 0;">
+      <div style="font-size:0.78rem;color:var(--ink-soft);background:var(--surface-2);padding:10px 12px;border-radius:var(--r-m);">
+        Die Berechnung dient ausschließlich der Planung und ersetzt keine steuerliche Beratung.
+      </div>
+    </div>
+    <div class="stats" id="steuernStats"></div>
+
+    <details class="related-list" open>
+      <summary><span>Unternehmensregelung</span><span class="rl-count" id="rlTaxProfileLabel"></span><span class="rl-chev">⌄</span></summary>
+      <div class="related-body">
+        <div id="taxProfileCard"></div>
+        <button type="button" class="btn btn-ghost btn-sm" id="changeTaxProfileBtn" style="margin-top:8px;">Regelung wechseln</button>
+      </div>
+    </details>
+
+    <details class="related-list">
+      <summary><span>Betriebsausgaben</span><span class="rl-count" id="rlAusgabenCount"></span><span class="rl-chev">⌄</span></summary>
+      <div class="related-body">
+        <button type="button" class="btn btn-ghost btn-sm" id="addAusgabeBtn">+ Ausgabe erfassen</button>
+        <div class="job-list" id="ausgabenList" style="margin-top:10px;"></div>
+      </div>
+    </details>
+
+    <details class="related-list">
+      <summary><span>Steuertermine</span><span class="rl-count" id="rlDeadlinesCount"></span><span class="rl-chev">⌄</span></summary>
+      <div class="related-body">
+        <button type="button" class="btn btn-ghost btn-sm" id="addDeadlineBtn">+ Termin</button>
+        <div class="job-list" id="taxDeadlinesList" style="margin-top:10px;"></div>
+      </div>
+    </details>
+
+    <details class="related-list">
+      <summary><span>Steuerparameter</span><span class="rl-count" id="rlParamsCount"></span><span class="rl-chev">⌄</span></summary>
+      <div class="related-body">
+        <p style="font-size:0.74rem;color:var(--ink-soft);">Jeder Wert braucht Bezeichnung, Betrag/Prozentsatz, Quelle und Gültig-ab-Datum. Fehlt ein Parameter, zeigt die App "Keine ausreichenden Daten" statt einer Schätzung.</p>
+        <button type="button" class="btn btn-ghost btn-sm" id="addTaxParamBtn">+ Parameter</button>
+        <div class="job-list" id="taxParamsList" style="margin-top:10px;"></div>
+      </div>
+    </details>
+
+    <div style="padding:12px 16px 24px;">
+      <button type="button" class="btn btn-primary" id="openReserveWizardBtn" style="width:100%;">Rücklagen-Assistent starten</button>
+    </div>
+  </div>
+
+  <div id="mitarbeiterKalkView" hidden>
+    <button type="button" class="view-back">← Mehr</button>
+    <div style="padding:14px 16px 0;">
+      <div style="font-size:0.78rem;color:var(--ink-soft);background:var(--surface-2);padding:10px 12px;border-radius:var(--r-m);">
+        Planungshilfe, keine Lohnabrechnung. Für verbindliche Werte bitte Lohnbüro/Steuerberatung hinzuziehen.
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary btn-sm" id="addEmployeeCalcBtn" style="margin:12px 16px;">+ Neue Kalkulation</button>
+    <div class="list" id="employeeCalcList"></div>
+  </div>
+
+  <div id="objektKalkView" hidden>
+    <button type="button" class="view-back">← Mehr</button>
+    <button type="button" class="btn btn-primary btn-sm" id="addObjectCalcBtn" style="margin:12px 16px;">+ Neue Kalkulation</button>
+    <div class="list" id="objectCalcList"></div>
+  </div>
+
   <div id="keysView" hidden>
     <button type="button" class="view-back">← Mehr</button>
     <div class="stats" id="keysStats"></div>
@@ -639,6 +717,18 @@
       <button type="button" class="more-card" data-view="keys">
         <svg class="icn" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5L18 5l2.5 2.5L18 10"/></svg>
         <div class="more-card-text"><strong>Schlüssel</strong><span>Wer hat welchen Schlüssel</span></div>
+      </button>
+      <button type="button" class="more-card" data-view="steuern">
+        <svg class="icn" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div class="more-card-text"><strong>Steuern &amp; Rücklagen</strong><span>Umsatz, Rücklagen, Steuertermine — nur Admin</span></div>
+      </button>
+      <button type="button" class="more-card" data-view="mitarbeiterKalk">
+        <svg class="icn" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div class="more-card-text"><strong>Mitarbeiter-Kalkulator</strong><span>Was ein Mitarbeiter wirklich kostet — nur Admin</span></div>
+      </button>
+      <button type="button" class="more-card" data-view="objektKalk">
+        <svg class="icn" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/></svg>
+        <div class="more-card-text"><strong>Objekt-Kalkulator</strong><span>Preis pro Objekt korrekt berechnen — nur Admin</span></div>
       </button>
     </div>
   </div>
@@ -819,7 +909,7 @@
             <button type="button" class="btn btn-ghost" id="addPosRow" style="margin-top:6px;">+ Position hinzufügen</button>
           </div>
           <div style="text-align:right; font-size:0.85rem; display:flex; flex-direction:column; gap:4px;">
-            <div style="font-size:0.7rem;color:var(--ink-soft);">Standard 0 % — Kleinunternehmer nach § 19 UStG. Nur ändern, falls das nicht mehr zutrifft.</div>
+            <div style="font-size:0.7rem;color:var(--ink-soft);" id="mwstHint">Standard 0 % — Kleinunternehmer nach § 19 UStG. Nur ändern, falls das nicht mehr zutrifft.</div>
             <div>Netto: <span id="sumNetto">0,00 €</span></div>
             <div>MwSt (<input id="mwstSatz" type="number" value="0" min="0" style="width:46px;border:1px solid var(--border);border-radius:6px;padding:2px 4px;" />%): <span id="sumMwst">0,00 €</span></div>
             <div style="font-weight:700; color:var(--brand);">Brutto: <span id="sumBrutto">0,00 €</span></div>
@@ -1045,6 +1135,256 @@
         <button type="button" class="btn btn-ghost" id="importPreviewCancel">Abbrechen</button>
         <button type="button" class="btn btn-primary" id="importPreviewConfirm">Import bestätigen</button>
       </div>
+    </div>
+  </div>
+
+  <div class="overlay confirm" id="infoOverlay">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2 id="infoOverlayTitle">Erklärung</h2>
+        <button id="infoOverlayClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div id="infoOverlayBody" style="font-size:0.85rem;line-height:1.6;color:var(--ink);"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ausgabeOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2 id="ausgabeTitle">Neue Ausgabe</h2>
+        <button id="ausgabeClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <form id="ausgabeForm">
+        <div class="detail-body">
+          <div class="job-form">
+            <label class="field"><span>Kategorie</span><select name="kategorie"></select></label>
+            <label class="field"><span>Betrag (€, brutto)</span><input name="betrag" type="number" min="0" step="0.01" required /></label>
+            <label class="field"><span>Datum</span><input name="datum" type="date" required /></label>
+            <label class="field"><span>Status</span><select name="status"><option>Offen</option><option>Bezahlt</option></select></label>
+            <label class="field"><span>Zahlungsart</span><input name="zahlungsart" placeholder="z. B. Überweisung" /></label>
+            <label class="field"><span>MwSt-Satz % (falls Vorsteuer relevant)</span><input name="mwstSatz" type="number" min="0" step="0.01" /></label>
+            <label class="field full"><span>Beschreibung</span><input name="beschreibung" required /></label>
+            <label class="field full"><span>Notiz</span><input name="notiz" /></label>
+          </div>
+        </div>
+        <div class="sheet-foot">
+          <button type="button" class="btn btn-ghost" id="ausgabeCancel">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="overlay confirm" id="ausgabeDeleteOverlay">
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>Ausgabe löschen?</h2>
+        <button id="ausgabeDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <p><strong id="ausgabeDeleteName"></strong> wird endgültig entfernt.</p>
+      <div class="sheet-foot">
+        <button type="button" class="btn btn-ghost" id="ausgabeDeleteCancel">Abbrechen</button>
+        <button type="button" class="btn btn-danger" id="ausgabeDeleteConfirm">Löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="taxParamOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2 id="taxParamTitle">Neuer Steuerparameter</h2>
+        <button id="taxParamClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <form id="taxParamForm">
+        <div class="detail-body">
+          <div class="job-form">
+            <label class="field full"><span>Parameter</span><select name="schluessel"></select></label>
+            <label class="field"><span>Wert</span><input name="wert" type="number" step="0.01" required /></label>
+            <label class="field"><span>Gültig ab</span><input name="gueltigAb" type="date" required /></label>
+            <label class="field full"><span>Quelle</span><input name="quelle" placeholder="z. B. § 19 UStG, Steuerberater am ..." required /></label>
+          </div>
+        </div>
+        <div class="sheet-foot">
+          <button type="button" class="btn btn-ghost" id="taxParamCancel">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="overlay" id="taxDeadlineOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2 id="taxDeadlineTitle">Neuer Steuertermin</h2>
+        <button id="taxDeadlineClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <form id="taxDeadlineForm">
+        <div class="detail-body">
+          <div class="job-form">
+            <label class="field full"><span>Bezeichnung</span><input name="bezeichnung" placeholder="z. B. USt-Voranmeldung Juli" required /></label>
+            <label class="field"><span>Fällig am</span><input name="faelligAm" type="date" required /></label>
+            <label class="field"><span>Wiederkehrend</span><select name="wiederkehrend"><option value="">Einmalig</option><option value="monatlich">Monatlich</option><option value="quartalsweise">Vierteljährlich</option><option value="jaehrlich">Jährlich</option></select></label>
+            <label class="field full"><span>Notiz</span><input name="notiz" /></label>
+          </div>
+        </div>
+        <div class="sheet-foot">
+          <button type="button" class="btn btn-ghost" id="taxDeadlineCancel">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="overlay" id="taxProfileChangeOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2>Unternehmensregelung wechseln</h2>
+        <button id="taxProfileChangeClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="detail-body">
+        <div style="background:var(--danger-soft);color:var(--danger);padding:10px 12px;border-radius:var(--r-m);font-size:0.8rem;">
+          Bestehende Angebote und Rechnungen bleiben von diesem Wechsel unberührt — nur neue Dokumente ab dem Gültig-ab-Datum verwenden die neue Regelung.
+        </div>
+        <div class="job-form" style="margin-top:12px;">
+          <label class="field full"><span>Neue Regelung</span>
+            <select id="taxProfileChangeModus">
+              <option value="Kleinunternehmer">Kleinunternehmerregelung nach § 19 UStG</option>
+              <option value="Regelbesteuerung">Regelbesteuerung mit Umsatzsteuer</option>
+            </select>
+          </label>
+          <label class="field"><span>Gültig ab</span><input id="taxProfileChangeDatum" type="date" required /></label>
+          <label class="field" id="taxProfileChangeZeitraumWrap"><span>Voranmeldungszeitraum</span>
+            <select id="taxProfileChangeZeitraum">
+              <option value="monatlich">Monatlich</option>
+              <option value="vierteljaehrlich">Vierteljährlich</option>
+              <option value="jaehrlich">Jährlich</option>
+              <option value="individuell">Individuell</option>
+            </select>
+          </label>
+          <label class="field full"><span>Quelle/Begründung</span><input id="taxProfileChangeQuelle" placeholder="z. B. Rücksprache Steuerberater am ..." required /></label>
+        </div>
+        <div id="taxProfileChangePreview" style="margin-top:12px;font-size:0.82rem;background:var(--surface-2);padding:10px 12px;border-radius:var(--r-m);"></div>
+      </div>
+      <div class="sheet-foot">
+        <button type="button" class="btn btn-ghost" id="taxProfileChangeCancel">Abbrechen</button>
+        <button type="button" class="btn btn-primary" id="taxProfileChangeConfirm">Änderung bestätigen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="reserveWizardOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2>Rücklagen-Assistent</h2>
+        <button id="reserveWizardClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="path-bar" id="reserveWizardPath"></div>
+      <div class="detail-body" id="reserveWizardBody"></div>
+      <div class="sheet-foot">
+        <button type="button" class="btn btn-ghost" id="reserveWizardBack">Zurück</button>
+        <button type="button" class="btn btn-primary" id="reserveWizardNext">Weiter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="employeeCalcOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2 id="employeeCalcTitle">Neue Mitarbeiter-Kalkulation</h2>
+        <button id="employeeCalcClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <form id="employeeCalcForm">
+        <div class="detail-body">
+          <div class="job-form">
+            <label class="field full"><span>Name/Bezeichnung *</span><input name="name" required /></label>
+            <label class="field"><span>Beschäftigungsart</span>
+              <select name="beschaeftigungsart"><option>Vollzeit</option><option>Teilzeit</option><option>Minijob</option><option>Werkstudent</option><option>Sonstige</option></select>
+            </label>
+            <label class="field"><span>Lohnbasis</span>
+              <select name="lohnArt"><option value="monat">Monatsbrutto</option><option value="stunde">Stundenlohn</option></select>
+            </label>
+            <label class="field"><span>Monatsbrutto (€)</span><input name="monatsbrutto" type="number" min="0" step="0.01" /></label>
+            <label class="field"><span>Stundenlohn (€)</span><input name="stundenlohn" type="number" min="0" step="0.01" /></label>
+            <label class="field"><span>Wochenstunden *</span><input name="wochenstunden" type="number" min="0.1" step="0.1" required /></label>
+            <label class="field"><span>Bezahlte Urlaubstage/Jahr</span><input name="urlaubstageJahr" type="number" min="0" step="1" value="0" /></label>
+            <label class="field"><span>Erwartete Krankheitstage/Jahr</span><input name="krankheitstageJahr" type="number" min="0" step="1" value="0" /></label>
+            <label class="field"><span>Feiertage/Jahr (Ausfall)</span><input name="feiertageJahr" type="number" min="0" step="1" value="0" /></label>
+            <label class="field"><span>Arbeitgeberanteil Sozialabgaben (%)</span><input name="arbeitgeberanteilProzent" type="number" min="0" step="0.01" placeholder="z. B. lt. Lohnbüro" /></label>
+            <label class="field"><span>Berufsgenossenschaft (€/Monat)</span><input name="berufsgenossenschaftMonatlich" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Zuschläge (€/Monat)</span><input name="zuschlaegeMonatlich" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Fahrtzeit (Std./Woche)</span><input name="fahrtzeitStdProWoche" type="number" min="0" step="0.1" value="0" /></label>
+            <label class="field"><span>Unproduktive Zeit (Std./Woche)</span><input name="unproduktiveZeitStdProWoche" type="number" min="0" step="0.1" value="0" /></label>
+            <label class="field"><span>Arbeitskleidung (€/Monat)</span><input name="arbeitskleidungMonatlich" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Schulungen (€/Monat)</span><input name="schulungenMonatlich" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Verwaltungskosten (€/Monat)</span><input name="verwaltungskostenMonatlich" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Sonstige Personalkosten (€/Monat)</span><input name="sonstigePersonalkostenMonatlich" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Gewünschte Gewinnmarge (%)</span><input name="gewinnmargeProzent" type="number" min="0" step="0.1" value="20" /></label>
+            <label class="field"><span>Beispiel: Einsatzdauer (Std.)</span><input name="beispielEinsatzstunden" type="number" min="0" step="0.1" value="2" /></label>
+            <label class="field"><span>Beispiel: Kundenpreis/Std. (€)</span><input name="beispielKundenpreis" type="number" min="0" step="0.01" /></label>
+          </div>
+          <div id="employeeCalcResult" style="margin-top:14px;"></div>
+        </div>
+        <div class="sheet-foot">
+          <button type="button" class="btn btn-ghost" id="employeeCalcCancel">Abbrechen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="overlay" id="objectCalcOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2 id="objectCalcTitle">Neue Objekt-Kalkulation</h2>
+        <button id="objectCalcClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <form id="objectCalcForm">
+        <div class="detail-body">
+          <div class="job-form">
+            <label class="field"><span>Kunde</span><select name="customerId"><option value="">Kein Kunde / Neuakquise</option></select></label>
+            <label class="field"><span>Objektname *</span><input name="objektname" required /></label>
+            <label class="field full"><span>Objektadresse</span><input name="objektadresse" /></label>
+            <label class="field"><span>Objektart</span><select name="objektart"><option>Büro</option><option>Praxis</option><option>Treppenhaus</option><option>Wohnanlage</option><option>Gewerbeobjekt</option><option>Sonstiges</option></select></label>
+            <label class="field"><span>Quadratmeter</span><input name="qm" type="number" min="0" step="1" /></label>
+            <label class="field"><span>Anzahl Räume</span><input name="anzahlRaeume" type="number" min="0" step="1" /></label>
+            <label class="field"><span>Anzahl Toiletten</span><input name="anzahlToiletten" type="number" min="0" step="1" /></label>
+            <label class="field"><span>Küche/Aufenthaltsraum</span><select name="kueche"><option value="">Nein</option><option value="ja">Ja</option></select></label>
+            <label class="field"><span>Etagen</span><input name="etagen" type="number" min="0" step="1" /></label>
+            <label class="field"><span>Bodenarten</span><input name="bodenarten" placeholder="z. B. Fliesen, Teppich" /></label>
+            <label class="field"><span>Verschmutzungsgrad</span><select name="verschmutzungsgrad"><option>Gering</option><option>Mittel</option><option>Hoch</option></select></label>
+            <label class="field"><span>Personen-/Besucherverkehr</span><select name="verkehr"><option>Gering</option><option>Mittel</option><option>Hoch</option></select></label>
+            <label class="field"><span>Reinigungstage</span><input name="reinigungstage" placeholder="z. B. Mo, Mi, Fr" /></label>
+            <label class="field"><span>Reinigungsintervall</span>
+              <select name="reinigungsintervall"><option>Täglich (Werktage)</option><option>Wöchentlich</option><option>2x wöchentlich</option><option>14-tägig</option><option>Monatlich</option></select>
+            </label>
+            <label class="field"><span>Gewünschte Uhrzeit</span><input name="uhrzeit" type="time" /></label>
+            <label class="field"><span>Arbeitszeit pro Einsatz (Std.) *</span><input name="arbeitszeitProEinsatz" type="number" min="0.1" step="0.1" required /></label>
+            <label class="field"><span>Anzahl Mitarbeiter</span><input name="anzahlMitarbeiter" type="number" min="1" step="1" value="1" /></label>
+            <label class="field"><span>Mitarbeiter-Kalkulation (Stundensatz)</span><select name="employeeCalcId"><option value="">Manuell eingeben</option></select></label>
+            <label class="field"><span>Manueller Stundensatz (€, falls keine Kalkulation gewählt)</span><input name="manuellerStundensatz" type="number" min="0" step="0.01" /></label>
+            <label class="field"><span>Fahrtstrecke (km, einfach)</span><input name="fahrtstreckeKm" type="number" min="0" step="0.1" /></label>
+            <label class="field"><span>Fahrtkosten pro Einsatz (€)</span><input name="fahrtkostenProEinsatz" type="number" min="0" step="0.01" value="0" placeholder="z. B. km × 0,30 €" /></label>
+            <label class="field"><span>Materialkosten pro Einsatz (€)</span><input name="materialkostenProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Verbrauchsmaterial pro Einsatz (€)</span><input name="verbrauchsmaterialProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Gerätekosten pro Einsatz (€)</span><input name="geraetekostenProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Verwaltungskosten pro Einsatz (€)</span><input name="verwaltungskostenProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
+            <label class="field"><span>Risikozuschlag (%)</span><input name="risikozuschlagProzent" type="number" min="0" step="0.1" value="0" /></label>
+            <label class="field"><span>Gewünschte Gewinnmarge (%)</span><input name="gewinnmargeProzent" type="number" min="0" step="0.1" value="20" /></label>
+            <label class="field full"><span>Sonderleistungen</span><input name="sonderleistungen" /></label>
+            <label class="field"><span>Angebotener/Ist-Preis je Einsatz (€, optional)</span><input name="istPreisProEinsatz" type="number" min="0" step="0.01" /></label>
+          </div>
+          <div style="padding:12px 16px 0;">
+            <h3 class="section-title">Leistungen aus dem Leistungsverzeichnis</h3>
+            <div id="objectCalcServices" class="job-list" style="margin-top:6px;"></div>
+          </div>
+          <div id="objectCalcResult" style="margin-top:14px;"></div>
+        </div>
+        <div class="sheet-foot">
+          <button type="button" class="btn btn-ghost" id="objectCalcCancel">Abbrechen</button>
+          <button type="button" class="btn btn-ghost" id="objectCalcMakeOffer">Angebot erstellen</button>
+          <button type="submit" class="btn btn-primary">Speichern</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1335,7 +1675,8 @@
       convert: '<circle cx="12" cy="12" r="10"/><polyline points="10 8 14 12 10 16"/>',
       bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
       ban: '<circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>',
-      warn: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'
+      warn: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+      info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
     };
     return '<svg class="icn" viewBox="0 0 24 24">' + paths[name] + '</svg>';
   }
@@ -1517,6 +1858,21 @@
   var allDateienUnsub = null;
   var allUnzugeordnete = [];
   var allUnzugeordneteUnsub = null;
+  var ausgaben = [];
+  var ausgabenUnsub = null;
+  var wizardStep = 1;
+  var wizardZeitraum = null;
+  var wizardData = null;
+  var taxParameters = [];
+  var taxParametersUnsub = null;
+  var taxProfiles = [];
+  var taxProfilesUnsub = null;
+  var taxDeadlines = [];
+  var taxDeadlinesUnsub = null;
+  var employeeCostProfiles = [];
+  var employeeCostProfilesUnsub = null;
+  var objectCalculations = [];
+  var objectCalculationsUnsub = null;
   var dokFilterTyp = "Alle";
   var dokFilterKunde = "";
   var dokFilterJahr = "";
@@ -1647,6 +2003,32 @@
       renderDashboard();
       if (activeView === "dokumente") renderDokumente();
     }, function () { setBanner("Nicht zugeordnete Dokumente konnten nicht geladen werden."); });
+    ausgabenUnsub = db.collection("ausgaben").onSnapshot(function (snap) {
+      ausgaben = snap.docs.map(function (d) { return d.data(); });
+      renderDashboard();
+      if (activeView === "steuern") renderSteuernView();
+    }, function () { setBanner("Ausgaben konnten nicht geladen werden."); });
+    taxParametersUnsub = db.collection("taxParameters").onSnapshot(function (snap) {
+      taxParameters = snap.docs.map(function (d) { return d.data(); });
+      if (activeView === "steuern") renderSteuernView();
+    }, function () { setBanner("Steuerparameter konnten nicht geladen werden."); });
+    taxProfilesUnsub = db.collection("taxProfiles").onSnapshot(function (snap) {
+      taxProfiles = snap.docs.map(function (d) { return d.data(); });
+      if (activeView === "steuern") renderSteuernView();
+    }, function () { setBanner("Steuerprofile konnten nicht geladen werden."); });
+    taxDeadlinesUnsub = db.collection("taxDeadlines").onSnapshot(function (snap) {
+      taxDeadlines = snap.docs.map(function (d) { return d.data(); });
+      renderDashboard();
+      if (activeView === "steuern") renderSteuernView();
+    }, function () { setBanner("Steuertermine konnten nicht geladen werden."); });
+    employeeCostProfilesUnsub = db.collection("employeeCostProfiles").onSnapshot(function (snap) {
+      employeeCostProfiles = snap.docs.map(function (d) { return d.data(); });
+      if (activeView === "mitarbeiterKalk") renderEmployeeCalcList();
+    }, function () { setBanner("Mitarbeiter-Kalkulationen konnten nicht geladen werden."); });
+    objectCalculationsUnsub = db.collection("objectCalculations").onSnapshot(function (snap) {
+      objectCalculations = snap.docs.map(function (d) { return d.data(); });
+      if (activeView === "objektKalk") renderObjectCalcList();
+    }, function () { setBanner("Objekt-Kalkulationen konnten nicht geladen werden."); });
     vehiclesUnsub = db.collection("ressourcen").onSnapshot(function (snap) {
       vehicles = snap.docs.map(function (d) { return d.data(); });
       renderVehicles();
@@ -1682,6 +2064,12 @@
     if (allDocumentsUnsub) { allDocumentsUnsub(); allDocumentsUnsub = null; }
     if (allDateienUnsub) { allDateienUnsub(); allDateienUnsub = null; }
     if (allUnzugeordneteUnsub) { allUnzugeordneteUnsub(); allUnzugeordneteUnsub = null; }
+    if (ausgabenUnsub) { ausgabenUnsub(); ausgabenUnsub = null; }
+    if (taxParametersUnsub) { taxParametersUnsub(); taxParametersUnsub = null; }
+    if (taxProfilesUnsub) { taxProfilesUnsub(); taxProfilesUnsub = null; }
+    if (taxDeadlinesUnsub) { taxDeadlinesUnsub(); taxDeadlinesUnsub = null; }
+    if (employeeCostProfilesUnsub) { employeeCostProfilesUnsub(); employeeCostProfilesUnsub = null; }
+    if (objectCalculationsUnsub) { objectCalculationsUnsub(); objectCalculationsUnsub = null; }
     if (vehiclesUnsub) { vehiclesUnsub(); vehiclesUnsub = null; }
     if (ticketsUnsub) { ticketsUnsub(); ticketsUnsub = null; }
     if (keysUnsub) { keysUnsub(); keysUnsub = null; }
@@ -2585,9 +2973,9 @@
       docForm.elements.datum.value = new Date().toISOString().slice(0, 10);
       docForm.elements.nummer.value = type !== "Rechnung" ? suggestDocNumber(type) : "";
       docForm.elements.leistungsort.value = detailCustomer ? (detailCustomer.address || "") : "";
-      mwstInput.value = 0;
       currentPositions = [emptyPosition()];
     }
+    applyTaxProfileDefaultToDocForm(existingDoc);
     renderPosRows();
     var catalogPick = document.getElementById("catalogPick");
     catalogPick.innerHTML = '<option value="">Aus Katalog wählen…</option>' +
@@ -2597,6 +2985,32 @@
     docOverlay.classList.add("open");
   }
   function closeDocForm() { docOverlay.classList.remove("open"); editingDocId = null; pendingMaterialBillingRefs = []; pendingProtectedEdit = null; }
+
+  function applyTaxProfileDefaultToDocForm(existingDoc) {
+    var hint = document.getElementById("mwstHint");
+    if (existingDoc) {
+      mwstInput.readOnly = false;
+      hint.textContent = "Wert dieses Dokuments — unabhängig von der aktuell gültigen Unternehmensregelung.";
+      return;
+    }
+    var datum = docForm.elements.datum.value || todayStr();
+    var profil = getAktivesTaxProfile(datum);
+    if (!profil) {
+      mwstInput.value = 0;
+      mwstInput.readOnly = false;
+      hint.textContent = "Keine Unternehmensregelung konfiguriert (Menü „Steuern & Rücklagen\") — Wert bitte manuell prüfen.";
+    } else if (profil.modus === "Kleinunternehmer") {
+      mwstInput.value = 0;
+      mwstInput.readOnly = true;
+      hint.textContent = "Kleinunternehmerregelung nach § 19 UStG aktiv — keine Umsatzsteuer.";
+    } else {
+      var standardsatz = getTaxParam("regelbesteuerung_standardsatz", datum);
+      mwstInput.value = standardsatz ? standardsatz.wert : 19;
+      mwstInput.readOnly = false;
+      hint.textContent = "Regelbesteuerung aktiv — Standardsatz " + (standardsatz ? standardsatz.wert : 19) + "%, bei Bedarf pro Dokument änderbar.";
+    }
+  }
+  docForm.elements.datum.addEventListener("change", function () { if (!editingDocId) applyTaxProfileDefaultToDocForm(null); });
 
   var pendingProtectedEdit = null;
   var protectedEditOverlay = document.getElementById("protectedEditOverlay");
@@ -3045,7 +3459,7 @@
   document.getElementById("logoutBtn").addEventListener("click", function () { auth.signOut(); });
 
   var tip = document.getElementById("tip");
-  if (!window.localStorage.getItem(TIP_KEY)) tip.hidden = false;
+  try { if (!window.localStorage.getItem(TIP_KEY)) tip.hidden = false; } catch (e) { tip.hidden = false; }
   document.getElementById("tipClose").addEventListener("click", function () {
     tip.hidden = true;
     try { window.localStorage.setItem(TIP_KEY, "1"); } catch (e) {}
@@ -3138,7 +3552,7 @@
     openDetail(cust);
   });
 
-  var MORE_VIEWS = ["catalog", "material", "vehicles", "tickets", "docs", "dokumente", "keys"];
+  var MORE_VIEWS = ["catalog", "material", "vehicles", "tickets", "docs", "dokumente", "keys", "steuern", "mitarbeiterKalk", "objektKalk"];
   var VIEW_TO_RENDER = {
     catalog: function () { renderCatalog(); },
     material: function () { renderMaterial(); },
@@ -3146,7 +3560,10 @@
     tickets: function () { renderTickets(); },
     docs: function () { renderDocsChips(); renderDocsGlobal(); },
     dokumente: function () { renderDokumenteChips(); renderDokumenteFilters(); renderDokumente(); },
-    keys: function () { renderKeys(); }
+    keys: function () { renderKeys(); },
+    steuern: function () { renderSteuernView(); },
+    mitarbeiterKalk: function () { renderEmployeeCalcList(); },
+    objektKalk: function () { renderObjectCalcList(); }
   };
   function showView(view) {
     activeView = view;
@@ -3163,6 +3580,9 @@
     document.getElementById("docsView").hidden = view !== "docs";
     document.getElementById("dokumenteView").hidden = view !== "dokumente";
     document.getElementById("keysView").hidden = view !== "keys";
+    document.getElementById("steuernView").hidden = view !== "steuern";
+    document.getElementById("mitarbeiterKalkView").hidden = view !== "mitarbeiterKalk";
+    document.getElementById("objektKalkView").hidden = view !== "objektKalk";
     document.getElementById("tabDashboard").setAttribute("aria-selected", view === "dashboard");
     document.getElementById("tabCustomers").setAttribute("aria-selected", view === "customers");
     document.getElementById("tabCalendar").setAttribute("aria-selected", view === "calendar");
@@ -3179,6 +3599,9 @@
     document.getElementById("sbTabDocs").setAttribute("aria-selected", view === "docs");
     document.getElementById("sbTabDokumente").setAttribute("aria-selected", view === "dokumente");
     document.getElementById("sbTabKeys").setAttribute("aria-selected", view === "keys");
+    document.getElementById("sbTabSteuern").setAttribute("aria-selected", view === "steuern");
+    document.getElementById("sbTabMitarbeiterKalk").setAttribute("aria-selected", view === "mitarbeiterKalk");
+    document.getElementById("sbTabObjektKalk").setAttribute("aria-selected", view === "objektKalk");
   }
   document.getElementById("tabDashboard").addEventListener("click", function () { showView("dashboard"); renderDashboard(); });
   function navigateByDashKey(key) {
@@ -3231,9 +3654,17 @@
       renderDokumenteFilters();
       document.getElementById("dokFilterStatus").value = "Neu";
       renderDokumente();
+    } else if (key === "steuern") {
+      showView("steuern");
+      renderSteuernView();
     }
   }
   document.getElementById("dashStats").addEventListener("click", function (e) {
+    var stat = e.target.closest(".stat.clickable");
+    if (!stat) return;
+    navigateByDashKey(stat.dataset.key);
+  });
+  document.getElementById("dashStatsSteuern").addEventListener("click", function (e) {
     var stat = e.target.closest(".stat.clickable");
     if (!stat) return;
     navigateByDashKey(stat.dataset.key);
@@ -3268,6 +3699,9 @@
   document.getElementById("sbTabDocs").addEventListener("click", function () { showView("docs"); renderDocsChips(); renderDocsGlobal(); });
   document.getElementById("sbTabDokumente").addEventListener("click", function () { showView("dokumente"); renderDokumenteChips(); renderDokumenteFilters(); renderDokumente(); });
   document.getElementById("sbTabKeys").addEventListener("click", function () { showView("keys"); renderKeys(); });
+  document.getElementById("sbTabSteuern").addEventListener("click", function () { showView("steuern"); renderSteuernView(); });
+  document.getElementById("sbTabMitarbeiterKalk").addEventListener("click", function () { showView("mitarbeiterKalk"); renderEmployeeCalcList(); });
+  document.getElementById("sbTabObjektKalk").addEventListener("click", function () { showView("objektKalk"); renderObjectCalcList(); });
   var helpOverlay = document.getElementById("helpOverlay");
   document.getElementById("helpBtn").addEventListener("click", function () { helpOverlay.classList.add("open"); });
   document.getElementById("helpClose").addEventListener("click", function () { helpOverlay.classList.remove("open"); });
@@ -3507,6 +3941,863 @@
   }
 
   // ---- Dashboard ----
+  // ---- Steuern & Rücklagen: Parameter-Registry ----
+  var TAX_PARAM_KEYS = [
+    { key: "kleinunternehmer_grenze_vorjahr", label: "Kleinunternehmer-Grenze Vorjahresumsatz", unit: "€", hilfe: "Maximaler Vorjahresumsatz, bis zu dem die Kleinunternehmerregelung nach § 19 UStG gilt. Admin trägt den aktuell gültigen Wert mit Quelle ein." },
+    { key: "kleinunternehmer_grenze_laufend", label: "Kleinunternehmer-Grenze laufendes Jahr", unit: "€", hilfe: "Maximaler Umsatz im laufenden Jahr, bis zu dem die Kleinunternehmerregelung nach § 19 UStG gilt." },
+    { key: "regelbesteuerung_standardsatz", label: "Regelbesteuerung: Standard-USt-Satz", unit: "%", hilfe: "Vorbelegter Umsatzsteuersatz für neue Rechnungen/Angebote, sobald Regelbesteuerung aktiv ist. Bleibt frei editierbar pro Dokument." },
+    { key: "est_ruecklage_prozent", label: "Einkommensteuer-Rücklage", unit: "%", hilfe: "Anteil vom geschätzten Gewinn, der für die Einkommensteuer zurückgelegt werden soll. Hängt vom persönlichen Steuersatz der Gesellschafter ab — bitte mit Steuerberater abstimmen." },
+    { key: "gewerbesteuer_ruecklage_prozent", label: "Gewerbesteuer-Rücklage", unit: "%", hilfe: "Anteil vom geschätzten Gewinn für die Gewerbesteuer. Kleine Betriebe liegen oft unter dem Freibetrag (24.500 € Gewinn) — bitte mit Steuerberater abstimmen, ob überhaupt relevant." },
+    { key: "sonstige_ruecklage_prozent", label: "Sonstige Rücklagen", unit: "%", hilfe: "Zusätzlicher Puffer für sonstige Risiken/Ausgaben, frei wählbar." },
+    { key: "sicherheitsreserve_prozent", label: "Sicherheitsreserve", unit: "%", hilfe: "Zusätzlicher Sicherheitsaufschlag auf die empfohlene Gesamtrücklage, einstellbar im Rücklagen-Assistenten." },
+    { key: "mindestreserve_betrag", label: "Mindestreserve", unit: "€", hilfe: "Betrag, der unabhängig vom Gewinn immer als Rücklage empfohlen wird." },
+    { key: "tatsaechliche_ruecklage_betrag", label: "Tatsächlich zurückgelegter Betrag", unit: "€", hilfe: "Admin trägt hier manuell ein, wie viel bereits real auf ein Rücklagenkonto o. ä. zurückgelegt wurde. Wird mit der empfohlenen Rücklage verglichen." }
+  ];
+  function taxParamLabel(key) { var d = TAX_PARAM_KEYS.find(function (t) { return t.key === key; }); return d ? d.label : key; }
+  function taxParamUnit(key) { var d = TAX_PARAM_KEYS.find(function (t) { return t.key === key; }); return d ? d.unit : ""; }
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function getTaxParam(key, atDate) {
+    atDate = atDate || todayStr();
+    var candidates = taxParameters.filter(function (p) { return p.schluessel === key && (!p.gueltigAb || p.gueltigAb <= atDate); });
+    if (!candidates.length) return null;
+    candidates.sort(function (a, b) { return (b.gueltigAb || "").localeCompare(a.gueltigAb || ""); });
+    return candidates[0];
+  }
+  function getAktivesTaxProfile(atDate) {
+    atDate = atDate || todayStr();
+    var candidates = taxProfiles.filter(function (p) { return p.gueltigAb && p.gueltigAb <= atDate; });
+    if (!candidates.length) return null;
+    candidates.sort(function (a, b) { return (b.gueltigAb || "").localeCompare(a.gueltigAb || ""); });
+    return candidates[0];
+  }
+  function sumBy(arr, fn) { return arr.reduce(function (s, x) { return s + (fn(x) || 0); }, 0); }
+  function metricOk(wert, erklaerung) { return { wert: wert, status: "ok", erklaerung: erklaerung }; }
+  function metricFehlend(erklaerung) { return { wert: null, status: "keine_daten", erklaerung: erklaerung }; }
+  function prozentRuecklage(paramKey, basis, bezeichnung, atDate) {
+    var p = getTaxParam(paramKey, atDate);
+    if (!p) return metricFehlend(bezeichnung + ": kein Parameter \"" + taxParamLabel(paramKey) + "\" konfiguriert. Bitte unter „Steuerparameter\" anlegen.");
+    if (basis == null) return metricFehlend(bezeichnung + ": Gewinnschätzung fehlt.");
+    var wert = basis * (p.wert / 100);
+    return metricOk(wert, bezeichnung + " = Gewinnschätzung (" + fmtEUR(basis) + ") × " + p.wert + "% (Quelle: " + esc(p.quelle || "–") + ", gültig ab " + fmtDate(p.gueltigAb) + ") = " + fmtEUR(wert));
+  }
+
+  // ---- Steuern & Rücklagen: Berechnungs-Engine ----
+  function berechneSteuernUebersicht(vonDatum, bisDatum) {
+    bisDatum = bisDatum || todayStr();
+    vonDatum = vonDatum || (new Date().getFullYear() + "-01-01");
+    var rechnungen = allDocuments.filter(function (d) { return d.typ === "Rechnung" && d.status !== "Storniert" && d.datum >= vonDatum && d.datum <= bisDatum; });
+    var umsatzRechnungen = sumBy(rechnungen, function (d) { return d.brutto; });
+    var bezahlteListe = rechnungen.filter(function (d) { return d.status === "Bezahlt"; });
+    var bezahlteEinnahmen = sumBy(bezahlteListe, function (d) { return d.brutto; });
+    var offeneForderungen = sumBy(rechnungen.filter(function (d) { return d.status === "Offen" || d.status === "Überfällig"; }), function (d) { return d.brutto; });
+
+    var ausgabenPeriode = ausgaben.filter(function (a) { return a.datum >= vonDatum && a.datum <= bisDatum; });
+    var betrieblicheAusgaben = sumBy(ausgabenPeriode, function (a) { return a.betrag; });
+    var bezahlteAusgabenListe = ausgabenPeriode.filter(function (a) { return a.status === "Bezahlt"; });
+    var bezahlteAusgaben = sumBy(bezahlteAusgabenListe, function (a) { return a.betrag; });
+
+    var gewinn = bezahlteEinnahmen - bezahlteAusgaben;
+
+    var profil = getAktivesTaxProfile(bisDatum);
+    var ust;
+    if (!profil) {
+      ust = metricFehlend("Keine Unternehmensregelung konfiguriert. Bitte unter „Unternehmensregelung\" einrichten.");
+    } else if (profil.modus === "Kleinunternehmer") {
+      ust = metricOk(0, "Kleinunternehmerregelung nach § 19 UStG aktiv (gültig ab " + fmtDate(profil.gueltigAb) + ") — keine Umsatzsteuer wird berechnet.");
+    } else {
+      var ustAusEinnahmen = sumBy(bezahlteListe, function (d) { return (d.brutto || 0) - (d.netto || 0); });
+      var vorsteuer = sumBy(bezahlteAusgabenListe.filter(function (a) { return a.mwstSatz > 0; }), function (a) { return a.betrag - a.betrag / (1 + a.mwstSatz / 100); });
+      ust = metricOk(ustAusEinnahmen - vorsteuer, "Umsatzsteuer aus bezahlten Rechnungen (" + fmtEUR(ustAusEinnahmen) + ") minus Vorsteuer aus bezahlten Ausgaben (" + fmtEUR(vorsteuer) + ") = " + fmtEUR(ustAusEinnahmen - vorsteuer));
+    }
+
+    var est = prozentRuecklage("est_ruecklage_prozent", gewinn, "Einkommensteuer-Rücklage", bisDatum);
+    var gewst = prozentRuecklage("gewerbesteuer_ruecklage_prozent", gewinn, "Gewerbesteuer-Rücklage", bisDatum);
+    var sonstige = prozentRuecklage("sonstige_ruecklage_prozent", gewinn, "Sonstige Rücklagen", bisDatum);
+
+    var teilRuecklagen = [ust, est, gewst, sonstige];
+    var alleOk = teilRuecklagen.every(function (m) { return m.status === "ok"; });
+    var gesamtRuecklage = alleOk ?
+      metricOk(sumBy(teilRuecklagen, function (m) { return m.wert; }), "Summe aus Umsatzsteuer, Einkommensteuer-, Gewerbesteuer- und sonstiger Rücklage.") :
+      metricFehlend("Nicht alle Rücklagen-Parameter sind konfiguriert.");
+
+    var verfuegbar = (gesamtRuecklage.status === "ok") ?
+      metricOk(gewinn - gesamtRuecklage.wert, "Gewinnschätzung (" + fmtEUR(gewinn) + ") minus empfohlene Gesamtrücklage (" + fmtEUR(gesamtRuecklage.wert) + ").") :
+      metricFehlend("Rücklagen unvollständig, siehe oben.");
+
+    return {
+      umsatzRechnungen: metricOk(umsatzRechnungen, "Summe aller nicht-stornierten Rechnungen im Zeitraum " + fmtDate(vonDatum) + "–" + fmtDate(bisDatum) + " (unabhängig vom Zahlungsstatus)."),
+      bezahlteEinnahmen: metricOk(bezahlteEinnahmen, "Summe aller Rechnungen mit Status „Bezahlt\" im Zeitraum."),
+      offeneForderungen: metricOk(offeneForderungen, "Summe aller Rechnungen mit Status „Offen\"/„Überfällig\" — zählt bewusst nicht als verfügbares Geld."),
+      betrieblicheAusgaben: metricOk(betrieblicheAusgaben, "Summe aller erfassten Ausgaben im Zeitraum (unabhängig vom Zahlungsstatus)."),
+      bezahlteAusgaben: metricOk(bezahlteAusgaben, "Summe aller Ausgaben mit Status „Bezahlt\" im Zeitraum."),
+      gewinn: metricOk(gewinn, "Tatsächlich bezahlte Einnahmen (" + fmtEUR(bezahlteEinnahmen) + ") minus bezahlte Ausgaben (" + fmtEUR(bezahlteAusgaben) + "). Offene Forderungen zählen bewusst nicht mit."),
+      ust: ust, est: est, gewst: gewst, sonstige: sonstige,
+      gesamtRuecklage: gesamtRuecklage, verfuegbar: verfuegbar,
+      profil: profil, vonDatum: vonDatum, bisDatum: bisDatum
+    };
+  }
+
+  // ---- Steuern & Rücklagen: Info-/Erklärungs-Popover ----
+  function showInfo(title, bodyHtml) {
+    document.getElementById("infoOverlayTitle").textContent = title;
+    document.getElementById("infoOverlayBody").innerHTML = bodyHtml;
+    document.getElementById("infoOverlay").classList.add("open");
+  }
+  document.getElementById("infoOverlayClose").addEventListener("click", function () { document.getElementById("infoOverlay").classList.remove("open"); });
+  document.getElementById("infoOverlay").addEventListener("click", function (e) { if (e.target.id === "infoOverlay") document.getElementById("infoOverlay").classList.remove("open"); });
+
+  // ---- Steuern & Rücklagen: Übersicht ----
+  var steuernAktuelleBerechnung = null;
+  var STEUERN_KPI_INFO = {
+    umsatzRechnungen: "Alle Rechnungen, die ihr in diesem Jahr ausgestellt habt — egal ob schon bezahlt.",
+    bezahlteEinnahmen: "Geld, das tatsächlich auf eurem Konto angekommen ist.",
+    offeneForderungen: "Rechnungen, die eure Kunden euch noch schulden — das ist noch kein verfügbares Geld.",
+    betrieblicheAusgaben: "Alle Ausgaben, die ihr für den Betrieb erfasst habt — egal ob schon bezahlt.",
+    gewinn: "Vereinfachte Schätzung: eingegangenes Geld minus bezahlte Ausgaben.",
+    ust: "Der Betrag, den ihr ans Finanzamt abführen müsstet (nur bei Regelbesteuerung — Kleinunternehmer zahlen keine USt).",
+    est: "Empfohlene Rücklage für die persönliche Einkommensteuer der Gesellschafter.",
+    gewst: "Empfohlene Rücklage für die Gewerbesteuer.",
+    sonstige: "Zusätzlicher Puffer, den ihr selbst festlegt.",
+    gesamtRuecklage: "Summe aller empfohlenen Rücklagen — das solltet ihr ungefähr zurücklegen.",
+    verfuegbar: "Das, was nach Abzug aller Rücklagen voraussichtlich frei verfügbar bleibt."
+  };
+  function renderSteuernView() {
+    var jahr = new Date().getFullYear();
+    steuernAktuelleBerechnung = berechneSteuernUebersicht(jahr + "-01-01", todayStr());
+    var b = steuernAktuelleBerechnung;
+    var cards = [
+      { key: "umsatzRechnungen", label: "Umsatz " + jahr + " (Rechnungen)" },
+      { key: "bezahlteEinnahmen", label: "Tatsächlich eingegangen" },
+      { key: "offeneForderungen", label: "Offene Forderungen" },
+      { key: "betrieblicheAusgaben", label: "Betriebliche Ausgaben" },
+      { key: "gewinn", label: "Gewinnschätzung" },
+      { key: "ust", label: "Umsatzsteuer", gold: true },
+      { key: "est", label: "Einkommensteuer-Rücklage", gold: true },
+      { key: "gewst", label: "Gewerbesteuer-Rücklage", gold: true },
+      { key: "sonstige", label: "Sonstige Rücklagen", gold: true },
+      { key: "gesamtRuecklage", label: "Empfohlene Gesamtrücklage", gold: true },
+      { key: "verfuegbar", label: "Voraussichtlich verfügbar" }
+    ];
+    var naechsterTermin = taxDeadlines.filter(function (t) { return t.faelligAm >= todayStr(); }).sort(function (a, b) { return a.faelligAm.localeCompare(b.faelligAm); })[0];
+    document.getElementById("steuernStats").innerHTML = cards.map(function (c) {
+      var m = b[c.key];
+      var ok = m.status === "ok";
+      var displayVal = ok ? fmtEUR(m.wert) : "Keine ausreichenden Daten";
+      var valStyle = !ok ? 'font-size:0.8rem;color:var(--ink-soft);' : (c.gold ? 'color:var(--accent);' : '');
+      return '<div class="stat" data-key="' + c.key + '" style="cursor:pointer;">' +
+        '<div class="lbl">' + esc(c.label) + '</div>' +
+        '<div class="val" style="' + valStyle + '">' + displayVal + '</div></div>';
+    }).join("") +
+      '<div class="stat" data-key="_termin" style="cursor:default;"><div class="lbl">Nächster Steuertermin</div>' +
+      '<div class="val" style="font-size:0.95rem;">' + (naechsterTermin ? esc(naechsterTermin.bezeichnung) + " · " + fmtDate(naechsterTermin.faelligAm) : "Keine Termine hinterlegt") + '</div></div>';
+    renderTaxProfileCard();
+    renderAusgabenList();
+    renderTaxDeadlinesList();
+    renderTaxParamsList();
+  }
+  document.getElementById("steuernStats").addEventListener("click", function (e) {
+    var card = e.target.closest("[data-key]");
+    if (!card || card.dataset.key === "_termin" || !steuernAktuelleBerechnung) return;
+    var m = steuernAktuelleBerechnung[card.dataset.key];
+    if (!m) return;
+    var info = STEUERN_KPI_INFO[card.dataset.key] || "";
+    showInfo("So wurde gerechnet", (info ? '<p style="color:var(--ink-soft);margin-bottom:10px;">' + esc(info) + '</p>' : "") + '<p><strong>Rechenweg:</strong> ' + esc(m.erklaerung) + '</p>');
+  });
+
+  var taxProfileChangeOverlay = document.getElementById("taxProfileChangeOverlay");
+  function openTaxProfileChange() {
+    var aktuell = getAktivesTaxProfile();
+    document.getElementById("taxProfileChangeModus").value = aktuell && aktuell.modus === "Regelbesteuerung" ? "Kleinunternehmer" : (aktuell ? "Regelbesteuerung" : "Kleinunternehmer");
+    document.getElementById("taxProfileChangeDatum").value = "";
+    document.getElementById("taxProfileChangeQuelle").value = "";
+    updateTaxProfileChangePreview();
+    taxProfileChangeOverlay.classList.add("open");
+  }
+  function updateTaxProfileChangePreview() {
+    var modus = document.getElementById("taxProfileChangeModus").value;
+    var datum = document.getElementById("taxProfileChangeDatum").value;
+    var isKU = modus === "Kleinunternehmer";
+    document.getElementById("taxProfileChangeZeitraumWrap").hidden = isKU;
+    var text = !datum ? "Bitte Gültig-ab-Datum wählen." :
+      "Ab dem " + fmtDate(datum) + " werden neue Dokumente " + (isKU ?
+        "ohne Umsatzsteuer (§ 19 UStG) erstellt." :
+        "mit Umsatzsteuer erstellt (Standardsatz nach Steuerparameter „Regelbesteuerung: Standard-USt-Satz\", falls konfiguriert, sonst 19%).") +
+      " Bereits erstellte Angebote und Rechnungen bleiben unverändert.";
+    document.getElementById("taxProfileChangePreview").textContent = text;
+  }
+  document.getElementById("taxProfileChangeModus").addEventListener("change", updateTaxProfileChangePreview);
+  document.getElementById("taxProfileChangeDatum").addEventListener("change", updateTaxProfileChangePreview);
+  document.getElementById("changeTaxProfileBtn").addEventListener("click", openTaxProfileChange);
+  document.getElementById("taxProfileChangeClose").addEventListener("click", function () { taxProfileChangeOverlay.classList.remove("open"); });
+  document.getElementById("taxProfileChangeCancel").addEventListener("click", function () { taxProfileChangeOverlay.classList.remove("open"); });
+  taxProfileChangeOverlay.addEventListener("click", function (e) { if (e.target === taxProfileChangeOverlay) taxProfileChangeOverlay.classList.remove("open"); });
+  document.getElementById("taxProfileChangeConfirm").addEventListener("click", function () {
+    var modus = document.getElementById("taxProfileChangeModus").value;
+    var datum = document.getElementById("taxProfileChangeDatum").value;
+    var quelle = document.getElementById("taxProfileChangeQuelle").value.trim();
+    var zeitraum = document.getElementById("taxProfileChangeZeitraum").value;
+    if (!datum) { showToast("Bitte ein Gültig-ab-Datum angeben", true); return; }
+    if (!quelle) { showToast("Bitte eine Quelle/Begründung angeben", true); return; }
+    var data = {
+      id: uid(), modus: modus, gueltigAb: datum, quelle: quelle, notiz: "",
+      voranmeldungszeitraum: modus === "Regelbesteuerung" ? zeitraum : "",
+      status: "aktiv", erstelltVon: currentUserEmail, erstelltAm: new Date().toISOString()
+    };
+    var alteProfile = taxProfiles.slice();
+    var batch = db.batch();
+    batch.set(db.collection("taxProfiles").doc(data.id), data);
+    alteProfile.forEach(function (p) { batch.update(db.collection("taxProfiles").doc(p.id), { status: "archiviert" }); });
+    batch.commit()
+      .then(function () {
+        return logAenderung("taxProfiles/" + data.id, "update", getAktivesTaxProfile(), data, "Unternehmensregelung gewechselt: " + quelle);
+      })
+      .then(function () {
+        showToast("Unternehmensregelung gespeichert");
+        taxProfileChangeOverlay.classList.remove("open");
+      })
+      .catch(function (err) { setBanner("Speichern fehlgeschlagen: " + err.message); });
+  });
+
+  function renderTaxProfileCard() {
+    var profil = getAktivesTaxProfile();
+    var el = document.getElementById("taxProfileCard");
+    document.getElementById("rlTaxProfileLabel").textContent = profil ? profil.modus : "";
+    if (!profil) {
+      el.innerHTML = '<div class="job-empty">Keine Unternehmensregelung konfiguriert.</div>';
+      return;
+    }
+    var isKU = profil.modus === "Kleinunternehmer";
+    el.innerHTML = '<div class="card" style="cursor:default;">' +
+      '<div class="card-top"><div class="card-name">' + (isKU ? "Kleinunternehmerregelung nach § 19 UStG" : "Regelbesteuerung mit Umsatzsteuer") + '</div></div>' +
+      '<div class="card-type">Gültig ab ' + fmtDate(profil.gueltigAb) + (profil.quelle ? " · " + esc(profil.quelle) : "") + '</div>' +
+      (isKU ? '<div class="services">Hinweis auf neuen Dokumenten: „Gemäß § 19 UStG wird keine Umsatzsteuer berechnet."</div>' :
+        '<div class="services">Voranmeldungszeitraum: ' + esc(profil.voranmeldungszeitraum || "nicht festgelegt") + '</div>') +
+      '</div>';
+  }
+
+  // ---- Ausgaben ----
+  var AUSGABEN_KATEGORIEN = ["Material", "Fahrzeuge", "Versicherungen", "Software", "Telefon/Internet", "Werbung", "Löhne", "Fremdleistungen", "Sonstige Betriebsausgaben"];
+  function emptyAusgabe() { return { id: "", kategorie: AUSGABEN_KATEGORIEN[0], betrag: "", datum: todayStr(), status: "Offen", zahlungsart: "", mwstSatz: "", beschreibung: "", notiz: "" }; }
+  var editingAusgabeId = null;
+  var deleteAusgabeTarget = null;
+  var ausgabeForm = document.getElementById("ausgabeForm");
+  var ausgabeOverlay = document.getElementById("ausgabeOverlay");
+  function openAusgabeForm(a) {
+    var data = a || emptyAusgabe();
+    editingAusgabeId = data.id || null;
+    document.getElementById("ausgabeTitle").textContent = editingAusgabeId ? "Ausgabe bearbeiten" : "Neue Ausgabe";
+    ausgabeForm.elements.kategorie.innerHTML = AUSGABEN_KATEGORIEN.map(function (k) { return '<option>' + k + '</option>'; }).join("");
+    Object.keys(emptyAusgabe()).forEach(function (k) {
+      if (k === "id") return;
+      if (ausgabeForm.elements[k]) ausgabeForm.elements[k].value = data[k] || (k === "kategorie" ? AUSGABEN_KATEGORIEN[0] : k === "status" ? "Offen" : k === "datum" ? todayStr() : "");
+    });
+    ausgabeOverlay.classList.add("open");
+  }
+  function closeAusgabeForm() { ausgabeOverlay.classList.remove("open"); editingAusgabeId = null; }
+  document.getElementById("ausgabeClose").addEventListener("click", closeAusgabeForm);
+  document.getElementById("ausgabeCancel").addEventListener("click", closeAusgabeForm);
+  ausgabeOverlay.addEventListener("click", function (e) { if (e.target === ausgabeOverlay) closeAusgabeForm(); });
+  document.getElementById("addAusgabeBtn").addEventListener("click", function () { openAusgabeForm(null); });
+  ausgabeForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var betrag = parseFloat(ausgabeForm.elements.betrag.value);
+    if (!(betrag > 0)) { showToast("Bitte einen gültigen Betrag angeben", true); return; }
+    var data = {
+      id: editingAusgabeId || uid(),
+      kategorie: ausgabeForm.elements.kategorie.value,
+      betrag: betrag,
+      datum: ausgabeForm.elements.datum.value,
+      status: ausgabeForm.elements.status.value,
+      zahlungsart: ausgabeForm.elements.zahlungsart.value.trim(),
+      mwstSatz: ausgabeForm.elements.mwstSatz.value ? parseFloat(ausgabeForm.elements.mwstSatz.value) : null,
+      beschreibung: ausgabeForm.elements.beschreibung.value.trim(),
+      notiz: ausgabeForm.elements.notiz.value.trim(),
+      erstelltVon: currentUserEmail, erstelltAm: new Date().toISOString()
+    };
+    db.collection("ausgaben").doc(data.id).set(data)
+      .then(function () { showToast("Gespeichert"); closeAusgabeForm(); })
+      .catch(function (err) { setBanner("Speichern fehlgeschlagen: " + err.message); });
+  });
+  function renderAusgabenList() {
+    var el = document.getElementById("ausgabenList");
+    document.getElementById("rlAusgabenCount").textContent = ausgaben.length ? ausgaben.length : "";
+    if (ausgaben.length === 0) { el.innerHTML = '<div class="job-empty">Noch keine Ausgaben erfasst.</div>'; return; }
+    var sorted = ausgaben.slice().sort(function (a, b) { return (b.datum || "").localeCompare(a.datum || ""); });
+    el.innerHTML = sorted.map(function (a) {
+      return '<div class="job-row" data-id="' + a.id + '">' +
+        '<div class="job-row-top"><div><div class="job-title">' + esc(a.beschreibung) + '</div>' +
+        '<div class="job-meta">' + esc(a.kategorie) + ' · ' + fmtEUR(a.betrag) + ' · ' + fmtDate(a.datum) + ' · ' + esc(a.status) + '</div></div>' +
+        '<button type="button" class="ausg-del" data-id="' + a.id + '" aria-label="Löschen">' + icon("trash") + '</button></div></div>';
+    }).join("");
+  }
+  document.getElementById("ausgabenList").addEventListener("click", function (e) {
+    var delBtn = e.target.closest(".ausg-del");
+    if (delBtn) {
+      var a = ausgaben.find(function (x) { return x.id === delBtn.dataset.id; });
+      if (!a) return;
+      deleteAusgabeTarget = a;
+      document.getElementById("ausgabeDeleteName").textContent = a.beschreibung;
+      document.getElementById("ausgabeDeleteOverlay").classList.add("open");
+      return;
+    }
+    var row = e.target.closest(".job-row");
+    if (row) { var a2 = ausgaben.find(function (x) { return x.id === row.dataset.id; }); if (a2) openAusgabeForm(a2); }
+  });
+  document.getElementById("ausgabeDeleteClose").addEventListener("click", function () { document.getElementById("ausgabeDeleteOverlay").classList.remove("open"); });
+  document.getElementById("ausgabeDeleteCancel").addEventListener("click", function () { document.getElementById("ausgabeDeleteOverlay").classList.remove("open"); });
+  document.getElementById("ausgabeDeleteConfirm").addEventListener("click", function () {
+    if (!deleteAusgabeTarget) return;
+    db.collection("ausgaben").doc(deleteAusgabeTarget.id).delete()
+      .then(function () { showToast("Gelöscht"); })
+      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+    document.getElementById("ausgabeDeleteOverlay").classList.remove("open");
+    deleteAusgabeTarget = null;
+  });
+
+  // ---- Steuerparameter ----
+  var editingTaxParamId = null;
+  var taxParamForm = document.getElementById("taxParamForm");
+  var taxParamOverlay = document.getElementById("taxParamOverlay");
+  function openTaxParamForm(p) {
+    editingTaxParamId = (p && p.id) || null;
+    document.getElementById("taxParamTitle").textContent = editingTaxParamId ? "Parameter bearbeiten" : "Neuer Parameter";
+    taxParamForm.elements.schluessel.innerHTML = TAX_PARAM_KEYS.map(function (t) { return '<option value="' + t.key + '">' + esc(t.label) + ' (' + t.unit + ')</option>'; }).join("");
+    if (p) {
+      taxParamForm.elements.schluessel.value = p.schluessel;
+      taxParamForm.elements.wert.value = p.wert;
+      taxParamForm.elements.gueltigAb.value = p.gueltigAb;
+      taxParamForm.elements.quelle.value = p.quelle || "";
+    } else {
+      taxParamForm.reset();
+      taxParamForm.elements.gueltigAb.value = todayStr();
+    }
+    taxParamOverlay.classList.add("open");
+  }
+  function closeTaxParamForm() { taxParamOverlay.classList.remove("open"); editingTaxParamId = null; }
+  document.getElementById("taxParamClose").addEventListener("click", closeTaxParamForm);
+  document.getElementById("taxParamCancel").addEventListener("click", closeTaxParamForm);
+  taxParamOverlay.addEventListener("click", function (e) { if (e.target === taxParamOverlay) closeTaxParamForm(); });
+  document.getElementById("addTaxParamBtn").addEventListener("click", function () { openTaxParamForm(null); });
+  taxParamForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var schluessel = taxParamForm.elements.schluessel.value;
+    var data = {
+      id: editingTaxParamId || uid(),
+      schluessel: schluessel,
+      bezeichnung: taxParamLabel(schluessel),
+      wert: parseFloat(taxParamForm.elements.wert.value),
+      gueltigAb: taxParamForm.elements.gueltigAb.value,
+      quelle: taxParamForm.elements.quelle.value.trim(),
+      letzteAktualisierung: new Date().toISOString(),
+      erstelltVon: currentUserEmail
+    };
+    var vorher = editingTaxParamId ? taxParameters.find(function (p) { return p.id === editingTaxParamId; }) : null;
+    db.collection("taxParameters").doc(data.id).set(data)
+      .then(function () {
+        if (vorher) logAenderung("taxParameters/" + data.id, "update", vorher, data, "Steuerparameter aktualisiert");
+        showToast("Gespeichert"); closeTaxParamForm();
+      })
+      .catch(function (err) { setBanner("Speichern fehlgeschlagen: " + err.message); });
+  });
+  function renderTaxParamsList() {
+    var el = document.getElementById("taxParamsList");
+    document.getElementById("rlParamsCount").textContent = taxParameters.length ? taxParameters.length : "";
+    if (taxParameters.length === 0) { el.innerHTML = '<div class="job-empty">Noch keine Parameter konfiguriert.</div>'; return; }
+    var sorted = taxParameters.slice().sort(function (a, b) { return taxParamLabel(a.schluessel).localeCompare(taxParamLabel(b.schluessel), "de"); });
+    el.innerHTML = sorted.map(function (p) {
+      return '<div class="job-row" data-id="' + p.id + '">' +
+        '<div class="job-row-top"><div><div class="job-title">' + esc(taxParamLabel(p.schluessel)) + '</div>' +
+        '<div class="job-meta">' + p.wert + esc(taxParamUnit(p.schluessel)) + ' · gültig ab ' + fmtDate(p.gueltigAb) + ' · ' + esc(p.quelle || "") + '</div></div>' +
+        '<button type="button" class="param-del" data-id="' + p.id + '" aria-label="Löschen">' + icon("trash") + '</button></div></div>';
+    }).join("");
+  }
+  document.getElementById("taxParamsList").addEventListener("click", function (e) {
+    var delBtn = e.target.closest(".param-del");
+    if (delBtn) {
+      if (!confirm("Parameter wirklich löschen?")) return;
+      var p = taxParameters.find(function (x) { return x.id === delBtn.dataset.id; });
+      db.collection("taxParameters").doc(delBtn.dataset.id).delete()
+        .then(function () { if (p) logAenderung("taxParameters/" + p.id, "delete", p, null, "Steuerparameter gelöscht"); showToast("Gelöscht"); })
+        .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      return;
+    }
+    var row = e.target.closest(".job-row");
+    if (row) { var p2 = taxParameters.find(function (x) { return x.id === row.dataset.id; }); if (p2) openTaxParamForm(p2); }
+  });
+
+  // ---- Steuertermine ----
+  function emptyTaxDeadline() { return { id: "", bezeichnung: "", faelligAm: "", wiederkehrend: "", notiz: "" }; }
+  var editingDeadlineId = null;
+  var taxDeadlineForm = document.getElementById("taxDeadlineForm");
+  var taxDeadlineOverlay = document.getElementById("taxDeadlineOverlay");
+  function openTaxDeadlineForm(d) {
+    var data = d || emptyTaxDeadline();
+    editingDeadlineId = data.id || null;
+    document.getElementById("taxDeadlineTitle").textContent = editingDeadlineId ? "Termin bearbeiten" : "Neuer Termin";
+    Object.keys(emptyTaxDeadline()).forEach(function (k) { if (k === "id") return; if (taxDeadlineForm.elements[k]) taxDeadlineForm.elements[k].value = data[k] || ""; });
+    taxDeadlineOverlay.classList.add("open");
+  }
+  function closeTaxDeadlineForm() { taxDeadlineOverlay.classList.remove("open"); editingDeadlineId = null; }
+  document.getElementById("taxDeadlineClose").addEventListener("click", closeTaxDeadlineForm);
+  document.getElementById("taxDeadlineCancel").addEventListener("click", closeTaxDeadlineForm);
+  taxDeadlineOverlay.addEventListener("click", function (e) { if (e.target === taxDeadlineOverlay) closeTaxDeadlineForm(); });
+  document.getElementById("addDeadlineBtn").addEventListener("click", function () { openTaxDeadlineForm(null); });
+  taxDeadlineForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var data = {
+      id: editingDeadlineId || uid(),
+      bezeichnung: taxDeadlineForm.elements.bezeichnung.value.trim(),
+      faelligAm: taxDeadlineForm.elements.faelligAm.value,
+      wiederkehrend: taxDeadlineForm.elements.wiederkehrend.value,
+      notiz: taxDeadlineForm.elements.notiz.value.trim()
+    };
+    db.collection("taxDeadlines").doc(data.id).set(data)
+      .then(function () { showToast("Gespeichert"); closeTaxDeadlineForm(); })
+      .catch(function (err) { setBanner("Speichern fehlgeschlagen: " + err.message); });
+  });
+  function renderTaxDeadlinesList() {
+    var el = document.getElementById("taxDeadlinesList");
+    document.getElementById("rlDeadlinesCount").textContent = taxDeadlines.length ? taxDeadlines.length : "";
+    if (taxDeadlines.length === 0) { el.innerHTML = '<div class="job-empty">Noch keine Termine hinterlegt.</div>'; return; }
+    var today = todayStr();
+    var sorted = taxDeadlines.slice().sort(function (a, b) { return (a.faelligAm || "").localeCompare(b.faelligAm || ""); });
+    el.innerHTML = sorted.map(function (d) {
+      var tage = d.faelligAm ? daysBetween(today, d.faelligAm) : null;
+      var warn = tage != null && tage <= 30;
+      return '<div class="job-row" data-id="' + d.id + '">' +
+        '<div class="job-row-top"><div><div class="job-title">' + esc(d.bezeichnung) + '</div>' +
+        '<div class="job-meta"' + (warn ? ' style="color:var(--danger);font-weight:700;"' : '') + '>Fällig ' + fmtDate(d.faelligAm) + (tage != null ? " · in " + tage + " Tagen" : "") + (d.wiederkehrend ? " · " + esc(d.wiederkehrend) : "") + '</div></div>' +
+        '<button type="button" class="deadline-del" data-id="' + d.id + '" aria-label="Löschen">' + icon("trash") + '</button></div></div>';
+    }).join("");
+  }
+  document.getElementById("taxDeadlinesList").addEventListener("click", function (e) {
+    var delBtn = e.target.closest(".deadline-del");
+    if (delBtn) {
+      if (!confirm("Termin wirklich löschen?")) return;
+      db.collection("taxDeadlines").doc(delBtn.dataset.id).delete()
+        .then(function () { showToast("Gelöscht"); })
+        .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      return;
+    }
+    var row = e.target.closest(".job-row");
+    if (row) { var d2 = taxDeadlines.find(function (x) { return x.id === row.dataset.id; }); if (d2) openTaxDeadlineForm(d2); }
+  });
+
+  // ---- Rücklagen-Assistent ----
+  var RESERVE_WIZARD_STEPS = ["Zeitraum", "Einnahmen", "Ausgaben", "Rücklagen", "Steuerkalender"];
+  function openReserveWizard() {
+    wizardStep = 1;
+    wizardZeitraum = null;
+    wizardData = null;
+    renderReserveWizard();
+    document.getElementById("reserveWizardOverlay").classList.add("open");
+  }
+  document.getElementById("openReserveWizardBtn").addEventListener("click", openReserveWizard);
+  document.getElementById("reserveWizardClose").addEventListener("click", function () { document.getElementById("reserveWizardOverlay").classList.remove("open"); });
+  document.getElementById("reserveWizardOverlay").addEventListener("click", function (e) { if (e.target.id === "reserveWizardOverlay") document.getElementById("reserveWizardOverlay").classList.remove("open"); });
+  function steuernWizardStat(label, m) {
+    return '<div class="stat"><div class="lbl">' + esc(label) + '</div><div class="val">' + (m.status === "ok" ? fmtEUR(m.wert) : "Keine Daten") + '</div></div>';
+  }
+  function renderReserveWizardPath() {
+    document.getElementById("reserveWizardPath").innerHTML = RESERVE_WIZARD_STEPS.map(function (s, i) {
+      var n = i + 1;
+      var cls = n < wizardStep ? "done" : (n === wizardStep ? "current" : "");
+      return '<button type="button" class="path-step ' + cls + '" disabled>' + n + '. ' + s + '</button>';
+    }).join("");
+  }
+  function renderReserveWizard() {
+    renderReserveWizardPath();
+    var body = document.getElementById("reserveWizardBody");
+    document.getElementById("reserveWizardBack").hidden = wizardStep === 1;
+    document.getElementById("reserveWizardNext").textContent = wizardStep === 5 ? "Fertig" : "Weiter";
+    if (wizardStep === 1) {
+      body.innerHTML =
+        '<div class="job-form">' +
+        '<button type="button" class="btn btn-ghost wz-period" data-period="monat">Dieser Monat</button>' +
+        '<button type="button" class="btn btn-ghost wz-period" data-period="quartal">Dieses Quartal</button>' +
+        '<button type="button" class="btn btn-ghost wz-period" data-period="jahr">Dieses Jahr</button>' +
+        '<button type="button" class="btn btn-ghost wz-period" data-period="frei">Frei wählen</button>' +
+        '</div>' +
+        '<div class="job-form" id="wzFreiWrap" hidden style="margin-top:10px;">' +
+        '<label class="field"><span>Von</span><input type="date" id="wzVon" /></label>' +
+        '<label class="field"><span>Bis</span><input type="date" id="wzBis" /></label>' +
+        '</div>' +
+        (wizardZeitraum ? '<p style="margin-top:12px;font-size:0.85rem;"><strong>Gewählt:</strong> ' + esc(wizardZeitraum.label) + ' (' + fmtDate(wizardZeitraum.von) + ' – ' + fmtDate(wizardZeitraum.bis) + ')</p>' :
+          '<p style="margin-top:12px;font-size:0.82rem;color:var(--ink-soft);">Bitte einen Zeitraum wählen.</p>');
+    } else if (wizardStep === 2) {
+      var stornoCount = allDocuments.filter(function (d) { return d.typ === "Rechnung" && d.status === "Storniert" && d.datum >= wizardZeitraum.von && d.datum <= wizardZeitraum.bis; }).length;
+      body.innerHTML = '<div class="stats">' +
+        steuernWizardStat("Umsatz gesamt", wizardData.umsatzRechnungen) +
+        steuernWizardStat("Bezahlt", wizardData.bezahlteEinnahmen) +
+        steuernWizardStat("Offen", wizardData.offeneForderungen) +
+        '<div class="stat"><div class="lbl">Storniert</div><div class="val">' + stornoCount + ' Rechnung(en)</div></div>' +
+        '</div>';
+    } else if (wizardStep === 3) {
+      var ausgabenPeriode = ausgaben.filter(function (a) { return a.datum >= wizardZeitraum.von && a.datum <= wizardZeitraum.bis; });
+      var byKategorie = {};
+      ausgabenPeriode.forEach(function (a) { byKategorie[a.kategorie] = (byKategorie[a.kategorie] || 0) + a.betrag; });
+      var kategorieRows = Object.keys(byKategorie).sort().map(function (k) {
+        return '<div class="job-row" style="cursor:default;"><div class="job-row-top"><div class="job-title">' + esc(k) + '</div></div><div class="job-meta">' + fmtEUR(byKategorie[k]) + '</div></div>';
+      }).join("") || '<div class="job-empty">Keine Ausgaben im Zeitraum erfasst.</div>';
+      body.innerHTML = '<div class="stats">' + steuernWizardStat("Ausgaben gesamt", wizardData.betrieblicheAusgaben) + steuernWizardStat("Bereits bezahlt", wizardData.bezahlteAusgaben) + '</div>' +
+        '<h3 class="section-title" style="margin:14px 0 6px;">Nach Kategorie</h3><div class="job-list">' + kategorieRows + '</div>';
+    } else if (wizardStep === 4) {
+      var sicherheit = getTaxParam("sicherheitsreserve_prozent");
+      var mindest = getTaxParam("mindestreserve_betrag");
+      var basis = wizardData.gesamtRuecklage.status === "ok" ? wizardData.gesamtRuecklage.wert : null;
+      var mitSicherheit = basis != null && sicherheit ? basis * (1 + sicherheit.wert / 100) : basis;
+      var empfohlen = mitSicherheit != null && mindest ? Math.max(mitSicherheit, mindest.wert) : mitSicherheit;
+      body.innerHTML = (basis == null ?
+        '<div class="job-empty">Keine ausreichenden Daten — Rücklagen-Parameter zuerst unter „Steuerparameter\" konfigurieren.</div>' :
+        '<p style="font-size:0.95rem;">Nach aktueller Planung solltest du ungefähr diesen Betrag zurücklegen:</p>' +
+        '<p style="font-size:1.8rem;font-weight:700;color:var(--accent);margin:8px 0;">' + fmtEUR(empfohlen) + '</p>' +
+        '<div style="font-size:0.78rem;color:var(--ink-soft);">Basis-Rücklage ' + fmtEUR(basis) + (sicherheit ? " + Sicherheitsreserve " + sicherheit.wert + "%" : "") + (mindest ? ", Mindestreserve " + fmtEUR(mindest.wert) : "") + '</div>' +
+        '<p style="font-size:0.76rem;color:var(--ink-soft);margin-top:10px;">Sicherheits-/Mindestreserve unter „Steuerparameter\" einstellbar (Parameter „Sicherheitsreserve"/„Mindestreserve"). Jede Änderung wird protokolliert. Keine automatische Überweisung — reine Anzeige.</p>');
+    } else if (wizardStep === 5) {
+      body.innerHTML = '<p style="font-size:0.85rem;">Anstehende Steuertermine:</p><div class="job-list" id="wzDeadlinesList"></div>' +
+        '<button type="button" class="btn btn-ghost btn-sm" id="wzAddDeadline" style="margin-top:8px;">+ Termin</button>';
+      document.getElementById("wzDeadlinesList").innerHTML = document.getElementById("taxDeadlinesList").innerHTML;
+      document.getElementById("wzAddDeadline").addEventListener("click", function () { openTaxDeadlineForm(null); });
+    }
+  }
+  document.getElementById("reserveWizardBody").addEventListener("click", function (e) {
+    var btn = e.target.closest(".wz-period");
+    if (!btn) return;
+    var period = btn.dataset.period;
+    var today = new Date();
+    var von, bis, label;
+    if (period === "monat") {
+      von = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-01";
+      bis = todayStr(); label = "Dieser Monat";
+    } else if (period === "quartal") {
+      var q = Math.floor(today.getMonth() / 3);
+      von = today.getFullYear() + "-" + String(q * 3 + 1).padStart(2, "0") + "-01";
+      bis = todayStr(); label = "Dieses Quartal";
+    } else if (period === "jahr") {
+      von = today.getFullYear() + "-01-01"; bis = todayStr(); label = "Dieses Jahr";
+    } else {
+      document.getElementById("wzFreiWrap").hidden = false;
+      return;
+    }
+    wizardZeitraum = { von: von, bis: bis, label: label };
+    wizardData = berechneSteuernUebersicht(von, bis);
+    renderReserveWizard();
+  });
+  document.getElementById("reserveWizardNext").addEventListener("click", function () {
+    if (wizardStep === 1) {
+      var freiWrap = document.getElementById("wzFreiWrap");
+      if (freiWrap && !freiWrap.hidden) {
+        var von = document.getElementById("wzVon").value, bis = document.getElementById("wzBis").value;
+        if (!von || !bis) { showToast("Bitte Von und Bis wählen", true); return; }
+        wizardZeitraum = { von: von, bis: bis, label: "Frei gewählt" };
+        wizardData = berechneSteuernUebersicht(von, bis);
+      }
+      if (!wizardZeitraum) { showToast("Bitte einen Zeitraum wählen", true); return; }
+    }
+    if (wizardStep === 5) { document.getElementById("reserveWizardOverlay").classList.remove("open"); return; }
+    wizardStep++;
+    renderReserveWizard();
+  });
+  document.getElementById("reserveWizardBack").addEventListener("click", function () {
+    if (wizardStep > 1) { wizardStep--; renderReserveWizard(); }
+  });
+
+  // ---- Mitarbeiter-Kalkulator ----
+  function emptyEmployeeCalc() {
+    return {
+      id: "", name: "", beschaeftigungsart: "Vollzeit", lohnArt: "monat", monatsbrutto: "", stundenlohn: "",
+      wochenstunden: "", urlaubstageJahr: 0, krankheitstageJahr: 0, feiertageJahr: 0,
+      arbeitgeberanteilProzent: "", berufsgenossenschaftMonatlich: 0, zuschlaegeMonatlich: 0,
+      fahrtzeitStdProWoche: 0, unproduktiveZeitStdProWoche: 0, arbeitskleidungMonatlich: 0,
+      schulungenMonatlich: 0, verwaltungskostenMonatlich: 0, sonstigePersonalkostenMonatlich: 0,
+      gewinnmargeProzent: 20, beispielEinsatzstunden: 2, beispielKundenpreis: ""
+    };
+  }
+  function berechneMitarbeiterKosten(f) {
+    var wochenstunden = parseFloat(f.wochenstunden) || 0;
+    if (wochenstunden <= 0) return null;
+    var monatsbrutto = f.lohnArt === "stunde" ?
+      (parseFloat(f.stundenlohn) || 0) * wochenstunden * 4.33 :
+      (parseFloat(f.monatsbrutto) || 0);
+    var agAnteilProzent = f.arbeitgeberanteilProzent !== "" && f.arbeitgeberanteilProzent != null ? parseFloat(f.arbeitgeberanteilProzent) : null;
+    var lohnnebenkosten = agAnteilProzent != null ? monatsbrutto * (agAnteilProzent / 100) : null;
+    var sonstigeMonatlicheKosten = (parseFloat(f.berufsgenossenschaftMonatlich) || 0) + (parseFloat(f.zuschlaegeMonatlich) || 0) +
+      (parseFloat(f.arbeitskleidungMonatlich) || 0) + (parseFloat(f.schulungenMonatlich) || 0) +
+      (parseFloat(f.verwaltungskostenMonatlich) || 0) + (parseFloat(f.sonstigePersonalkostenMonatlich) || 0);
+    var gesamtkostenMonatlich = lohnnebenkosten != null ? monatsbrutto + lohnnebenkosten + sonstigeMonatlicheKosten : null;
+
+    var stundenProTag = wochenstunden / 5;
+    var bezahlteStundenMonat = wochenstunden * 4.33;
+    var ausfallStundenMonat = ((parseFloat(f.urlaubstageJahr) || 0) + (parseFloat(f.krankheitstageJahr) || 0) + (parseFloat(f.feiertageJahr) || 0)) / 12 * stundenProTag;
+    var reisezeitUnprodMonat = ((parseFloat(f.fahrtzeitStdProWoche) || 0) + (parseFloat(f.unproduktiveZeitStdProWoche) || 0)) * 4.33;
+    var produktiveStundenMonat = Math.max(0.01, bezahlteStundenMonat - ausfallStundenMonat - reisezeitUnprodMonat);
+
+    var kostenProBezahlterStunde = gesamtkostenMonatlich != null ? gesamtkostenMonatlich / bezahlteStundenMonat : null;
+    var kostenProProduktiverStunde = gesamtkostenMonatlich != null ? gesamtkostenMonatlich / produktiveStundenMonat : null;
+    var margeProzent = parseFloat(f.gewinnmargeProzent) || 0;
+    var empfohlenerPreis = kostenProProduktiverStunde != null ? kostenProProduktiverStunde * (1 + margeProzent / 100) : null;
+    var einsatzstunden = parseFloat(f.beispielEinsatzstunden) || 0;
+    var kostenProEinsatz = kostenProProduktiverStunde != null ? kostenProProduktiverStunde * einsatzstunden : null;
+    var kundenpreis = f.beispielKundenpreis !== "" && f.beispielKundenpreis != null ? parseFloat(f.beispielKundenpreis) : null;
+    var gewinnBeiKundenpreis = (kundenpreis != null && kostenProProduktiverStunde != null) ? (kundenpreis - kostenProProduktiverStunde) * einsatzstunden : null;
+
+    return {
+      monatsbrutto: monatsbrutto, lohnnebenkosten: lohnnebenkosten, gesamtkostenMonatlich: gesamtkostenMonatlich,
+      bezahlteStundenMonat: bezahlteStundenMonat, produktiveStundenMonat: produktiveStundenMonat,
+      kostenProBezahlterStunde: kostenProBezahlterStunde, kostenProProduktiverStunde: kostenProProduktiverStunde,
+      mindestpreis: kostenProProduktiverStunde, empfohlenerPreis: empfohlenerPreis,
+      kostenProEinsatz: kostenProEinsatz, einsatzstunden: einsatzstunden,
+      kundenpreis: kundenpreis, gewinnBeiKundenpreis: gewinnBeiKundenpreis,
+      agAnteilFehlt: agAnteilProzent == null
+    };
+  }
+  function readEmployeeCalcForm() {
+    var f = {};
+    Object.keys(emptyEmployeeCalc()).forEach(function (k) { if (employeeCalcForm.elements[k]) f[k] = employeeCalcForm.elements[k].value; });
+    return f;
+  }
+  function renderEmployeeCalcResult() {
+    var f = readEmployeeCalcForm();
+    var r = berechneMitarbeiterKosten(f);
+    var el = document.getElementById("employeeCalcResult");
+    if (!r) { el.innerHTML = '<div class="job-empty">Bitte Wochenstunden angeben.</div>'; return; }
+    if (r.agAnteilFehlt) {
+      el.innerHTML = '<div class="job-empty">Arbeitgeberanteil Sozialabgaben fehlt — bitte Wert aus dem Lohnbüro eintragen, um Gesamtkosten zu berechnen.</div>';
+      return;
+    }
+    var rows = [
+      ["Monatliche Gesamtkosten", fmtEUR(r.gesamtkostenMonatlich)],
+      ["Kosten pro bezahlter Stunde", fmtEUR(r.kostenProBezahlterStunde)],
+      ["Kosten pro produktiver Stunde", fmtEUR(r.kostenProProduktiverStunde)],
+      ["Mindestverkaufspreis/Std.", fmtEUR(r.mindestpreis)],
+      ["Empfohlener Verkaufspreis/Std.", fmtEUR(r.empfohlenerPreis)],
+      ["Kosten pro Einsatz (" + r.einsatzstunden + " Std.)", fmtEUR(r.kostenProEinsatz)]
+    ];
+    if (r.kundenpreis != null) rows.push(["Gewinn bei " + fmtEUR(r.kundenpreis) + "/Std.", fmtEUR(r.gewinnBeiKundenpreis)]);
+    el.innerHTML = '<h3 class="section-title" style="margin-bottom:8px;">Ergebnis</h3>' +
+      rows.map(function (row) {
+        return '<div class="row" style="justify-content:space-between;display:flex;padding:4px 0;border-bottom:1px solid var(--border);"><span>' + esc(row[0]) + '</span><strong style="color:var(--accent);">' + row[1] + '</strong></div>';
+      }).join("") +
+      '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Annahme: Monatswerte auf Basis von 4,33 Wochen/Monat, Arbeitstage = Wochenstunden/5. Planungshilfe, ersetzt keine Lohnabrechnung.</div>';
+  }
+  var editingEmployeeCalcId = null;
+  var employeeCalcForm = document.getElementById("employeeCalcForm");
+  var employeeCalcOverlay = document.getElementById("employeeCalcOverlay");
+  function openEmployeeCalcForm(p) {
+    var data = p || emptyEmployeeCalc();
+    editingEmployeeCalcId = data.id || null;
+    document.getElementById("employeeCalcTitle").textContent = editingEmployeeCalcId ? "Kalkulation bearbeiten" : "Neue Mitarbeiter-Kalkulation";
+    Object.keys(emptyEmployeeCalc()).forEach(function (k) {
+      if (k === "id") return;
+      if (employeeCalcForm.elements[k]) employeeCalcForm.elements[k].value = data[k] != null ? data[k] : emptyEmployeeCalc()[k];
+    });
+    renderEmployeeCalcResult();
+    employeeCalcOverlay.classList.add("open");
+  }
+  document.getElementById("addEmployeeCalcBtn").addEventListener("click", function () { openEmployeeCalcForm(null); });
+  document.getElementById("employeeCalcClose").addEventListener("click", function () { employeeCalcOverlay.classList.remove("open"); });
+  document.getElementById("employeeCalcCancel").addEventListener("click", function () { employeeCalcOverlay.classList.remove("open"); });
+  employeeCalcOverlay.addEventListener("click", function (e) { if (e.target === employeeCalcOverlay) employeeCalcOverlay.classList.remove("open"); });
+  employeeCalcForm.addEventListener("input", renderEmployeeCalcResult);
+  employeeCalcForm.addEventListener("change", renderEmployeeCalcResult);
+  employeeCalcForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var f = readEmployeeCalcForm();
+    if (!f.name.trim() || !(parseFloat(f.wochenstunden) > 0)) { showToast("Bitte Name und Wochenstunden angeben", true); return; }
+    var r = berechneMitarbeiterKosten(f);
+    var data = Object.assign({ id: editingEmployeeCalcId || uid() }, f, {
+      ergebnis: r, erstelltVon: currentUserEmail, erstelltAm: new Date().toISOString(), status: "Entwurf"
+    });
+    db.collection("employeeCostProfiles").doc(data.id).set(data)
+      .then(function () { showToast("Gespeichert"); employeeCalcOverlay.classList.remove("open"); })
+      .catch(function (err) { setBanner("Speichern fehlgeschlagen: " + err.message); });
+  });
+  function renderEmployeeCalcList() {
+    var el = document.getElementById("employeeCalcList");
+    if (employeeCostProfiles.length === 0) { el.innerHTML = '<div class="empty"><div class="t">Noch keine Kalkulation erfasst</div><div class="s">Mit dem Plus-Button die erste Kalkulation anlegen.</div></div>'; return; }
+    var sorted = employeeCostProfiles.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); });
+    el.innerHTML = sorted.map(function (p) {
+      var r = p.ergebnis || {};
+      return '<div class="card" data-id="' + p.id + '"><div class="card-top"><div><div class="card-name">' + esc(p.name) + '</div><div class="card-type">' + esc(p.beschaeftigungsart) + '</div></div></div>' +
+        '<div class="row"><strong style="color:var(--accent)">' + (r.empfohlenerPreis != null ? fmtEUR(r.empfohlenerPreis) + '/Std. empfohlen' : 'Unvollständig') + '</strong></div>' +
+        '<div class="card-foot"><div></div><div class="actions"><button type="button" class="emp-calc-del" data-id="' + p.id + '" aria-label="Löschen">' + icon("trash") + '</button></div></div></div>';
+    }).join("");
+  }
+  document.getElementById("employeeCalcList").addEventListener("click", function (e) {
+    var delBtn = e.target.closest(".emp-calc-del");
+    if (delBtn) {
+      if (!confirm("Kalkulation wirklich löschen?")) return;
+      db.collection("employeeCostProfiles").doc(delBtn.dataset.id).delete()
+        .then(function () { showToast("Gelöscht"); }).catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      return;
+    }
+    var card = e.target.closest(".card");
+    if (card) { var p = employeeCostProfiles.find(function (x) { return x.id === card.dataset.id; }); if (p) openEmployeeCalcForm(p); }
+  });
+
+  // ---- Objekt-Kalkulator ----
+  var REINIGUNGSINTERVALL_EINSAETZE = { "Täglich (Werktage)": 21.7, "Wöchentlich": 4.33, "2x wöchentlich": 8.66, "14-tägig": 2.17, "Monatlich": 1 };
+  function emptyObjectCalc() {
+    return {
+      id: "", customerId: "", objektname: "", objektadresse: "", objektart: "Büro", qm: "", anzahlRaeume: "", anzahlToiletten: "",
+      kueche: "", etagen: "", bodenarten: "", verschmutzungsgrad: "Mittel", verkehr: "Mittel", reinigungstage: "",
+      reinigungsintervall: "Wöchentlich", uhrzeit: "", arbeitszeitProEinsatz: "", anzahlMitarbeiter: 1,
+      employeeCalcId: "", manuellerStundensatz: "", fahrtstreckeKm: "", fahrtkostenProEinsatz: 0,
+      materialkostenProEinsatz: 0, verbrauchsmaterialProEinsatz: 0, geraetekostenProEinsatz: 0, verwaltungskostenProEinsatz: 0,
+      risikozuschlagProzent: 0, gewinnmargeProzent: 20, sonderleistungen: "", istPreisProEinsatz: "", ausgewaehlteLeistungen: []
+    };
+  }
+  function berechneObjektKosten(f, leistungen) {
+    var arbeitszeit = parseFloat(f.arbeitszeitProEinsatz) || 0;
+    if (arbeitszeit <= 0) return null;
+    var anzahlMitarbeiter = parseFloat(f.anzahlMitarbeiter) || 1;
+    var personalStundenProEinsatz = arbeitszeit * anzahlMitarbeiter;
+    var profil = f.employeeCalcId ? employeeCostProfiles.find(function (p) { return p.id === f.employeeCalcId; }) : null;
+    var stundensatz = profil && profil.ergebnis ? profil.ergebnis.kostenProProduktiverStunde : (f.manuellerStundensatz !== "" ? parseFloat(f.manuellerStundensatz) : null);
+    if (stundensatz == null) return { fehlt: "Bitte Mitarbeiter-Kalkulation wählen oder manuellen Stundensatz eingeben." };
+    var personalkosten = personalStundenProEinsatz * stundensatz;
+    var sachkosten = (parseFloat(f.materialkostenProEinsatz) || 0) + (parseFloat(f.verbrauchsmaterialProEinsatz) || 0) +
+      (parseFloat(f.fahrtkostenProEinsatz) || 0) + (parseFloat(f.geraetekostenProEinsatz) || 0) + (parseFloat(f.verwaltungskostenProEinsatz) || 0);
+    var risiko = parseFloat(f.risikozuschlagProzent) || 0;
+    var selbstkostenProEinsatz = (personalkosten + sachkosten) * (1 + risiko / 100);
+    var marge = parseFloat(f.gewinnmargeProzent) || 0;
+    var empfohlenerPreisProEinsatz = selbstkostenProEinsatz * (1 + marge / 100);
+    var einsaetzeProMonat = REINIGUNGSINTERVALL_EINSAETZE[f.reinigungsintervall] || 1;
+    var empfohlenerMonatspreis = empfohlenerPreisProEinsatz * einsaetzeProMonat;
+    var effektiverStundenpreis = personalStundenProEinsatz > 0 ? empfohlenerPreisProEinsatz / personalStundenProEinsatz : null;
+    var istPreis = f.istPreisProEinsatz !== "" && f.istPreisProEinsatz != null ? parseFloat(f.istPreisProEinsatz) : null;
+    var unterkalkuliert = istPreis != null && istPreis < selbstkostenProEinsatz;
+    return {
+      personalStundenProEinsatz: personalStundenProEinsatz, stundensatz: stundensatz, personalkosten: personalkosten, sachkosten: sachkosten,
+      selbstkostenProEinsatz: selbstkostenProEinsatz, mindestpreisProEinsatz: selbstkostenProEinsatz, empfohlenerPreisProEinsatz: empfohlenerPreisProEinsatz,
+      einsaetzeProMonat: einsaetzeProMonat, empfohlenerMonatspreis: empfohlenerMonatspreis, effektiverStundenpreis: effektiverStundenpreis,
+      istPreis: istPreis, unterkalkuliert: unterkalkuliert
+    };
+  }
+  function readObjectCalcForm() {
+    var f = {};
+    Object.keys(emptyObjectCalc()).forEach(function (k) { if (k === "ausgewaehlteLeistungen") return; if (objectCalcForm.elements[k]) f[k] = objectCalcForm.elements[k].value; });
+    f.ausgewaehlteLeistungen = Array.prototype.slice.call(document.querySelectorAll('#objectCalcServices input:checked')).map(function (cb) { return cb.value; });
+    return f;
+  }
+  function renderObjectCalcResult() {
+    var f = readObjectCalcForm();
+    var r = berechneObjektKosten(f);
+    var el = document.getElementById("objectCalcResult");
+    if (!r) { el.innerHTML = '<div class="job-empty">Bitte Arbeitszeit pro Einsatz angeben.</div>'; return; }
+    if (r.fehlt) { el.innerHTML = '<div class="job-empty">' + esc(r.fehlt) + '</div>'; return; }
+    var warnLine = r.unterkalkuliert ?
+      '<div style="background:var(--danger-soft);color:var(--danger);padding:8px 10px;border-radius:var(--r-s);font-size:0.78rem;margin-bottom:8px;font-weight:700;">⚠ Unterkalkulation: Ist-Preis (' + fmtEUR(r.istPreis) + ') liegt unter den Selbstkosten (' + fmtEUR(r.selbstkostenProEinsatz) + ').</div>' : "";
+    var rows = [
+      ["Personalkosten pro Einsatz", fmtEUR(r.personalkosten)],
+      ["Sachkosten pro Einsatz", fmtEUR(r.sachkosten)],
+      ["Selbstkosten pro Einsatz", fmtEUR(r.selbstkostenProEinsatz)],
+      ["Mindestpreis pro Einsatz", fmtEUR(r.mindestpreisProEinsatz)],
+      ["Empfohlener Preis pro Einsatz", fmtEUR(r.empfohlenerPreisProEinsatz)],
+      ["Einsätze pro Monat (Ø)", r.einsaetzeProMonat.toFixed(2)],
+      ["Empfohlener Monatspreis", fmtEUR(r.empfohlenerMonatspreis)],
+      ["Effektiver Stundenpreis (Kunde)", r.effektiverStundenpreis != null ? fmtEUR(r.effektiverStundenpreis) : "–"]
+    ];
+    el.innerHTML = warnLine + '<h3 class="section-title" style="margin-bottom:8px;">Ergebnis</h3>' +
+      rows.map(function (row) {
+        return '<div class="row" style="justify-content:space-between;display:flex;padding:4px 0;border-bottom:1px solid var(--border);"><span>' + esc(row[0]) + '</span><strong style="color:var(--accent);">' + row[1] + '</strong></div>';
+      }).join("") +
+      '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Reinigungsintervall bestimmt die Einsätze/Monat (Kalenderdurchschnitt). Selbstkosten = Personal- + Sachkosten inkl. Risikozuschlag.</div>';
+  }
+  var editingObjectCalcId = null;
+  var objectCalcForm = document.getElementById("objectCalcForm");
+  var objectCalcOverlay = document.getElementById("objectCalcOverlay");
+  function populateObjectCalcSelects(selected) {
+    var custSel = objectCalcForm.elements.customerId;
+    custSel.innerHTML = '<option value="">Kein Kunde / Neuakquise</option>' +
+      customers.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
+        .map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + '</option>'; }).join("");
+    var empSel = objectCalcForm.elements.employeeCalcId;
+    empSel.innerHTML = '<option value="">Manuell eingeben</option>' +
+      employeeCostProfiles.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
+        .map(function (p) { return '<option value="' + p.id + '">' + esc(p.name) + (p.ergebnis && p.ergebnis.kostenProProduktiverStunde ? " (" + fmtEUR(p.ergebnis.kostenProProduktiverStunde) + "/Std.)" : "") + '</option>'; }).join("");
+    var selectedLeistungen = (selected && selected.ausgewaehlteLeistungen) || [];
+    document.getElementById("objectCalcServices").innerHTML = services.length === 0 ?
+      '<div class="job-empty">Noch keine Leistungen im Katalog erfasst.</div>' :
+      services.slice().sort(function (a, b) { return (a.label || "").localeCompare(b.label || "", "de"); }).map(function (s) {
+        return '<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:0.85rem;"><input type="checkbox" value="' + s.id + '"' + (selectedLeistungen.indexOf(s.id) !== -1 ? " checked" : "") + ' />' + esc(s.label) + '</label>';
+      }).join("");
+  }
+  function openObjectCalcForm(p) {
+    var data = p || emptyObjectCalc();
+    editingObjectCalcId = data.id || null;
+    document.getElementById("objectCalcTitle").textContent = editingObjectCalcId ? "Kalkulation bearbeiten" : "Neue Objekt-Kalkulation";
+    populateObjectCalcSelects(data);
+    Object.keys(emptyObjectCalc()).forEach(function (k) {
+      if (k === "id" || k === "ausgewaehlteLeistungen") return;
+      if (objectCalcForm.elements[k]) objectCalcForm.elements[k].value = data[k] != null ? data[k] : emptyObjectCalc()[k];
+    });
+    renderObjectCalcResult();
+    objectCalcOverlay.classList.add("open");
+  }
+  document.getElementById("addObjectCalcBtn").addEventListener("click", function () { openObjectCalcForm(null); });
+  document.getElementById("objectCalcClose").addEventListener("click", function () { objectCalcOverlay.classList.remove("open"); });
+  document.getElementById("objectCalcCancel").addEventListener("click", function () { objectCalcOverlay.classList.remove("open"); });
+  objectCalcOverlay.addEventListener("click", function (e) { if (e.target === objectCalcOverlay) objectCalcOverlay.classList.remove("open"); });
+  objectCalcForm.addEventListener("input", renderObjectCalcResult);
+  objectCalcForm.addEventListener("change", renderObjectCalcResult);
+  objectCalcForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var f = readObjectCalcForm();
+    if (!f.objektname.trim() || !(parseFloat(f.arbeitszeitProEinsatz) > 0)) { showToast("Bitte Objektname und Arbeitszeit angeben", true); return; }
+    var r = berechneObjektKosten(f);
+    var cust = f.customerId ? customers.find(function (c) { return c.id === f.customerId; }) : null;
+    var data = Object.assign({ id: editingObjectCalcId || uid() }, f, {
+      customerName: cust ? cust.name : "", ergebnis: (r && !r.fehlt) ? r : null,
+      erstelltVon: currentUserEmail, erstelltAm: new Date().toISOString(), status: "Entwurf"
+    });
+    db.collection("objectCalculations").doc(data.id).set(data)
+      .then(function () { showToast("Gespeichert"); objectCalcOverlay.classList.remove("open"); })
+      .catch(function (err) { setBanner("Speichern fehlgeschlagen: " + err.message); });
+  });
+  document.getElementById("objectCalcMakeOffer").addEventListener("click", function () {
+    var f = readObjectCalcForm();
+    if (!f.customerId) { showToast("Bitte zuerst einen Kunden auswählen", true); return; }
+    var r = berechneObjektKosten(f);
+    if (!r || r.fehlt) { showToast("Kalkulation unvollständig", true); return; }
+    var cust = customers.find(function (c) { return c.id === f.customerId; });
+    if (!cust) { showToast("Kunde nicht gefunden", true); return; }
+    objectCalcOverlay.classList.remove("open");
+    showView("customers");
+    openDetail(cust);
+    openDocForm("Angebot", null);
+    currentPositions = [{
+      bezeichnung: "Unterhaltsreinigung " + f.objektname + " (" + f.reinigungsintervall + ")",
+      menge: 1, preis: r.empfohlenerMonatspreis, einheit: "Pauschal"
+    }];
+    renderPosRows();
+    showToast("Kalkulation übernommen — bitte prüfen und speichern");
+  });
+  function renderObjectCalcList() {
+    var el = document.getElementById("objectCalcList");
+    if (objectCalculations.length === 0) { el.innerHTML = '<div class="empty"><div class="t">Noch keine Kalkulation erfasst</div><div class="s">Mit dem Plus-Button die erste Kalkulation anlegen.</div></div>'; return; }
+    var sorted = objectCalculations.slice().sort(function (a, b) { return (a.objektname || "").localeCompare(b.objektname || "", "de"); });
+    el.innerHTML = sorted.map(function (p) {
+      var r = p.ergebnis || {};
+      var warn = r.unterkalkuliert;
+      return '<div class="card" data-id="' + p.id + '"><div class="card-top"><div><div class="card-name">' + esc(p.objektname) + '</div><div class="card-type">' + esc(p.customerName || "Kein Kunde") + '</div></div>' +
+        (warn ? '<span class="badge-status" style="background:var(--danger-soft);color:var(--danger);">Unterkalkuliert</span>' : '') + '</div>' +
+        '<div class="row"><strong style="color:var(--accent)">' + (r.empfohlenerMonatspreis != null ? fmtEUR(r.empfohlenerMonatspreis) + '/Monat empfohlen' : 'Unvollständig') + '</strong></div>' +
+        '<div class="card-foot"><div></div><div class="actions"><button type="button" class="obj-calc-del" data-id="' + p.id + '" aria-label="Löschen">' + icon("trash") + '</button></div></div></div>';
+    }).join("");
+  }
+  document.getElementById("objectCalcList").addEventListener("click", function (e) {
+    var delBtn = e.target.closest(".obj-calc-del");
+    if (delBtn) {
+      if (!confirm("Kalkulation wirklich löschen?")) return;
+      db.collection("objectCalculations").doc(delBtn.dataset.id).delete()
+        .then(function () { showToast("Gelöscht"); }).catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      return;
+    }
+    var card = e.target.closest(".card");
+    if (card) { var p = objectCalculations.find(function (x) { return x.id === card.dataset.id; }); if (p) openObjectCalcForm(p); }
+  });
+
   function renderDashboard() {
     var activeCustomers = customers.filter(function (c) { return c.status === "Aktiv"; });
     var year = new Date().getFullYear();
@@ -3530,6 +4821,28 @@
     var dokNeu = alleDokumente.filter(function (f) { return f.status === "Neu"; }).length;
     var dokDieseWoche = alleDokumente.filter(function (f) { return isWithinDays(f.uploadedAm, 7); }).length;
 
+    var monatsStart = year + "-" + String(new Date().getMonth() + 1).padStart(2, "0") + "-01";
+    var monatsCalc = berechneSteuernUebersicht(monatsStart, today);
+    var jahresCalc = berechneSteuernUebersicht(year + "-01-01", today);
+    var zurueckgelegtParam = getTaxParam("tatsaechliche_ruecklage_betrag");
+    var zurueckgelegt = zurueckgelegtParam ? zurueckgelegtParam.wert : null;
+    var empfohleneRuecklage = jahresCalc.gesamtRuecklage.status === "ok" ? jahresCalc.gesamtRuecklage.wert : null;
+    var fehlendeRuecklage = (empfohleneRuecklage != null && zurueckgelegt != null) ? Math.max(0, empfohleneRuecklage - zurueckgelegt) : null;
+    var naechsterTerminDash = taxDeadlines.filter(function (t) { return t.faelligAm >= today; }).sort(function (a, b) { return a.faelligAm.localeCompare(b.faelligAm); })[0];
+
+    var steuernItems = [
+      { l: "Umsatz diesen Monat", v: fmtEUR(monatsCalc.umsatzRechnungen.wert), key: "steuern" },
+      { l: "Zahlungseingänge diesen Monat", v: fmtEUR(monatsCalc.bezahlteEinnahmen.wert), key: "steuern" },
+      { l: "Offene Rechnungen", v: fmtEUR(monatsCalc.offeneForderungen.wert), key: "steuern" },
+      { l: "Betriebsausgaben diesen Monat", v: fmtEUR(monatsCalc.betrieblicheAusgaben.wert), key: "steuern" },
+      { l: "Geschätzter Gewinn diesen Monat", v: fmtEUR(monatsCalc.gewinn.wert), key: "steuern" },
+      { l: "Empfohlene Steuerreserve " + year, v: empfohleneRuecklage != null ? fmtEUR(empfohleneRuecklage) : "Keine Daten", key: "steuern", gold: true },
+      { l: "Bereits zurückgelegt", v: zurueckgelegt != null ? fmtEUR(zurueckgelegt) : "Keine Daten", key: "steuern", gold: true },
+      { l: "Noch fehlende Rücklage", v: fehlendeRuecklage != null ? fmtEUR(fehlendeRuecklage) : "Keine Daten", key: "steuern", warn: fehlendeRuecklage != null && fehlendeRuecklage > 0, gold: fehlendeRuecklage === 0 },
+      { l: "Verfügbar nach Rücklagen " + year, v: jahresCalc.verfuegbar.status === "ok" ? fmtEUR(jahresCalc.verfuegbar.wert) : "Keine Daten", key: "steuern" },
+      { l: "Nächster Steuertermin", v: naechsterTerminDash ? esc(naechsterTerminDash.bezeichnung) + " · " + fmtDate(naechsterTerminDash.faelligAm) : "Keine Termine", key: "steuern" }
+    ];
+
     var items = [
       { l: "Aktive Kunden", v: activeCustomers.length, key: "activeCustomers" },
       { l: "Umsatz " + year + " (Rechnungen)", v: fmtEUR(currentRevenue), key: "revenue" },
@@ -3543,6 +4856,10 @@
     ];
     document.getElementById("dashStats").innerHTML = items.map(function (s) {
       return '<div class="stat' + (s.key ? " clickable" : "") + '"' + (s.key ? ' data-key="' + s.key + '"' : "") + '><div class="lbl">' + s.l + '</div><div class="val"' + (s.warn ? ' style="color:var(--danger)"' : "") + '>' + s.v + '</div></div>';
+    }).join("");
+    document.getElementById("dashStatsSteuern").innerHTML = steuernItems.map(function (s) {
+      var color = s.warn ? "var(--danger)" : (s.gold ? "var(--accent)" : "");
+      return '<div class="stat clickable" data-key="' + s.key + '"><div class="lbl">' + s.l + '</div><div class="val"' + (color ? ' style="color:' + color + '"' : "") + '>' + s.v + '</div></div>';
     }).join("");
 
     var overdueInvoices = allDocuments.filter(function (d) { return d.typ === "Rechnung" && (d.status === "Offen" || d.status === "Überfällig") && d.gueltigFaellig && d.gueltigFaellig < today; }).length;
@@ -3574,18 +4891,27 @@
       }).join("");
     }
 
-    var pct = Math.min(100, (currentRevenue / 100000) * 100);
-    var barClass = currentRevenue >= 100000 ? "over" : currentRevenue >= 80000 ? "warn" : "";
-    var lastYearLine = lastRevenue > 25000 ?
-      '<div class="kub-bar-label" style="color:var(--danger)"><span>⚠ Vorjahresgrenze überschritten</span><span>' + fmtEUR(lastRevenue) + ' / 25.000 €</span></div>' :
-      '<div class="kub-bar-label"><span>Vorjahr (' + lastYear + ')</span><span>' + fmtEUR(lastRevenue) + ' / 25.000 €</span></div>';
+    var grenzeLaufendParam = getTaxParam("kleinunternehmer_grenze_laufend");
+    var grenzeVorjahrParam = getTaxParam("kleinunternehmer_grenze_vorjahr");
+    var grenzeLaufend = grenzeLaufendParam ? grenzeLaufendParam.wert : null;
+    var grenzeVorjahr = grenzeVorjahrParam ? grenzeVorjahrParam.wert : null;
+    var grenzenFehlen = !grenzeLaufendParam || !grenzeVorjahrParam;
+    var pct = grenzeLaufend ? Math.min(100, (currentRevenue / grenzeLaufend) * 100) : 0;
+    var barClass = grenzeLaufend && currentRevenue >= grenzeLaufend ? "over" : grenzeLaufend && currentRevenue >= grenzeLaufend * 0.8 ? "warn" : "";
+    var lastYearLine = grenzeVorjahr == null ?
+      '<div class="kub-bar-label"><span>Vorjahr (' + lastYear + ')</span><span>' + fmtEUR(lastRevenue) + ' / Grenze nicht konfiguriert</span></div>' :
+      (lastRevenue > grenzeVorjahr ?
+        '<div class="kub-bar-label" style="color:var(--danger)"><span>⚠ Vorjahresgrenze überschritten</span><span>' + fmtEUR(lastRevenue) + ' / ' + fmtEUR(grenzeVorjahr) + '</span></div>' :
+        '<div class="kub-bar-label"><span>Vorjahr (' + lastYear + ')</span><span>' + fmtEUR(lastRevenue) + ' / ' + fmtEUR(grenzeVorjahr) + '</span></div>');
+    var hinweisFehlend = grenzenFehlen ? '<div class="kub-sub" style="color:var(--danger);">Grenzwerte nicht konfiguriert — unter „Steuern &amp; Rücklagen" → Steuerparameter eintragen.</div>' : "";
 
     document.getElementById("kubCard").innerHTML =
       '<h3>Kleinunternehmer-Grenze (§ 19 UStG)</h3>' +
       '<div class="kub-sub">Schätzung auf Basis erfasster Rechnungen — ersetzt keine Buchhaltung.</div>' +
+      hinweisFehlend +
       lastYearLine +
       '<div class="kub-bar-wrap" style="margin-top:10px;">' +
-      '<div class="kub-bar-label"><span>Laufendes Jahr (' + year + ')</span><strong>' + fmtEUR(currentRevenue) + ' / 100.000 €</strong></div>' +
+      '<div class="kub-bar-label"><span>Laufendes Jahr (' + year + ')</span><strong>' + fmtEUR(currentRevenue) + ' / ' + (grenzeLaufend ? fmtEUR(grenzeLaufend) : "Grenze nicht konfiguriert") + '</strong></div>' +
       '<div class="kub-bar"><div class="kub-bar-fill ' + barClass + '" style="width:' + pct + '%"></div></div>' +
       '</div>';
   }
@@ -5333,6 +6659,84 @@
       loginScreen.hidden = false;
     }
   });
+
+  // ---- Selbsttests (Berechnungskern) — Aufruf in der Browser-Konsole: runSelfTests() ----
+  function runSelfTests() {
+    var results = [];
+    function assertClose(name, actual, expected, tolerance) {
+      tolerance = tolerance == null ? 0.01 : tolerance;
+      var pass = actual != null && Math.abs(actual - expected) <= tolerance;
+      results.push({ name: name, pass: pass, actual: actual, expected: expected });
+    }
+    function assertEqual(name, actual, expected) {
+      results.push({ name: name, pass: actual === expected, actual: actual, expected: expected });
+    }
+
+    // Mitarbeiter-Kalkulator: 40 Std./Woche, 3000€ Monatsbrutto, 20% AG-Anteil, keine Ausfallzeiten
+    var mk = berechneMitarbeiterKosten({
+      lohnArt: "monat", monatsbrutto: "3000", stundenlohn: "", wochenstunden: "40",
+      urlaubstageJahr: "0", krankheitstageJahr: "0", feiertageJahr: "0",
+      arbeitgeberanteilProzent: "20", berufsgenossenschaftMonatlich: "0", zuschlaegeMonatlich: "0",
+      fahrtzeitStdProWoche: "0", unproduktiveZeitStdProWoche: "0", arbeitskleidungMonatlich: "0",
+      schulungenMonatlich: "0", verwaltungskostenMonatlich: "0", sonstigePersonalkostenMonatlich: "0",
+      gewinnmargeProzent: "0", beispielEinsatzstunden: "2", beispielKundenpreis: ""
+    });
+    assertClose("Mitarbeiter-Kalk: Gesamtkosten = Brutto + 20%", mk && mk.gesamtkostenMonatlich, 3600, 0.5);
+    assertClose("Mitarbeiter-Kalk: bezahlte Std./Monat = 40×4,33", mk && mk.bezahlteStundenMonat, 173.2, 0.5);
+    assertClose("Mitarbeiter-Kalk: Kosten/bezahlter Std.", mk && mk.kostenProBezahlterStunde, 3600 / 173.2, 0.1);
+
+    // Mitarbeiter-Kalkulator: fehlender AG-Anteil -> keine Gesamtkosten (keine Rateweite)
+    var mkFehlt = berechneMitarbeiterKosten({ lohnArt: "monat", monatsbrutto: "3000", wochenstunden: "40", arbeitgeberanteilProzent: "" });
+    assertEqual("Mitarbeiter-Kalk: fehlender AG-Anteil -> agAnteilFehlt", mkFehlt && mkFehlt.agAnteilFehlt, true);
+
+    // Objekt-Kalkulator: 2 Std., 1 MA, 25€/Std., keine Sachkosten, 20% Marge, wöchentlich
+    var ok = berechneObjektKosten({
+      arbeitszeitProEinsatz: "2", anzahlMitarbeiter: "1", employeeCalcId: "", manuellerStundensatz: "25",
+      materialkostenProEinsatz: "0", verbrauchsmaterialProEinsatz: "0", fahrtkostenProEinsatz: "0",
+      geraetekostenProEinsatz: "0", verwaltungskostenProEinsatz: "0", risikozuschlagProzent: "0",
+      gewinnmargeProzent: "20", reinigungsintervall: "Wöchentlich", istPreisProEinsatz: ""
+    });
+    assertClose("Objekt-Kalk: Personalkosten = 2×25", ok && ok.personalkosten, 50, 0.01);
+    assertClose("Objekt-Kalk: Selbstkosten = Personalkosten (keine Sachkosten)", ok && ok.selbstkostenProEinsatz, 50, 0.01);
+    assertClose("Objekt-Kalk: empfohlener Preis = Selbstkosten × 1,2", ok && ok.empfohlenerPreisProEinsatz, 60, 0.01);
+    assertClose("Objekt-Kalk: Monatspreis = Preis × 4,33 Einsätze", ok && ok.empfohlenerMonatspreis, 60 * 4.33, 0.5);
+
+    // Objekt-Kalkulator: Unterkalkulations-Warnung
+    var okWarn = berechneObjektKosten({
+      arbeitszeitProEinsatz: "2", anzahlMitarbeiter: "1", manuellerStundensatz: "25",
+      materialkostenProEinsatz: "0", verbrauchsmaterialProEinsatz: "0", fahrtkostenProEinsatz: "0",
+      geraetekostenProEinsatz: "0", verwaltungskostenProEinsatz: "0", risikozuschlagProzent: "0",
+      gewinnmargeProzent: "20", reinigungsintervall: "Wöchentlich", istPreisProEinsatz: "30"
+    });
+    assertEqual("Objekt-Kalk: Ist-Preis 30€ < Selbstkosten 50€ -> Warnung", okWarn && okWarn.unterkalkuliert, true);
+
+    // Steuern-Engine: bezahlte/offene Rechnungen korrekt getrennt, Rücklagen ohne Parameter = keine_daten
+    var origDocs = allDocuments, origAusgaben = ausgaben, origParams = taxParameters, origProfile = taxProfiles;
+    allDocuments = [
+      { typ: "Rechnung", status: "Bezahlt", brutto: 1000, netto: 1000, datum: "2026-01-15" },
+      { typ: "Rechnung", status: "Offen", brutto: 500, netto: 500, datum: "2026-01-20" },
+      { typ: "Rechnung", status: "Storniert", brutto: 999, netto: 999, datum: "2026-01-10" }
+    ];
+    ausgaben = [{ kategorie: "Material", betrag: 200, datum: "2026-01-05", status: "Bezahlt" }];
+    taxParameters = [];
+    taxProfiles = [];
+    var b = berechneSteuernUebersicht("2026-01-01", "2026-01-31");
+    assertClose("Steuern: Umsatz zählt Storniert nicht mit", b.umsatzRechnungen.wert, 1500, 0.01);
+    assertClose("Steuern: bezahlte Einnahmen = nur Bezahlt", b.bezahlteEinnahmen.wert, 1000, 0.01);
+    assertClose("Steuern: offene Forderungen = nur Offen", b.offeneForderungen.wert, 500, 0.01);
+    assertClose("Steuern: Gewinn = bezahlt − bezahlte Ausgaben", b.gewinn.wert, 800, 0.01);
+    assertEqual("Steuern: ohne Steuerparameter -> Rücklage keine_daten", b.gesamtRuecklage.status, "keine_daten");
+    allDocuments = origDocs; ausgaben = origAusgaben; taxParameters = origParams; taxProfiles = origProfile;
+
+    var passed = results.filter(function (r) { return r.pass; }).length;
+    console.log("Selbsttests: " + passed + "/" + results.length + " bestanden");
+    results.forEach(function (r) {
+      if (r.pass) console.log("✓ " + r.name);
+      else console.error("✗ " + r.name + " — erwartet: " + r.expected + ", erhalten: " + r.actual);
+    });
+    return results;
+  }
+  window.runSelfTests = runSelfTests;
 })();
 </script>
 </body>

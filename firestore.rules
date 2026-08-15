@@ -133,6 +133,26 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ---- Steuern & Rücklagen, Kalkulatoren (nur Gesellschafter) ----
+    match /ausgaben/{id} {
+      allow read, write: if isOwner();
+    }
+    match /taxParameters/{id} {
+      allow read, write: if isOwner();
+    }
+    match /taxProfiles/{id} {
+      allow read, write: if isOwner();
+    }
+    match /taxDeadlines/{id} {
+      allow read, write: if isOwner();
+    }
+    match /employeeCostProfiles/{id} {
+      allow read, write: if isOwner();
+    }
+    match /objectCalculations/{id} {
+      allow read, write: if isOwner();
+    }
+
     // ---- Sonstiges (nur Gesellschafter) ----
     match /ressourcen/{resourceId} {
       allow read, write: if isOwner();
