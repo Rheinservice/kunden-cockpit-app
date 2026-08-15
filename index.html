@@ -912,6 +912,7 @@
         <button id="docClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="path-bar" id="docPathBar"></div>
+      <div id="conversionHint" hidden style="margin:12px 16px 0;font-size:0.78rem;color:var(--accent-ink,var(--brand));background:var(--accent-soft);padding:10px 12px;border-radius:var(--r-m);font-weight:600;"></div>
       <form id="docForm">
         <div class="detail-body">
           <div class="job-form">
@@ -3102,7 +3103,7 @@
     renderDocPath(type, docForm.elements.status.value);
     docOverlay.classList.add("open");
   }
-  function closeDocForm() { docOverlay.classList.remove("open"); editingDocId = null; pendingMaterialBillingRefs = []; pendingProtectedEdit = null; }
+  function closeDocForm() { docOverlay.classList.remove("open"); editingDocId = null; pendingMaterialBillingRefs = []; pendingProtectedEdit = null; pendingConversionSource = null; document.getElementById("conversionHint").hidden = true; }
 
   function applyTaxProfileDefaultToDocForm(existingDoc) {
     var hint = document.getElementById("mwstHint");
@@ -3202,6 +3203,7 @@
     var status = docForm.elements.status.value;
     if (docType === "Rechnung" && status !== "Entwurf" && !nummer) nummer = suggestDocNumber("Rechnung");
     var previousDoc = editingDocId ? docs.find(function (d) { return d.id === editingDocId; }) : null;
+    var conversionSource = (!editingDocId && docType === "Rechnung") ? pendingConversionSource : null;
     var data = {
       id: editingDocId || uid(), typ: docType, nummer: nummer,
       status: status, datum: docForm.elements.datum.value,
@@ -3209,6 +3211,10 @@
       leistungszeitraum: docForm.elements.leistungszeitraum.value.trim(), leistungsort: docForm.elements.leistungsort.value.trim(),
       mwstSatz: mwstSatz, netto: netto, brutto: brutto, notizen: docForm.elements.notizen.value.trim()
     };
+    if (conversionSource) {
+      if (conversionSource.typ === "Angebot") data.angebotId = conversionSource.id;
+      else if (conversionSource.typ === "Kostenvoranschlag") data.kostenvoranschlagId = conversionSource.id;
+    }
     var billingRefs = pendingMaterialBillingRefs.slice();
     var protectedGrund = (pendingProtectedEdit && previousDoc && pendingProtectedEdit.doc.id === previousDoc.id) ? pendingProtectedEdit.grund : null;
     db.collection("customers").doc(detailCustomer.id).collection("dokumente").doc(data.id).set(data)
@@ -3222,9 +3228,15 @@
         if (protectedGrund) {
           logAenderung("customers/" + detailCustomer.id + "/dokumente/" + data.id, "update", previousDoc, data, protectedGrund);
         }
+        if (conversionSource) {
+          db.collection("customers").doc(detailCustomer.id).collection("dokumente").doc(conversionSource.id)
+            .update({ convertedToInvoiceId: data.id }).catch(function () {});
+        }
         closeDocForm();
         if (docType === "Angebot" && status === "Angenommen" && !(previousDoc && previousDoc.convertedToInvoiceId)) {
-          convertOfferToInvoice(data);
+          startInvoiceConversion(data);
+        } else if (docType === "Kostenvoranschlag" && status === "Bestätigt" && !(previousDoc && previousDoc.convertedToInvoiceId)) {
+          startInvoiceConversion(data);
         }
       })
       .catch(function (err) { setBanner("Speichern fehlgeschlagen: " + err.message); });
@@ -3239,6 +3251,8 @@
     el.innerHTML = sorted.map(function (d) {
       var colorInfo = (DOC_STATUS[d.typ] && DOC_STATUS[d.typ].colors[d.status]) || { bg: "#EEF0F2", fg: "#5B6470" };
       var convertedInvoice = d.convertedToInvoiceId ? docs.find(function (x) { return x.id === d.convertedToInvoiceId; }) : null;
+      var conversionOrigin = d.angebotId ? { label: "Angebot", quelle: docs.find(function (x) { return x.id === d.angebotId; }) } :
+        d.kostenvoranschlagId ? { label: "Kostenvoranschlag", quelle: docs.find(function (x) { return x.id === d.kostenvoranschlagId; }) } : null;
       var mahnstufe = d.mahnstufe || 0;
       var canMahnen = d.typ === "Rechnung" && d.status !== "Bezahlt" && d.status !== "Storniert" && d.gueltigFaellig && d.gueltigFaellig < today && mahnstufe < 2;
       var isStorniert = d.typ === "Rechnung" && d.status === "Storniert";
@@ -3248,10 +3262,11 @@
         '<div class="doc-row-top"><div><div class="job-title">' + esc(d.typ) + ' ' + esc(d.nummer || "") + '</div>' +
         '<div class="job-meta">' + fmtDate(d.datum) + ' · ' + fmtEUR(d.brutto) +
         (convertedInvoice ? ' · → Rechnung ' + esc(convertedInvoice.nummer || "") : "") +
+        (conversionOrigin && conversionOrigin.quelle ? ' · aus ' + conversionOrigin.label + ' ' + esc(conversionOrigin.quelle.nummer || "") : "") +
         (mahnstufe > 0 ? ' · ' + mahnstufe + '. Mahnstufe' : "") + '</div>' + lockedHint + '</div>' +
         '<span class="badge-status" style="background:' + colorInfo.bg + ';color:' + colorInfo.fg + '">' + esc(d.status) + '</span></div>' +
         '<div class="doc-actions">' +
-        (d.typ === "Angebot" && d.status === "Angenommen" && !d.convertedToInvoiceId ?
+        (((d.typ === "Angebot" && d.status === "Angenommen") || (d.typ === "Kostenvoranschlag" && d.status === "Bestätigt")) && !d.convertedToInvoiceId ?
           '<button type="button" class="doc-convert" data-doc="' + d.id + '" aria-label="In Rechnung umwandeln">' + icon("convert") + '</button>' : "") +
         (canMahnen ?
           '<button type="button" class="doc-mahnung" data-doc="' + d.id + '" aria-label="' + (mahnstufe === 0 ? "Zahlungserinnerung" : "2. Mahnung") + ' drucken">' + icon("bell") + '</button>' : "") +
@@ -3646,23 +3661,19 @@
     window.print();
   }
 
-  function convertOfferToInvoice(offer) {
-    if (!detailCustomer) return;
-    var invoiceId = uid();
-    var today = new Date().toISOString().slice(0, 10);
-    var invoice = {
-      id: invoiceId, typ: "Rechnung", nummer: "",
-      status: "Entwurf", datum: today, gueltigFaellig: "",
-      positionen: (offer.positionen || []).map(function (p) { return { bezeichnung: p.bezeichnung, menge: p.menge, preis: p.preis, einheit: p.einheit || "Std." }; }),
-      mwstSatz: offer.mwstSatz, netto: offer.netto, brutto: offer.brutto,
-      notizen: offer.notizen || "", angebotId: offer.id
-    };
-    return db.collection("customers").doc(detailCustomer.id).collection("dokumente").doc(invoiceId).set(invoice)
-      .then(function () {
-        return db.collection("customers").doc(detailCustomer.id).collection("dokumente").doc(offer.id).update({ convertedToInvoiceId: invoiceId });
-      })
-      .then(function () { showToast("Rechnungsentwurf erstellt"); })
-      .catch(function (err) { setBanner("Umwandlung fehlgeschlagen: " + err.message); });
+  var pendingConversionSource = null;
+  function startInvoiceConversion(sourceDoc) {
+    if (!detailCustomer || sourceDoc.convertedToInvoiceId) return;
+    pendingConversionSource = sourceDoc;
+    openDocForm("Rechnung", null);
+    currentPositions = (sourceDoc.positionen && sourceDoc.positionen.length) ?
+      sourceDoc.positionen.map(function (p) { return { bezeichnung: p.bezeichnung, menge: p.menge, preis: p.preis, einheit: p.einheit || "Std." }; }) : [emptyPosition()];
+    docForm.elements.leistungsort.value = sourceDoc.leistungsort || docForm.elements.leistungsort.value;
+    docForm.elements.notizen.value = sourceDoc.notizen || "";
+    renderPosRows();
+    document.getElementById("conversionHint").hidden = false;
+    document.getElementById("conversionHint").textContent =
+      "Diese Rechnung wurde aus " + sourceDoc.typ + " Nr. " + (sourceDoc.nummer || sourceDoc.id) + " übernommen. Bitte Positionen, Preise und Rechnungsnummer prüfen — der tatsächliche Aufwand kann vom Original abweichen.";
   }
 
   document.getElementById("docList").addEventListener("click", function (e) {
@@ -3682,7 +3693,7 @@
     }
     if (convertBtn) {
       var offer = docs.find(function (x) { return x.id === convertBtn.dataset.doc; });
-      if (offer) convertOfferToInvoice(offer);
+      if (offer) startInvoiceConversion(offer);
       return;
     }
     if (mahnungBtn) {
