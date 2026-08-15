@@ -553,7 +553,10 @@
   <div id="catalogView" hidden>
     <button type="button" class="view-back">← Mehr</button>
     <p style="padding:14px 16px 0;font-size:0.78rem;color:var(--ink-soft);">Preise gelten für neue Angebote/Rechnungen. Bereits erstellte Dokumente ändern sich nicht.</p>
-    <div style="padding:10px 16px 0;"><button type="button" class="btn btn-ghost" id="loadMarketPrices" style="width:100%;">Marktpreis-Vorschläge laden (Winterdienst, Glas, Garten)</button></div>
+    <div style="padding:10px 16px 0;display:flex;flex-direction:column;gap:8px;">
+      <button type="button" class="btn btn-ghost" id="loadMarketPrices" style="width:100%;">Marktpreis-Vorschläge laden (Winterdienst, Glas, Garten)</button>
+      <button type="button" class="btn btn-ghost" id="seedServicesFromExcelBtn" style="width:100%;">Excel-Preisliste importieren (16 Positionen)</button>
+    </div>
     <div class="list" id="catalogList"></div>
     <button class="fab" id="fabAddService" aria-label="Neue Leistung">
       <svg class="icn" viewBox="0 0 24 24" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -662,13 +665,17 @@
       <summary><span>Steuerparameter</span><span class="rl-count" id="rlParamsCount"></span><span class="rl-chev">⌄</span></summary>
       <div class="related-body">
         <p style="font-size:0.74rem;color:var(--ink-soft);">Jeder Wert braucht Bezeichnung, Betrag/Prozentsatz, Quelle und Gültig-ab-Datum. Fehlt ein Parameter, zeigt die App "Keine ausreichenden Daten" statt einer Schätzung.</p>
-        <button type="button" class="btn btn-ghost btn-sm" id="addTaxParamBtn">+ Parameter</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-ghost btn-sm" id="addTaxParamBtn">+ Parameter</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="seedTaxParamsBtn">Excel-Werte importieren</button>
+        </div>
         <div class="job-list" id="taxParamsList" style="margin-top:10px;"></div>
       </div>
     </details>
 
-    <div style="padding:12px 16px 24px;">
+    <div style="padding:12px 16px 24px;display:flex;flex-direction:column;gap:8px;">
       <button type="button" class="btn btn-primary" id="openReserveWizardBtn" style="width:100%;">Rücklagen-Assistent starten</button>
+      <button type="button" class="btn btn-ghost" id="openEntnahmeRechnerBtn" style="width:100%;">Gesellschafter-Entnahme berechnen</button>
     </div>
   </div>
 
@@ -1021,11 +1028,19 @@
       <form id="serviceForm">
         <div class="sheet-body">
           <label class="field full"><span>Leistung *</span><input name="label" placeholder="z. B. Unterhaltsreinigung" required /></label>
+          <label class="field"><span>Kategorie</span><input name="kategorie" placeholder="z. B. Reinigung" /></label>
           <label class="field"><span>Einheit</span><input name="unit" placeholder="z. B. Std., m², Pauschal" /></label>
           <div class="field full"><span>Preisstufen (€) — leer lassen für freien Preis</span></div>
           <label class="field"><span>Mindest</span><input name="mindest" type="number" min="0" step="0.01" /></label>
           <label class="field"><span>Standard</span><input name="standard" type="number" min="0" step="0.01" /></label>
           <label class="field"><span>Premium</span><input name="premium" type="number" min="0" step="0.01" /></label>
+          <div class="field full"><span>Marktvergleich (optional, zur Orientierung)</span></div>
+          <label class="field"><span>Markt von (€)</span><input name="marktVon" type="number" min="0" step="0.01" /></label>
+          <label class="field"><span>Markt bis (€)</span><input name="marktBis" type="number" min="0" step="0.01" /></label>
+          <label class="field"><span>Mindestmenge</span><input name="mindestmenge" type="number" min="0" step="0.01" /></label>
+          <label class="field full"><span>Kalkulationsbasis / Hinweis</span><input name="kalkulationsbasis" placeholder="z. B. Fläche × Frequenz; Mindestpreis bei kleinen Flächen" /></label>
+          <label class="field full"><span>Quelle</span><input name="quelle" placeholder="z. B. Marktspanne, Anbietervergleich" /></label>
+          <label class="field"><span>Abrufdatum</span><input name="abrufdatum" type="date" /></label>
         </div>
         <div class="sheet-foot">
           <button type="button" class="btn btn-ghost" id="serviceCancel">Abbrechen</button>
@@ -1300,6 +1315,27 @@
     </div>
   </div>
 
+  <div class="overlay" id="entnahmeRechnerOverlay">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2>Gesellschafter-Entnahme</h2>
+        <button id="entnahmeRechnerClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="detail-body">
+        <div style="font-size:0.78rem;color:var(--ink-soft);background:var(--surface-2);padding:10px 12px;border-radius:var(--r-m);margin-bottom:12px;">
+          Kein Arbeitnehmergehalt aus der GbR — der Gewinnanteil wird persönlich versteuert. Diese Berechnung plant eine Entnahme nach Steuer- und Vorsorgerücklage; sie ersetzt keine Lohn-/Steuerberatung.
+        </div>
+        <div class="job-form">
+          <label class="field full"><span>Gewinnanteil vor Rücklagen (€)</span><input id="entnahmeGewinnanteil" type="number" min="0" step="0.01" /></label>
+        </div>
+        <div id="entnahmeRechnerResult" style="margin-top:14px;"></div>
+      </div>
+      <div class="sheet-foot">
+        <button type="button" class="btn btn-primary" id="entnahmeRechnerDone">Fertig</button>
+      </div>
+    </div>
+  </div>
+
   <div class="overlay" id="employeeCalcOverlay">
     <div class="sheet" role="dialog" aria-modal="true">
       <div class="sheet-head">
@@ -1319,6 +1355,13 @@
             <label class="field"><span>Monatsbrutto (€)</span><input name="monatsbrutto" type="number" min="0" step="0.01" /></label>
             <label class="field"><span>Stundenlohn (€)</span><input name="stundenlohn" type="number" min="0" step="0.01" /></label>
             <label class="field"><span>Wochenstunden *</span><input name="wochenstunden" type="number" min="0.1" step="0.1" required /></label>
+            <div class="field full"><span>Lohnrechner (exakte AN-/AG-Abzüge, wie in der Excel-Kalkulation)</span></div>
+            <label class="field"><span>Lohnsteuer-Schätzung (%)</span><input name="lohnsteuerProzent" type="number" min="0" step="0.1" value="15" /></label>
+            <label class="field"><span>Kirchensteuer/sonstige Lohnsteuer (%)</span><input name="kirchensteuerProzent" type="number" min="0" step="0.1" value="0" /></label>
+            <label class="field"><span>Kinderlosen-PV-Zuschlag AN (%)</span><input name="kinderlosenPvZuschlagProzent" type="number" min="0" step="0.01" value="0.6" /></label>
+            <label class="field"><span>KV-Zusatzbeitrag AN (%)</span><input name="kvZusatzbeitragAnProzent" type="number" min="0" step="0.01" /></label>
+            <label class="field"><span>Sonstige AN-Abzüge (%)</span><input name="sonstigeAnAbzuegeProzent" type="number" min="0" step="0.1" value="0" /></label>
+            <label class="field"><span>Arbeitgeberzuschuss/Benefits (€/Monat)</span><input name="agZuschussMonatlich" type="number" min="0" step="0.01" value="0" /></label>
             <label class="field"><span>Bezahlte Urlaubstage/Jahr</span><input name="urlaubstageJahr" type="number" min="0" step="1" value="0" /></label>
             <label class="field"><span>Erwartete Krankheitstage/Jahr</span><input name="krankheitstageJahr" type="number" min="0" step="1" value="0" /></label>
             <label class="field"><span>Feiertage/Jahr (Ausfall)</span><input name="feiertageJahr" type="number" min="0" step="1" value="0" /></label>
@@ -1373,7 +1416,7 @@
           <div class="calc-step job-form" data-step="2" hidden>
             <label class="field"><span>Reinigungstage</span><input name="reinigungstage" placeholder="z. B. Mo, Mi, Fr" /></label>
             <label class="field"><span>Reinigungsintervall</span>
-              <select name="reinigungsintervall"><option>Täglich (Werktage)</option><option>Wöchentlich</option><option>2x wöchentlich</option><option>14-tägig</option><option>Monatlich</option></select>
+              <select name="reinigungsintervall"><option>Einmalig (kein Wiederholungsintervall)</option><option>1x pro Woche</option><option>2x pro Woche</option><option>3x pro Woche</option><option>4x pro Woche</option><option>5x pro Woche (täglich, Mo–Fr)</option><option>14-tägig (alle 2 Wochen)</option><option>1x pro Monat</option></select>
             </label>
             <label class="field"><span>Gewünschte Uhrzeit</span><input name="uhrzeit" type="time" /></label>
             <label class="field"><span>Arbeitszeit pro Einsatz (Std.) *</span><input name="arbeitszeitProEinsatz" type="number" min="0.1" step="0.1" /></label>
@@ -1394,8 +1437,11 @@
             <label class="field"><span>Verbrauchsmaterial pro Einsatz (€)</span><input name="verbrauchsmaterialProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
             <label class="field"><span>Gerätekosten pro Einsatz (€)</span><input name="geraetekostenProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
             <label class="field"><span>Verwaltungskosten pro Einsatz (€)</span><input name="verwaltungskostenProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
-            <label class="field"><span>Risikozuschlag (%)</span><input name="risikozuschlagProzent" type="number" min="0" step="0.1" value="0" /></label>
-            <label class="field"><span>Gewünschte Gewinnmarge (%)</span><input name="gewinnmargeProzent" type="number" min="0" step="0.1" value="20" /></label>
+            <label class="field"><span>Gewünschte Gewinnmarge auf Verkaufspreis (%)</span><input name="gewinnmargeProzent" type="number" min="0" max="99" step="0.1" value="20" /></label>
+            <div class="field full"><span>Preisanpassung (optional, auf den Verkaufspreis)</span></div>
+            <label class="field"><span>Rabatt auf Leistungswert (%)</span><input name="rabattProzent" type="number" min="0" max="100" step="0.1" value="0" /></label>
+            <label class="field"><span>Sonderzuschlag/Risikozuschlag (%)</span><input name="risikozuschlagProzent" type="number" min="0" step="0.1" value="0" /></label>
+            <label class="field"><span>Zahlungs-/Angebotspauschale (€)</span><input name="zahlungspauschale" type="number" min="0" step="0.01" value="0" /></label>
             <label class="field"><span>Angebotener/Ist-Preis je Einsatz (€, optional)</span><input name="istPreisProEinsatz" type="number" min="0" step="0.01" /></label>
           </div>
 
@@ -2155,6 +2201,40 @@
       .catch(function (err) { setBanner("Preisvorschläge konnten nicht geladen werden: " + err.message); });
   }
   document.getElementById("loadMarketPrices").addEventListener("click", loadMarketPrices);
+
+  // Werte aus "Professionelle Preis- und Lohnkalkulation 2026 M&I-Rheinservice.xlsx", Blatt Preisliste (Stand 2026-08-09).
+  var EXCEL_SERVICES_SEED = [
+    { label: "Unterhaltsreinigung Büro", kategorie: "Reinigung", unit: "m² je Reinigung", marktVon: 0.2, marktBis: 0.5, standard: 0.48, mindestmenge: 100, kalkulationsbasis: "Fläche × Frequenz; kleine Flächen mit Mindestpreis", quelle: "Marktspanne; Zeitaufwand prüfen", abrufdatum: "2026-08-09" },
+    { label: "Unterhaltsreinigung Praxis", kategorie: "Reinigung", unit: "m² je Reinigung", marktVon: 0.35, marktBis: 0.9, standard: 0.68, mindestmenge: 80, kalkulationsbasis: "Hygiene-/Kontaktflächen und Dokumentation berücksichtigen", quelle: "M&I-Annahme aus Markt-/Aufwandsvergleich", abrufdatum: "2026-08-09" },
+    { label: "Grundreinigung", kategorie: "Sonderreinigung", unit: "m²", marktVon: 3.5, marktBis: 7.5, standard: 5.25, mindestmenge: 50, kalkulationsbasis: "Verschmutzungsgrad und Zusatzarbeiten erfassen", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Bauendreinigung", kategorie: "Sonderreinigung", unit: "m²", marktVon: 4.0, marktBis: 9.0, standard: 6.0, mindestmenge: 50, kalkulationsbasis: "Baufein-/Baugrobreinigung getrennt kalkulieren", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Fenster-/Glasreinigung normal", kategorie: "Glasreinigung", unit: "m² Glasfläche", marktVon: 2.0, marktBis: 4.0, standard: 3.2, mindestmenge: 20, kalkulationsbasis: "Innen/Außen, Rahmen, Höhe und Zugänglichkeit erfassen", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Wintergartenreinigung", kategorie: "Glasreinigung", unit: "m² Glasfläche", marktVon: 4.5, marktBis: 6.0, standard: 5.25, mindestmenge: 10, kalkulationsbasis: "Ober-/Unterseite und starke Verschmutzung separat", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Glasfassade/Glasdach", kategorie: "Glasreinigung", unit: "m² Glasfläche", marktVon: 4.0, marktBis: 8.0, standard: 6.0, mindestmenge: 20, kalkulationsbasis: "Zugang, Hubtechnik und Sicherheitsaufwand berücksichtigen", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Teppichreinigung", kategorie: "Sonderreinigung", unit: "m²", marktVon: 4.0, marktBis: 8.0, standard: 5.5, mindestmenge: 20, kalkulationsbasis: "Verfahren und Trocknungszeit berücksichtigen", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Treppenhaus Basis", kategorie: "Hausmeister/Reinigung", unit: "Etage", marktVon: 10.0, marktBis: 30.0, standard: 25.0, mindestmenge: 1, kalkulationsbasis: "Etagen, Geländer, Fensterbänke und Frequenz", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Treppenhaus umfangreich", kategorie: "Hausmeister/Reinigung", unit: "Etage", marktVon: 30.0, marktBis: 60.0, standard: 45.0, mindestmenge: 1, kalkulationsbasis: "Zusatzflächen und stärkere Verschmutzung", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Reinigungsleistung nach Stunde", kategorie: "Reinigung", unit: "Stunde", marktVon: 25.0, marktBis: 40.0, standard: 52.0, mindestmenge: 1, kalkulationsbasis: "M&I-Startpreis enthält Reserve für Gemeinkosten/Marge", quelle: "Marktspanne + M&I-Kalkulationsziel", abrufdatum: "2026-08-09" },
+    { label: "Hausmeister/Instandhaltung", kategorie: "Hausmeisterservice", unit: "Stunde", marktVon: 35.0, marktBis: 50.0, standard: 52.0, mindestmenge: 1, kalkulationsbasis: "Kleinreparaturen/Objektbetreuung ohne Material", quelle: "Marktspanne + M&I-Kalkulationsziel", abrufdatum: "2026-08-09" },
+    { label: "Gartenpflege", kategorie: "Gartenpflege", unit: "Stunde", marktVon: 30.0, marktBis: 45.0, standard: 48.0, mindestmenge: 1, kalkulationsbasis: "Maschinen, Entsorgung und Saisonaufwand ergänzen", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Winterdienst Einsatz", kategorie: "Winterdienst", unit: "m² je Einsatz", marktVon: 1.5, marktBis: 6.0, standard: 2.75, mindestmenge: 20, kalkulationsbasis: "Streugut, Nacht-/Wochenendzuschlag und Bereitschaft extra", quelle: "Marktspanne", abrufdatum: "2026-08-09" },
+    { label: "Anfahrt/Kilometer", kategorie: "Fahrtkosten", unit: "km", marktVon: 0.6, marktBis: 1.31, standard: 0.7, mindestmenge: 1, kalkulationsbasis: "Mindestpauschale und Fahrzeit zusätzlich prüfen", quelle: "Anbieterpreis/Marktvergleich", abrufdatum: "2026-08-09" },
+    { label: "Geräte-/Werkzeugpauschale", kategorie: "Zuschlag", unit: "Einsatz", marktVon: 25.0, marktBis: 50.0, standard: 42.8, mindestmenge: 1, kalkulationsbasis: "Bei Spezialmaschinen höher kalkulieren", quelle: "Anbieterpreis", abrufdatum: "2026-08-09" }
+  ];
+  function seedServicesFromExcel() {
+    var vorhandeneLabels = services.map(function (s) { return s.label; });
+    var fehlend = EXCEL_SERVICES_SEED.filter(function (s) { return vorhandeneLabels.indexOf(s.label) === -1; });
+    if (fehlend.length === 0) { showToast("Alle Excel-Positionen sind bereits im Katalog"); return; }
+    var batch = db.batch();
+    fehlend.forEach(function (s) {
+      var id = uid();
+      batch.set(db.collection("services").doc(id), Object.assign({ id: id, mindest: s.marktVon, premium: s.marktBis }, s));
+    });
+    batch.commit()
+      .then(function () { showToast(fehlend.length + " Positionen aus der Excel-Preisliste importiert"); })
+      .catch(function (err) { setBanner("Import fehlgeschlagen: " + err.message); });
+  }
+  document.getElementById("seedServicesFromExcelBtn").addEventListener("click", seedServicesFromExcel);
 
   function nextJobDate(customerId) {
     var today = new Date().toISOString().slice(0, 10);
@@ -3983,7 +4063,25 @@
     { key: "sonstige_ruecklage_prozent", label: "Sonstige Rücklagen", unit: "%", hilfe: "Zusätzlicher Puffer für sonstige Risiken/Ausgaben, frei wählbar." },
     { key: "sicherheitsreserve_prozent", label: "Sicherheitsreserve", unit: "%", hilfe: "Zusätzlicher Sicherheitsaufschlag auf die empfohlene Gesamtrücklage, einstellbar im Rücklagen-Assistenten." },
     { key: "mindestreserve_betrag", label: "Mindestreserve", unit: "€", hilfe: "Betrag, der unabhängig vom Gewinn immer als Rücklage empfohlen wird." },
-    { key: "tatsaechliche_ruecklage_betrag", label: "Tatsächlich zurückgelegter Betrag", unit: "€", hilfe: "Admin trägt hier manuell ein, wie viel bereits real auf ein Rücklagenkonto o. ä. zurückgelegt wurde. Wird mit der empfohlenen Rücklage verglichen." }
+    { key: "tatsaechliche_ruecklage_betrag", label: "Tatsächlich zurückgelegter Betrag", unit: "€", hilfe: "Admin trägt hier manuell ein, wie viel bereits real auf ein Rücklagenkonto o. ä. zurückgelegt wurde. Wird mit der empfohlenen Rücklage verglichen." },
+    { key: "mindestlohn_gesetzlich", label: "Gesetzlicher Mindestlohn", unit: "€/Std.", hilfe: "Gesetzlicher Mindestlohn — Untergrenze für jeden Stundenlohn." },
+    { key: "branchenmindestlohn_gebaeudereinigung", label: "Branchenmindestlohn Gebäudereinigung LG 1", unit: "€/Std.", hilfe: "Tariflicher Mindestlohn für einfache Reinigungsarbeiten (Lohngruppe 1)." },
+    { key: "kv_allgemein_prozent", label: "Krankenversicherung allgemeiner Satz", unit: "%", hilfe: "Gesamtsatz Krankenversicherung — wird im Mitarbeiter-Kalkulator hälftig auf Arbeitnehmer/Arbeitgeber aufgeteilt." },
+    { key: "kv_zusatzbeitrag_prozent", label: "Durchschnittlicher KV-Zusatzbeitrag", unit: "%", hilfe: "Kassenindividueller Zusatzbeitrag, hälftig AN/AG." },
+    { key: "rv_prozent", label: "Rentenversicherung gesamt", unit: "%", hilfe: "Gesamtsatz Rentenversicherung, hälftig AN/AG." },
+    { key: "av_prozent", label: "Arbeitslosenversicherung gesamt", unit: "%", hilfe: "Gesamtsatz Arbeitslosenversicherung, hälftig AN/AG." },
+    { key: "pv_ag_nrw_prozent", label: "Pflegeversicherung Arbeitgeberanteil (NRW)", unit: "%", hilfe: "Regionaler Wert für NRW — in Sachsen gilt ein abweichender Arbeitgeberanteil, bei Personal außerhalb NRW prüfen." },
+    { key: "u1_prozent", label: "U1-Umlage (Arbeitgeber)", unit: "%", hilfe: "Umlage für Entgeltfortzahlung im Krankheitsfall — abhängig vom Krankenkassen-Umlagesatz, editierbare Annahme." },
+    { key: "u2_prozent", label: "U2-Umlage (Arbeitgeber)", unit: "%", hilfe: "Umlage für Mutterschaftsleistungen — editierbare Annahme." },
+    { key: "insolvenzgeldumlage_prozent", label: "Insolvenzgeldumlage", unit: "%", hilfe: "Gesetzliche Umlage nach § 360 SGB III." },
+    { key: "berufsgenossenschaft_prozent", label: "Berufsgenossenschaft", unit: "%", hilfe: "Branchen-/gefahrtarifabhängige Berufsgenossenschafts-Beiträge, editierbare Annahme." },
+    { key: "sonstige_ag_kosten_prozent", label: "Sonstige Arbeitgeberkosten", unit: "%", hilfe: "Puffer für sonstige Personalnebenkosten." },
+    { key: "kilometersatz", label: "Kilometersatz/Fahrtkosten", unit: "€/km", hilfe: "Pauschale für Fahrtkosten pro gefahrenem Kilometer." },
+    { key: "gemeinkosten_prozent", label: "Gemeinkosten auf direkte Kosten", unit: "%", hilfe: "Deckt Verwaltung, Software, Versicherung, Telefon, Fahrzeug-Grundkosten. Empfehlung: 12–20 % der direkten Kosten." },
+    { key: "zielmarge_prozent", label: "Zielmarge auf Verkaufspreis", unit: "%", hilfe: "Marge = Gewinn ÷ Verkaufspreis (nicht Kostenaufschlag). Empfehlung: 15–25 % im Reinigungs-/Hausmeistergewerbe." },
+    { key: "steuerreserve_est_gesellschafter_prozent", label: "Gesellschafter: Steuerreserve Einkommensteuer/Soli", unit: "%", hilfe: "Anteil vom persönlichen Gewinnanteil eines Gesellschafters, der für Einkommensteuer/Soli zurückgelegt werden soll." },
+    { key: "private_kv_reserve_prozent", label: "Gesellschafter: private KV/PV-Reserve", unit: "%", hilfe: "Rücklage für die private Kranken-/Pflegeversicherung der Gesellschafter (keine Betriebsausgabe)." },
+    { key: "private_altersvorsorge_reserve_prozent", label: "Gesellschafter: private Altersvorsorge-Reserve", unit: "%", hilfe: "Rücklage für private Altersvorsorge der Gesellschafter." }
   ];
   function taxParamLabel(key) { var d = TAX_PARAM_KEYS.find(function (t) { return t.key === key; }); return d ? d.label : key; }
   function taxParamUnit(key) { var d = TAX_PARAM_KEYS.find(function (t) { return t.key === key; }); return d ? d.unit : ""; }
@@ -4358,6 +4456,59 @@
     if (row) { var p2 = taxParameters.find(function (x) { return x.id === row.dataset.id; }); if (p2) openTaxParamForm(p2); }
   });
 
+  // Werte aus "Professionelle Preis- und Lohnkalkulation 2026 M&I-Rheinservice.xlsx" (Blätter Einstellungen/Quellen/Lohnrechner, Stand 2026-08-09).
+  var EXCEL_TAX_PARAM_SEED = [
+    { key: "kleinunternehmer_grenze_vorjahr", wert: 25000, quelle: "https://www.gesetze-im-internet.de/ustg_1980/__19.html" },
+    { key: "kleinunternehmer_grenze_laufend", wert: 100000, quelle: "https://www.gesetze-im-internet.de/ustg_1980/__19.html" },
+    { key: "regelbesteuerung_standardsatz", wert: 19, quelle: "§ 12 Abs. 1 UStG (gesetzlicher Regelsteuersatz)" },
+    { key: "est_ruecklage_prozent", wert: 35, quelle: "Excel-Blatt Einstellungen, Steuerreserve GbR-Gewinn — Richtwert Grenzsteuersatz, im Zweifel mit Steuerberatung abstimmen" },
+    { key: "gewerbesteuer_ruecklage_prozent", wert: 0, quelle: "Excel-Blatt Einstellungen, Gewerbesteuerreserve — 0 % plausibel unterhalb Freibetrag 24.500 € (§ 11 Abs. 1 GewStG)" },
+    { key: "mindestlohn_gesetzlich", wert: 13.9, quelle: "https://www.bmas.de/DE/Service/Presse/Pressemitteilungen/2025/mindestlohn-steigt-zum-ersten-januar-2026.html" },
+    { key: "branchenmindestlohn_gebaeudereinigung", wert: 15.0, quelle: "https://www.die-gebaeudedienstleister.de/gebaeudedienstleister/tarifinformationen/" },
+    { key: "kv_allgemein_prozent", wert: 14.6, quelle: "https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554" },
+    { key: "kv_zusatzbeitrag_prozent", wert: 2.9, quelle: "https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554 (kassenindividueller Durchschnitt)" },
+    { key: "rv_prozent", wert: 18.6, quelle: "https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554" },
+    { key: "av_prozent", wert: 2.6, quelle: "https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554" },
+    { key: "pv_ag_nrw_prozent", wert: 1.8, quelle: "https://www.tk.de/firmenkunden/versicherung/beitraege-faq/pv-beitraege/wie-berechnen-arbeitgeber-den-pflegebeitrag-2148694" },
+    { key: "u1_prozent", wert: 1.5, quelle: "Excel-Blatt Einstellungen, editierbare Annahme, abhängig von Krankenkasse/Umlagesatz" },
+    { key: "u2_prozent", wert: 0.22, quelle: "Excel-Blatt Einstellungen, editierbare Annahme, abhängig von Krankenkasse/Umlagesatz" },
+    { key: "insolvenzgeldumlage_prozent", wert: 0.15, quelle: "https://www.tk.de/firmenkunden/service/fachthemen/fachthema-beitraege/insolvenzgeldumlage-2047584" },
+    { key: "berufsgenossenschaft_prozent", wert: 1.5, quelle: "Excel-Blatt Einstellungen, editierbare Annahme, branchen-/gefahrtarifabhängig" },
+    { key: "sonstige_ag_kosten_prozent", wert: 1, quelle: "Excel-Blatt Einstellungen, Kalkulationsannahme, Puffer für sonstige Personalnebenkosten" },
+    { key: "kilometersatz", wert: 0.7, quelle: "Excel-Blatt Preisliste, Anfahrt/Kilometer, M&I-Startpreis (Marktspanne 0,60–1,31 €/km)" },
+    { key: "gemeinkosten_prozent", wert: 15, quelle: "Excel-Blatt Einstellungen, Gemeinkosten auf direkte Kosten — Empfehlung 12–20 % der direkten Kosten" },
+    { key: "zielmarge_prozent", wert: 20, quelle: "Excel-Blatt Einstellungen, Zielmarge auf Verkaufspreis — Empfehlung 15–25 % im Reinigungs-/Hausmeistergewerbe" },
+    { key: "steuerreserve_est_gesellschafter_prozent", wert: 35, quelle: "Excel-Blatt Lohnrechner, GbR-Gesellschafter-Entnahme — Richtwert Grenzsteuersatz" },
+    { key: "private_kv_reserve_prozent", wert: 12, quelle: "Excel-Blatt Lohnrechner, GbR-Gesellschafter-Entnahme, Kalkulationsannahme" },
+    { key: "private_altersvorsorge_reserve_prozent", wert: 5, quelle: "Excel-Blatt Lohnrechner, GbR-Gesellschafter-Entnahme, Kalkulationsannahme" }
+  ];
+  function seedTaxParamsFromExcel() {
+    var vorhanden = {};
+    taxParameters.forEach(function (p) { vorhanden[p.schluessel] = true; });
+    var fehlend = EXCEL_TAX_PARAM_SEED.filter(function (s) { return !vorhanden[s.key]; });
+    if (fehlend.length === 0) { showToast("Alle Excel-Parameter sind bereits vorhanden"); return; }
+    var jetzt = new Date().toISOString();
+    var batch = db.batch();
+    fehlend.forEach(function (s) {
+      var data = {
+        id: uid(), schluessel: s.key, bezeichnung: taxParamLabel(s.key),
+        wert: s.wert, gueltigAb: "2026-01-01", quelle: s.quelle,
+        letzteAktualisierung: jetzt, erstelltVon: currentUserEmail
+      };
+      batch.set(db.collection("taxParameters").doc(data.id), data);
+    });
+    batch.commit()
+      .then(function () {
+        return logAenderung("taxParameters", "seed", null, { anzahl: fehlend.length, schluessel: fehlend.map(function (s) { return s.key; }) }, "Excel-Werte importiert (Professionelle Preis- und Lohnkalkulation 2026)");
+      })
+      .then(function () { showToast(fehlend.length + " Parameter aus der Excel-Kalkulation importiert"); })
+      .catch(function (err) { setBanner("Import fehlgeschlagen: " + err.message); });
+  }
+  document.getElementById("seedTaxParamsBtn").addEventListener("click", function () {
+    if (!confirm("Fehlende Steuer-/Lohnparameter aus der Excel-Kalkulation importieren? Bereits vorhandene Parameter werden dabei nicht verändert.")) return;
+    seedTaxParamsFromExcel();
+  });
+
   // ---- Steuertermine ----
   function emptyTaxDeadline() { return { id: "", bezeichnung: "", faelligAm: "", wiederkehrend: "", notiz: "" }; }
   var editingDeadlineId = null;
@@ -4428,6 +4579,53 @@
   document.getElementById("openReserveWizardBtn").addEventListener("click", openReserveWizard);
   document.getElementById("reserveWizardClose").addEventListener("click", function () { document.getElementById("reserveWizardOverlay").classList.remove("open"); });
   document.getElementById("reserveWizardOverlay").addEventListener("click", function (e) { if (e.target.id === "reserveWizardOverlay") document.getElementById("reserveWizardOverlay").classList.remove("open"); });
+
+  // ---- Gesellschafter-Entnahme-Rechner ----
+  function berechneGesellschafterEntnahme(gewinnanteil) {
+    var keys = ["steuerreserve_est_gesellschafter_prozent", "private_kv_reserve_prozent", "private_altersvorsorge_reserve_prozent"];
+    var fehlend = [];
+    var p = {};
+    keys.forEach(function (k) { var param = getTaxParam(k); if (!param) fehlend.push(taxParamLabel(k)); else p[k] = param.wert; });
+    if (fehlend.length > 0) return { fehlt: fehlend };
+    if (gewinnanteil == null || isNaN(gewinnanteil) || gewinnanteil < 0) return null;
+    var steuerreserve = gewinnanteil * (p.steuerreserve_est_gesellschafter_prozent / 100);
+    var kvReserve = gewinnanteil * (p.private_kv_reserve_prozent / 100);
+    var vorsorgeReserve = gewinnanteil * (p.private_altersvorsorge_reserve_prozent / 100);
+    var summeReserven = steuerreserve + kvReserve + vorsorgeReserve;
+    return {
+      gewinnanteil: gewinnanteil, steuerreserve: steuerreserve, steuerreserveProzent: p.steuerreserve_est_gesellschafter_prozent,
+      kvReserve: kvReserve, kvReserveProzent: p.private_kv_reserve_prozent,
+      vorsorgeReserve: vorsorgeReserve, vorsorgeReserveProzent: p.private_altersvorsorge_reserve_prozent,
+      summeReserven: summeReserven, entnahmeVerfuegbar: gewinnanteil - summeReserven
+    };
+  }
+  function renderEntnahmeRechner() {
+    var el = document.getElementById("entnahmeRechnerResult");
+    var wertStr = document.getElementById("entnahmeGewinnanteil").value;
+    var gewinnanteil = wertStr !== "" ? parseFloat(wertStr) : null;
+    var r = berechneGesellschafterEntnahme(gewinnanteil);
+    if (!r) { el.innerHTML = '<div class="job-empty">Bitte Gewinnanteil vor Rücklagen eingeben.</div>'; return; }
+    if (r.fehlt) {
+      el.innerHTML = '<div class="job-empty">Keine ausreichenden Daten — folgende Steuerparameter fehlen: ' + esc(r.fehlt.join(", ")) + '. Unter „Steuerparameter\" mit „Excel-Werte importieren\" befüllen.</div>';
+      return;
+    }
+    el.innerHTML = rowsHTML([
+      ["Steuerreserve Einkommensteuer/Soli (" + r.steuerreserveProzent + " %)", fmtEUR(r.steuerreserve)],
+      ["Private KV/PV-Reserve (" + r.kvReserveProzent + " %)", fmtEUR(r.kvReserve)],
+      ["Private Altersvorsorge-Reserve (" + r.vorsorgeReserveProzent + " %)", fmtEUR(r.vorsorgeReserve)],
+      ["Summe Rücklagen", fmtEUR(r.summeReserven)],
+      ["Entnahme verfügbar", fmtEUR(r.entnahmeVerfuegbar)]
+    ]) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Entnahme erst nach Steuer-/Vorsorgerücklagen planen. Keine Betriebsausgabe, keine Lohnabrechnung.</div>';
+  }
+  document.getElementById("openEntnahmeRechnerBtn").addEventListener("click", function () {
+    document.getElementById("entnahmeGewinnanteil").value = "";
+    renderEntnahmeRechner();
+    document.getElementById("entnahmeRechnerOverlay").classList.add("open");
+  });
+  document.getElementById("entnahmeGewinnanteil").addEventListener("input", renderEntnahmeRechner);
+  document.getElementById("entnahmeRechnerClose").addEventListener("click", function () { document.getElementById("entnahmeRechnerOverlay").classList.remove("open"); });
+  document.getElementById("entnahmeRechnerDone").addEventListener("click", function () { document.getElementById("entnahmeRechnerOverlay").classList.remove("open"); });
+  document.getElementById("entnahmeRechnerOverlay").addEventListener("click", function (e) { if (e.target.id === "entnahmeRechnerOverlay") document.getElementById("entnahmeRechnerOverlay").classList.remove("open"); });
   function steuernWizardStat(label, m) {
     return '<div class="stat"><div class="lbl">' + esc(label) + '</div><div class="val">' + (m.status === "ok" ? fmtEUR(m.wert) : "Keine Daten") + '</div></div>';
   }
@@ -4537,13 +4735,17 @@
 
   // ---- Mitarbeiter-Kalkulator ----
   function emptyEmployeeCalc() {
+    var kvZusatzGlobal = getTaxParam("kv_zusatzbeitrag_prozent");
     return {
       id: "", name: "", beschaeftigungsart: "Vollzeit", lohnArt: "monat", monatsbrutto: "", stundenlohn: "",
       wochenstunden: "", urlaubstageJahr: 0, krankheitstageJahr: 0, feiertageJahr: 0,
       arbeitgeberanteilProzent: "", berufsgenossenschaftMonatlich: 0, zuschlaegeMonatlich: 0,
       fahrtzeitStdProWoche: 0, unproduktiveZeitStdProWoche: 0, arbeitskleidungMonatlich: 0,
       schulungenMonatlich: 0, verwaltungskostenMonatlich: 0, sonstigePersonalkostenMonatlich: 0,
-      gewinnmargeProzent: 20, beispielEinsatzstunden: 2, beispielKundenpreis: ""
+      gewinnmargeProzent: 20, beispielEinsatzstunden: 2, beispielKundenpreis: "",
+      lohnsteuerProzent: 15, kirchensteuerProzent: 0, kinderlosenPvZuschlagProzent: 0.6,
+      kvZusatzbeitragAnProzent: kvZusatzGlobal ? Math.round(kvZusatzGlobal.wert / 2 * 100) / 100 : "",
+      sonstigeAnAbzuegeProzent: 0, agZuschussMonatlich: 0
     };
   }
   function berechneMitarbeiterKosten(f) {
@@ -4574,6 +4776,40 @@
     var kundenpreis = f.beispielKundenpreis !== "" && f.beispielKundenpreis != null ? parseFloat(f.beispielKundenpreis) : null;
     var gewinnBeiKundenpreis = (kundenpreis != null && kostenProProduktiverStunde != null) ? (kundenpreis - kostenProProduktiverStunde) * einsatzstunden : null;
 
+    // Lohnrechner: exakte AN-/AG-Aufteilung wie im Excel-Blatt "Lohnrechner" (Bruttolohn -> Netto, AG-Gesamtkosten).
+    var LR_PARAMS = ["kv_allgemein_prozent", "kv_zusatzbeitrag_prozent", "rv_prozent", "av_prozent", "pv_ag_nrw_prozent", "u1_prozent", "u2_prozent", "insolvenzgeldumlage_prozent", "berufsgenossenschaft_prozent", "sonstige_ag_kosten_prozent"];
+    var lrFehlend = [];
+    var lrP = {};
+    LR_PARAMS.forEach(function (key) {
+      var p = getTaxParam(key);
+      if (!p) lrFehlend.push(taxParamLabel(key)); else lrP[key] = p.wert / 100;
+    });
+    var lohnrechner = null;
+    if (lrFehlend.length === 0 && monatsbrutto > 0) {
+      var lsProzent = (parseFloat(f.lohnsteuerProzent) || 0) / 100;
+      var ksProzent = (parseFloat(f.kirchensteuerProzent) || 0) / 100;
+      var pvZuschlagProzent = (parseFloat(f.kinderlosenPvZuschlagProzent) || 0) / 100;
+      var kvZusatzAnProzent = (parseFloat(f.kvZusatzbeitragAnProzent) || 0) / 100;
+      var sonstAnProzent = (parseFloat(f.sonstigeAnAbzuegeProzent) || 0) / 100;
+      var agZuschuss = parseFloat(f.agZuschussMonatlich) || 0;
+      var anKv = monatsbrutto * lrP.kv_allgemein_prozent / 2;
+      var anRv = monatsbrutto * lrP.rv_prozent / 2;
+      var anAv = monatsbrutto * lrP.av_prozent / 2;
+      var anPv = monatsbrutto * (lrP.pv_ag_nrw_prozent / 2 + pvZuschlagProzent);
+      var anKvZusatz = monatsbrutto * kvZusatzAnProzent;
+      var anLohnsteuer = monatsbrutto * (lsProzent + ksProzent);
+      var anSonstige = monatsbrutto * sonstAnProzent;
+      var nettoAuszahlung = monatsbrutto - anKv - anRv - anAv - anPv - anKvZusatz - anLohnsteuer - anSonstige;
+      var agSozialUndUmlage = monatsbrutto * (lrP.kv_allgemein_prozent / 2 + lrP.kv_zusatzbeitrag_prozent / 2 + lrP.rv_prozent / 2 + lrP.av_prozent / 2 + lrP.pv_ag_nrw_prozent + lrP.u1_prozent + lrP.u2_prozent + lrP.insolvenzgeldumlage_prozent + lrP.berufsgenossenschaft_prozent + lrP.sonstige_ag_kosten_prozent);
+      var agGesamtkosten = monatsbrutto + agSozialUndUmlage + agZuschuss;
+      lohnrechner = {
+        anKv: anKv, anRv: anRv, anAv: anAv, anPv: anPv, anKvZusatz: anKvZusatz, anLohnsteuer: anLohnsteuer, anSonstige: anSonstige,
+        nettoAuszahlung: nettoAuszahlung, agSozialUndUmlage: agSozialUndUmlage, agZuschuss: agZuschuss, agGesamtkosten: agGesamtkosten,
+        nettoquote: monatsbrutto > 0 ? nettoAuszahlung / monatsbrutto : 0,
+        kostenfaktorAgBrutto: monatsbrutto > 0 ? agGesamtkosten / monatsbrutto : 0
+      };
+    }
+
     return {
       monatsbrutto: monatsbrutto, lohnnebenkosten: lohnnebenkosten, gesamtkostenMonatlich: gesamtkostenMonatlich,
       bezahlteStundenMonat: bezahlteStundenMonat, produktiveStundenMonat: produktiveStundenMonat,
@@ -4581,7 +4817,8 @@
       mindestpreis: kostenProProduktiverStunde, empfohlenerPreis: empfohlenerPreis,
       kostenProEinsatz: kostenProEinsatz, einsatzstunden: einsatzstunden,
       kundenpreis: kundenpreis, gewinnBeiKundenpreis: gewinnBeiKundenpreis,
-      agAnteilFehlt: agAnteilProzent == null
+      agAnteilFehlt: agAnteilProzent == null,
+      lohnrechner: lohnrechner, lohnrechnerFehlendeParameter: lrFehlend
     };
   }
   function readEmployeeCalcForm() {
@@ -4589,29 +4826,56 @@
     Object.keys(emptyEmployeeCalc()).forEach(function (k) { if (employeeCalcForm.elements[k]) f[k] = employeeCalcForm.elements[k].value; });
     return f;
   }
+  function rowsHTML(rows) {
+    return rows.map(function (row) {
+      return '<div class="row" style="justify-content:space-between;display:flex;padding:4px 0;border-bottom:1px solid var(--border);"><span>' + esc(row[0]) + '</span><strong style="color:var(--accent);">' + row[1] + '</strong></div>';
+    }).join("");
+  }
   function renderEmployeeCalcResult() {
     var f = readEmployeeCalcForm();
     var r = berechneMitarbeiterKosten(f);
     var el = document.getElementById("employeeCalcResult");
     if (!r) { el.innerHTML = '<div class="job-empty">Bitte Wochenstunden angeben.</div>'; return; }
+
+    var html = '<h3 class="section-title" style="margin-bottom:8px;">Vollkosten je produktive Stunde</h3>';
     if (r.agAnteilFehlt) {
-      el.innerHTML = '<div class="job-empty">Arbeitgeberanteil Sozialabgaben fehlt — bitte Wert aus dem Lohnbüro eintragen, um Gesamtkosten zu berechnen.</div>';
-      return;
+      html += '<div class="job-empty">Arbeitgeberanteil Sozialabgaben fehlt — bitte Wert aus dem Lohnbüro eintragen, um Gesamtkosten je Stunde zu berechnen.</div>';
+    } else {
+      var rows = [
+        ["Monatliche Gesamtkosten", fmtEUR(r.gesamtkostenMonatlich)],
+        ["Kosten pro bezahlter Stunde", fmtEUR(r.kostenProBezahlterStunde)],
+        ["Kosten pro produktiver Stunde", fmtEUR(r.kostenProProduktiverStunde)],
+        ["Mindestverkaufspreis/Std.", fmtEUR(r.mindestpreis)],
+        ["Empfohlener Verkaufspreis/Std.", fmtEUR(r.empfohlenerPreis)],
+        ["Kosten pro Einsatz (" + r.einsatzstunden + " Std.)", fmtEUR(r.kostenProEinsatz)]
+      ];
+      if (r.kundenpreis != null) rows.push(["Gewinn bei " + fmtEUR(r.kundenpreis) + "/Std.", fmtEUR(r.gewinnBeiKundenpreis)]);
+      html += rowsHTML(rows) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin:8px 0 0;">Annahme: Monatswerte auf Basis von 4,33 Wochen/Monat, Arbeitstage = Wochenstunden/5.</div>';
     }
-    var rows = [
-      ["Monatliche Gesamtkosten", fmtEUR(r.gesamtkostenMonatlich)],
-      ["Kosten pro bezahlter Stunde", fmtEUR(r.kostenProBezahlterStunde)],
-      ["Kosten pro produktiver Stunde", fmtEUR(r.kostenProProduktiverStunde)],
-      ["Mindestverkaufspreis/Std.", fmtEUR(r.mindestpreis)],
-      ["Empfohlener Verkaufspreis/Std.", fmtEUR(r.empfohlenerPreis)],
-      ["Kosten pro Einsatz (" + r.einsatzstunden + " Std.)", fmtEUR(r.kostenProEinsatz)]
-    ];
-    if (r.kundenpreis != null) rows.push(["Gewinn bei " + fmtEUR(r.kundenpreis) + "/Std.", fmtEUR(r.gewinnBeiKundenpreis)]);
-    el.innerHTML = '<h3 class="section-title" style="margin-bottom:8px;">Ergebnis</h3>' +
-      rows.map(function (row) {
-        return '<div class="row" style="justify-content:space-between;display:flex;padding:4px 0;border-bottom:1px solid var(--border);"><span>' + esc(row[0]) + '</span><strong style="color:var(--accent);">' + row[1] + '</strong></div>';
-      }).join("") +
-      '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Annahme: Monatswerte auf Basis von 4,33 Wochen/Monat, Arbeitstage = Wochenstunden/5. Planungshilfe, ersetzt keine Lohnabrechnung.</div>';
+
+    html += '<h3 class="section-title" style="margin:16px 0 8px;">Lohnrechner (Brutto → Netto, AG-Kosten)</h3>';
+    if (r.lohnrechnerFehlendeParameter.length > 0) {
+      html += '<div class="job-empty">Keine ausreichenden Daten — folgende Steuerparameter fehlen: ' + esc(r.lohnrechnerFehlendeParameter.join(", ")) + '. Unter „Steuern &amp; Rücklagen" → „Steuerparameter" mit „Excel-Werte importieren" befüllen.</div>';
+    } else if (!r.lohnrechner) {
+      html += '<div class="job-empty">Bitte Monatsbrutto bzw. Stundenlohn angeben.</div>';
+    } else {
+      var lr = r.lohnrechner;
+      html += rowsHTML([
+        ["Arbeitnehmer-Anteil KV", fmtEUR(lr.anKv)],
+        ["Arbeitnehmer-Anteil RV", fmtEUR(lr.anRv)],
+        ["Arbeitnehmer-Anteil AV", fmtEUR(lr.anAv)],
+        ["Arbeitnehmer-Anteil PV (inkl. Zuschlag)", fmtEUR(lr.anPv)],
+        ["KV-Zusatzbeitrag (AN)", fmtEUR(lr.anKvZusatz)],
+        ["Lohnsteuer/sonstige Steuer", fmtEUR(lr.anLohnsteuer)],
+        ["Sonstige Abzüge", fmtEUR(lr.anSonstige)],
+        ["Netto-Auszahlung (geschätzt)", fmtEUR(lr.nettoAuszahlung)],
+        ["Arbeitgeber Sozial-/Umlagekosten", fmtEUR(lr.agSozialUndUmlage)],
+        ["Arbeitgeber-Gesamtkosten", fmtEUR(lr.agGesamtkosten)],
+        ["Nettoquote", (lr.nettoquote * 100).toFixed(1) + " %"],
+        ["Kostenfaktor Arbeitgeber/Brutto", lr.kostenfaktorAgBrutto.toFixed(3) + "×"]
+      ]) + '<div style="font-size:0.72rem;color:var(--ink-soft);margin:8px 0 0;">Planungshilfe, keine Lohnabrechnung. Für verbindliche Werte bitte Lohnbüro/Steuerberatung hinzuziehen.</div>';
+    }
+    el.innerHTML = html;
   }
   var editingEmployeeCalcId = null;
   var employeeCalcForm = document.getElementById("employeeCalcForm");
@@ -4669,15 +4933,23 @@
   });
 
   // ---- Objekt-Kalkulator ----
-  var REINIGUNGSINTERVALL_EINSAETZE = { "Täglich (Werktage)": 21.7, "Wöchentlich": 4.33, "2x wöchentlich": 8.66, "14-tägig": 2.17, "Monatlich": 1 };
+  // Exakte Werte aus Excel-Blatt Einstellungen, Frequenztabelle für Monats-Hochrechnung (52 Wochen / 12 Monate = 4,3333 Wochen/Monat).
+  var REINIGUNGSINTERVALL_EINSAETZE = {
+    "Einmalig (kein Wiederholungsintervall)": 0, "1x pro Woche": 4.345, "2x pro Woche": 8.69, "3x pro Woche": 13.035,
+    "4x pro Woche": 17.38, "5x pro Woche (täglich, Mo–Fr)": 21.725, "14-tägig (alle 2 Wochen)": 2.1725, "1x pro Monat": 1.0,
+    // Alte Bezeichnungen (vor Excel-Import) — nur für bereits gespeicherte Kalkulationen, nicht mehr im Auswahlfeld:
+    "Täglich (Werktage)": 21.725, "Wöchentlich": 4.345, "2x wöchentlich": 8.69, "14-tägig": 2.1725, "Monatlich": 1.0
+  };
   function emptyObjectCalc() {
+    var zielmarge = getTaxParam("zielmarge_prozent");
     return {
       id: "", customerId: "", objektname: "", objektadresse: "", objektart: "Büro", qm: "", anzahlRaeume: "", anzahlToiletten: "",
       kueche: "", etagen: "", bodenarten: "", verschmutzungsgrad: "Mittel", verkehr: "Mittel", reinigungstage: "",
-      reinigungsintervall: "Wöchentlich", uhrzeit: "", arbeitszeitProEinsatz: "", anzahlMitarbeiter: 1,
+      reinigungsintervall: "1x pro Woche", uhrzeit: "", arbeitszeitProEinsatz: "", anzahlMitarbeiter: 1,
       employeeCalcId: "", manuellerStundensatz: "", fahrtstreckeKm: "", fahrtkostenProEinsatz: 0,
       materialkostenProEinsatz: 0, verbrauchsmaterialProEinsatz: 0, geraetekostenProEinsatz: 0, verwaltungskostenProEinsatz: 0,
-      risikozuschlagProzent: 0, gewinnmargeProzent: 20, sonderleistungen: "", istPreisProEinsatz: "", ausgewaehlteLeistungen: []
+      rabattProzent: 0, risikozuschlagProzent: 0, zahlungspauschale: 0,
+      gewinnmargeProzent: zielmarge ? zielmarge.wert : 20, sonderleistungen: "", istPreisProEinsatz: "", ausgewaehlteLeistungen: []
     };
   }
   function berechneObjektKosten(f, leistungen) {
@@ -4689,22 +4961,69 @@
     var stundensatz = profil && profil.ergebnis ? profil.ergebnis.kostenProProduktiverStunde : (f.manuellerStundensatz !== "" ? parseFloat(f.manuellerStundensatz) : null);
     if (stundensatz == null) return { fehlt: "Bitte Mitarbeiter-Kalkulation wählen oder manuellen Stundensatz eingeben." };
     var personalkosten = personalStundenProEinsatz * stundensatz;
+
+    var kmParam = getTaxParam("kilometersatz");
+    var fahrtstreckeKm = parseFloat(f.fahrtstreckeKm) || 0;
+    var fahrtkostenManuell = parseFloat(f.fahrtkostenProEinsatz) || 0;
+    var fahrtkosten = fahrtkostenManuell > 0 ? fahrtkostenManuell : (fahrtstreckeKm > 0 && kmParam ? fahrtstreckeKm * kmParam.wert : 0);
     var sachkosten = (parseFloat(f.materialkostenProEinsatz) || 0) + (parseFloat(f.verbrauchsmaterialProEinsatz) || 0) +
-      (parseFloat(f.fahrtkostenProEinsatz) || 0) + (parseFloat(f.geraetekostenProEinsatz) || 0) + (parseFloat(f.verwaltungskostenProEinsatz) || 0);
-    var risiko = parseFloat(f.risikozuschlagProzent) || 0;
-    var selbstkostenProEinsatz = (personalkosten + sachkosten) * (1 + risiko / 100);
-    var marge = parseFloat(f.gewinnmargeProzent) || 0;
-    var empfohlenerPreisProEinsatz = selbstkostenProEinsatz * (1 + marge / 100);
-    var einsaetzeProMonat = REINIGUNGSINTERVALL_EINSAETZE[f.reinigungsintervall] || 1;
-    var empfohlenerMonatspreis = empfohlenerPreisProEinsatz * einsaetzeProMonat;
-    var effektiverStundenpreis = personalStundenProEinsatz > 0 ? empfohlenerPreisProEinsatz / personalStundenProEinsatz : null;
+      fahrtkosten + (parseFloat(f.geraetekostenProEinsatz) || 0) + (parseFloat(f.verwaltungskostenProEinsatz) || 0);
+
+    var gemeinkostenParam = getTaxParam("gemeinkosten_prozent");
+    var marge = parseFloat(f.gewinnmargeProzent);
+    if (isNaN(marge)) marge = 0;
+    var fehlendeParameter = [];
+    if (!gemeinkostenParam) fehlendeParameter.push(taxParamLabel("gemeinkosten_prozent"));
+    if (marge >= 100) fehlendeParameter.push("Gewinnmarge muss unter 100 % liegen");
+
+    var profilSteuer = getAktivesTaxProfile();
+    var ustSatzParam = getTaxParam("regelbesteuerung_standardsatz");
+    var istRegelbesteuerung = profilSteuer && profilSteuer.modus === "Regelbesteuerung";
+    if (istRegelbesteuerung && !ustSatzParam) fehlendeParameter.push(taxParamLabel("regelbesteuerung_standardsatz"));
+
+    if (fehlendeParameter.length > 0) {
+      return { fehlt: "Keine ausreichenden Daten — es fehlen: " + fehlendeParameter.join(", ") + ". Unter „Steuern & Rücklagen\" → „Steuerparameter\" ergänzen." };
+    }
+
+    var gemeinkosten = (personalkosten + sachkosten) * (gemeinkostenParam.wert / 100);
+    var gesamtkosten = personalkosten + sachkosten + gemeinkosten;
+    var mindestpreisProEinsatz = gesamtkosten / (1 - marge / 100);
+
+    var rabatt = parseFloat(f.rabattProzent) || 0;
+    var sonderzuschlag = parseFloat(f.risikozuschlagProzent) || 0;
+    var zahlungspauschale = parseFloat(f.zahlungspauschale) || 0;
+    var preisNachRabattUndZuschlag = mindestpreisProEinsatz * (1 - rabatt / 100) * (1 + sonderzuschlag / 100);
+    var empfohlenerPreisProEinsatzNetto = preisNachRabattUndZuschlag + zahlungspauschale;
+
+    var ustSatz = istRegelbesteuerung ? ustSatzParam.wert : 0;
+    var ustProEinsatz = empfohlenerPreisProEinsatzNetto * (ustSatz / 100);
+    var kundenEndsummeProEinsatz = empfohlenerPreisProEinsatzNetto + ustProEinsatz;
+
+    var gewinnVorSteuerProEinsatz = empfohlenerPreisProEinsatzNetto - gesamtkosten;
+    var gewinnmargeIst = empfohlenerPreisProEinsatzNetto > 0 ? gewinnVorSteuerProEinsatz / empfohlenerPreisProEinsatzNetto : 0;
+
+    var einsaetzeProMonat = REINIGUNGSINTERVALL_EINSAETZE[f.reinigungsintervall] != null ? REINIGUNGSINTERVALL_EINSAETZE[f.reinigungsintervall] : 1;
+    var monatspreisNetto = empfohlenerPreisProEinsatzNetto * einsaetzeProMonat;
+    var monatspreisBrutto = istRegelbesteuerung ? monatspreisNetto * (1 + ustSatz / 100) : monatspreisNetto;
+    var jahrespreisNetto = monatspreisNetto * 12;
+    var monatsgewinnVorSteuer = einsaetzeProMonat * gewinnVorSteuerProEinsatz;
+
+    var effektiverStundenpreis = personalStundenProEinsatz > 0 ? empfohlenerPreisProEinsatzNetto / personalStundenProEinsatz : null;
     var istPreis = f.istPreisProEinsatz !== "" && f.istPreisProEinsatz != null ? parseFloat(f.istPreisProEinsatz) : null;
-    var unterkalkuliert = istPreis != null && istPreis < selbstkostenProEinsatz;
+    var unterkalkuliert = istPreis != null && istPreis < mindestpreisProEinsatz;
+
     return {
-      personalStundenProEinsatz: personalStundenProEinsatz, stundensatz: stundensatz, personalkosten: personalkosten, sachkosten: sachkosten,
-      selbstkostenProEinsatz: selbstkostenProEinsatz, mindestpreisProEinsatz: selbstkostenProEinsatz, empfohlenerPreisProEinsatz: empfohlenerPreisProEinsatz,
-      einsaetzeProMonat: einsaetzeProMonat, empfohlenerMonatspreis: empfohlenerMonatspreis, effektiverStundenpreis: effektiverStundenpreis,
-      istPreis: istPreis, unterkalkuliert: unterkalkuliert
+      personalStundenProEinsatz: personalStundenProEinsatz, stundensatz: stundensatz, personalkosten: personalkosten,
+      fahrtkosten: fahrtkosten, sachkosten: sachkosten, gemeinkosten: gemeinkosten, gesamtkosten: gesamtkosten,
+      selbstkostenProEinsatz: gesamtkosten, mindestpreisProEinsatz: mindestpreisProEinsatz,
+      rabatt: rabatt, sonderzuschlag: sonderzuschlag, zahlungspauschale: zahlungspauschale,
+      empfohlenerPreisProEinsatz: empfohlenerPreisProEinsatzNetto,
+      istRegelbesteuerung: istRegelbesteuerung, ustSatz: ustSatz, ustProEinsatz: ustProEinsatz, kundenEndsummeProEinsatz: kundenEndsummeProEinsatz,
+      gewinnVorSteuerProEinsatz: gewinnVorSteuerProEinsatz, gewinnmargeIst: gewinnmargeIst,
+      einsaetzeProMonat: einsaetzeProMonat, monatspreisNetto: monatspreisNetto, monatspreisBrutto: monatspreisBrutto,
+      jahrespreisNetto: jahrespreisNetto, monatsgewinnVorSteuer: monatsgewinnVorSteuer,
+      empfohlenerMonatspreis: monatspreisBrutto,
+      effektiverStundenpreis: effektiverStundenpreis, istPreis: istPreis, unterkalkuliert: unterkalkuliert
     };
   }
   function readObjectCalcForm() {
@@ -4720,22 +5039,34 @@
     if (!r) { el.innerHTML = '<div class="job-empty">Bitte Arbeitszeit pro Einsatz angeben.</div>'; return; }
     if (r.fehlt) { el.innerHTML = '<div class="job-empty">' + esc(r.fehlt) + '</div>'; return; }
     var warnLine = r.unterkalkuliert ?
-      '<div style="background:var(--danger-soft);color:var(--danger);padding:8px 10px;border-radius:var(--r-s);font-size:0.78rem;margin-bottom:8px;font-weight:700;">⚠ Unterkalkulation: Ist-Preis (' + fmtEUR(r.istPreis) + ') liegt unter den Selbstkosten (' + fmtEUR(r.selbstkostenProEinsatz) + ').</div>' : "";
-    var rows = [
+      '<div style="background:var(--danger-soft);color:var(--danger);padding:8px 10px;border-radius:var(--r-s);font-size:0.78rem;margin-bottom:8px;font-weight:700;">⚠ Unterkalkulation: Ist-Preis (' + fmtEUR(r.istPreis) + ') liegt unter dem Mindestpreis (' + fmtEUR(r.mindestpreisProEinsatz) + ').</div>' : "";
+    var kostenRows = [
       ["Personalkosten pro Einsatz", fmtEUR(r.personalkosten)],
-      ["Sachkosten pro Einsatz", fmtEUR(r.sachkosten)],
-      ["Selbstkosten pro Einsatz", fmtEUR(r.selbstkostenProEinsatz)],
-      ["Mindestpreis pro Einsatz", fmtEUR(r.mindestpreisProEinsatz)],
-      ["Empfohlener Preis pro Einsatz", fmtEUR(r.empfohlenerPreisProEinsatz)],
-      ["Einsätze pro Monat (Ø)", r.einsaetzeProMonat.toFixed(2)],
-      ["Empfohlener Monatspreis", fmtEUR(r.empfohlenerMonatspreis)],
+      ["Sachkosten pro Einsatz (inkl. Fahrt)", fmtEUR(r.sachkosten)],
+      ["Gemeinkosten", fmtEUR(r.gemeinkosten)],
+      ["Gesamtkosten pro Einsatz", fmtEUR(r.gesamtkosten)],
+      ["Mindestpreis bei Zielmarge (netto)", fmtEUR(r.mindestpreisProEinsatz)]
+    ];
+    var preisRows = [
+      ["Empfohlener Preis pro Einsatz (netto)", fmtEUR(r.empfohlenerPreisProEinsatz)],
+      ["Umsatzsteuer" + (r.istRegelbesteuerung ? " (" + r.ustSatz + " %)" : " (Kleinunternehmer)"), fmtEUR(r.ustProEinsatz)],
+      ["Kunden-Endsumme pro Einsatz", fmtEUR(r.kundenEndsummeProEinsatz)],
+      ["Gewinn vor Steuer pro Einsatz", fmtEUR(r.gewinnVorSteuerProEinsatz)],
+      ["Gewinnmarge (Ist)", (r.gewinnmargeIst * 100).toFixed(1) + " %"],
       ["Effektiver Stundenpreis (Kunde)", r.effektiverStundenpreis != null ? fmtEUR(r.effektiverStundenpreis) : "–"]
     ];
-    el.innerHTML = warnLine + '<h3 class="section-title" style="margin-bottom:8px;">Ergebnis</h3>' +
-      rows.map(function (row) {
-        return '<div class="row" style="justify-content:space-between;display:flex;padding:4px 0;border-bottom:1px solid var(--border);"><span>' + esc(row[0]) + '</span><strong style="color:var(--accent);">' + row[1] + '</strong></div>';
-      }).join("") +
-      '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Reinigungsintervall bestimmt die Einsätze/Monat (Kalenderdurchschnitt). Selbstkosten = Personal- + Sachkosten inkl. Risikozuschlag.</div>';
+    var hochrechnungRows = [
+      ["Einsätze pro Monat (Ø)", r.einsaetzeProMonat.toFixed(3)],
+      ["Monatspreis netto", fmtEUR(r.monatspreisNetto)],
+      ["Monatspreis inkl. USt (Endsumme)", fmtEUR(r.monatspreisBrutto)],
+      ["Jahrespreis netto (× 12 Monate)", fmtEUR(r.jahrespreisNetto)],
+      ["Monatsgewinn vor Steuer (gesamt)", fmtEUR(r.monatsgewinnVorSteuer)]
+    ];
+    el.innerHTML = warnLine +
+      '<h3 class="section-title" style="margin-bottom:8px;">Kosten &amp; Mindestpreis</h3>' + rowsHTML(kostenRows) +
+      '<h3 class="section-title" style="margin:16px 0 8px;">Verkaufspreis pro Einsatz</h3>' + rowsHTML(preisRows) +
+      '<h3 class="section-title" style="margin:16px 0 8px;">Frequenz &amp; Hochrechnung</h3>' + rowsHTML(hochrechnungRows) +
+      '<div style="font-size:0.72rem;color:var(--ink-soft);margin-top:8px;">Marge = Gewinn ÷ Verkaufspreis (nicht Kostenaufschlag). Mindestpreis = Gesamtkosten ÷ (1 − Zielmarge). Bei Frequenz „Einmalig\" sind Monats-/Jahrespreis und Monatsgewinn 0,00 € — das ist korrekt.</div>';
   }
   var editingObjectCalcId = null;
   var objectCalcForm = document.getElementById("objectCalcForm");
@@ -5132,26 +5463,48 @@
         '<div class="tier"><div class="tl">Standard</div><div class="tv">' + fmtPrice(s.standard) + '</div></div>' +
         '<div class="tier"><div class="tl">Premium</div><div class="tv">' + fmtPrice(s.premium) + '</div></div>' +
         '</div>' : '<div class="card-type" style="margin-top:4px;">Freier Preis (kein Festpreis hinterlegt)</div>';
+      var metaBits = [];
+      if (s.unit) metaBits.push("je " + s.unit);
+      if (s.kategorie) metaBits.push(s.kategorie);
+      if (s.mindestmenge) metaBits.push("ab " + s.mindestmenge + (s.unit ? " " + s.unit.replace(/^je\s*/, "") : ""));
+      var quelleBits = [];
+      if (s.marktVon != null || s.marktBis != null) quelleBits.push("Marktspanne " + (s.marktVon != null ? fmtPrice(s.marktVon) : "?") + " – " + (s.marktBis != null ? fmtPrice(s.marktBis) : "?"));
+      if (s.quelle) quelleBits.push(esc(s.quelle));
+      if (s.abrufdatum) quelleBits.push("Stand " + fmtDate(s.abrufdatum));
       return '<div class="card" data-id="' + s.id + '" style="cursor:default;">' +
         '<div class="card-top"><div><div class="card-name">' + esc(s.label) + '</div>' +
-        (s.unit ? '<div class="card-type">je ' + esc(s.unit) + '</div>' : '') + '</div></div>' +
+        (metaBits.length ? '<div class="card-type">' + esc(metaBits.join(" · ")) + '</div>' : '') + '</div></div>' +
         tierBlock +
+        (s.kalkulationsbasis ? '<div class="services" style="margin-top:4px;">' + esc(s.kalkulationsbasis) + '</div>' : '') +
+        (quelleBits.length ? '<div class="card-type" style="margin-top:4px;font-size:0.7rem;">' + quelleBits.join(" · ") + '</div>' : '') +
         '<div class="card-foot"><div></div><div class="actions">' +
         '<button type="button" class="svc-edit" data-id="' + s.id + '" aria-label="Bearbeiten">' + icon("pencil") + '</button>' +
         '<button type="button" class="svc-del" data-id="' + s.id + '" aria-label="Löschen">' + icon("trash") + '</button>' +
         '</div></div></div>';
     }).join("");
   }
-  function emptyService() { return { id: "", label: "", unit: "", mindest: null, standard: null, premium: null }; }
+  function emptyService() {
+    return {
+      id: "", label: "", unit: "", mindest: null, standard: null, premium: null,
+      kategorie: "", marktVon: null, marktBis: null, mindestmenge: null, kalkulationsbasis: "", quelle: "", abrufdatum: ""
+    };
+  }
   function openServiceForm(s) {
     var svc = s || emptyService();
     editingServiceId = svc.id || null;
     serviceTitle.textContent = editingServiceId ? "Leistung bearbeiten" : "Neue Leistung";
     serviceForm.elements.label.value = svc.label || "";
+    serviceForm.elements.kategorie.value = svc.kategorie || "";
     serviceForm.elements.unit.value = svc.unit || "";
     serviceForm.elements.mindest.value = svc.mindest != null ? svc.mindest : "";
     serviceForm.elements.standard.value = svc.standard != null ? svc.standard : "";
     serviceForm.elements.premium.value = svc.premium != null ? svc.premium : "";
+    serviceForm.elements.marktVon.value = svc.marktVon != null ? svc.marktVon : "";
+    serviceForm.elements.marktBis.value = svc.marktBis != null ? svc.marktBis : "";
+    serviceForm.elements.mindestmenge.value = svc.mindestmenge != null ? svc.mindestmenge : "";
+    serviceForm.elements.kalkulationsbasis.value = svc.kalkulationsbasis || "";
+    serviceForm.elements.quelle.value = svc.quelle || "";
+    serviceForm.elements.abrufdatum.value = svc.abrufdatum || "";
     serviceOverlay.classList.add("open");
   }
   function closeServiceForm() { serviceOverlay.classList.remove("open"); editingServiceId = null; }
@@ -5167,9 +5520,16 @@
     var parseOrNull = function (v) { return v.trim() === "" ? null : parseFloat(v); };
     var data = {
       id: editingServiceId || uid(), label: label, unit: serviceForm.elements.unit.value.trim(),
+      kategorie: serviceForm.elements.kategorie.value.trim(),
       mindest: parseOrNull(serviceForm.elements.mindest.value),
       standard: parseOrNull(serviceForm.elements.standard.value),
-      premium: parseOrNull(serviceForm.elements.premium.value)
+      premium: parseOrNull(serviceForm.elements.premium.value),
+      marktVon: parseOrNull(serviceForm.elements.marktVon.value),
+      marktBis: parseOrNull(serviceForm.elements.marktBis.value),
+      mindestmenge: parseOrNull(serviceForm.elements.mindestmenge.value),
+      kalkulationsbasis: serviceForm.elements.kalkulationsbasis.value.trim(),
+      quelle: serviceForm.elements.quelle.value.trim(),
+      abrufdatum: serviceForm.elements.abrufdatum.value
     };
     db.collection("services").doc(data.id).set(data)
       .then(function () { showToast("Gespeichert"); closeServiceForm(); })
@@ -6748,29 +7108,76 @@
     var mkFehlt = berechneMitarbeiterKosten({ lohnArt: "monat", monatsbrutto: "3000", wochenstunden: "40", arbeitgeberanteilProzent: "" });
     assertEqual("Mitarbeiter-Kalk: fehlender AG-Anteil -> agAnteilFehlt", mkFehlt && mkFehlt.agAnteilFehlt, true);
 
-    // Objekt-Kalkulator: 2 Std., 1 MA, 25€/Std., keine Sachkosten, 20% Marge, wöchentlich
-    var ok = berechneObjektKosten({
-      arbeitszeitProEinsatz: "2", anzahlMitarbeiter: "1", employeeCalcId: "", manuellerStundensatz: "25",
-      materialkostenProEinsatz: "0", verbrauchsmaterialProEinsatz: "0", fahrtkostenProEinsatz: "0",
-      geraetekostenProEinsatz: "0", verwaltungskostenProEinsatz: "0", risikozuschlagProzent: "0",
-      gewinnmargeProzent: "20", reinigungsintervall: "Wöchentlich", istPreisProEinsatz: ""
-    });
-    assertClose("Objekt-Kalk: Personalkosten = 2×25", ok && ok.personalkosten, 50, 0.01);
-    assertClose("Objekt-Kalk: Selbstkosten = Personalkosten (keine Sachkosten)", ok && ok.selbstkostenProEinsatz, 50, 0.01);
-    assertClose("Objekt-Kalk: empfohlener Preis = Selbstkosten × 1,2", ok && ok.empfohlenerPreisProEinsatz, 60, 0.01);
-    assertClose("Objekt-Kalk: Monatspreis = Preis × 4,33 Einsätze", ok && ok.empfohlenerMonatspreis, 60 * 4.33, 0.5);
+    // Ab hier: Tests, die auf zentrale Steuerparameter angewiesen sind — mit Excel-Werten isoliert nachstellen.
+    var origDocs = allDocuments, origAusgaben = ausgaben, origParams = taxParameters, origProfile = taxProfiles;
+    taxParameters = [
+      { schluessel: "kv_allgemein_prozent", wert: 14.6, gueltigAb: "2026-01-01" },
+      { schluessel: "kv_zusatzbeitrag_prozent", wert: 2.9, gueltigAb: "2026-01-01" },
+      { schluessel: "rv_prozent", wert: 18.6, gueltigAb: "2026-01-01" },
+      { schluessel: "av_prozent", wert: 2.6, gueltigAb: "2026-01-01" },
+      { schluessel: "pv_ag_nrw_prozent", wert: 1.8, gueltigAb: "2026-01-01" },
+      { schluessel: "u1_prozent", wert: 1.5, gueltigAb: "2026-01-01" },
+      { schluessel: "u2_prozent", wert: 0.22, gueltigAb: "2026-01-01" },
+      { schluessel: "insolvenzgeldumlage_prozent", wert: 0.15, gueltigAb: "2026-01-01" },
+      { schluessel: "berufsgenossenschaft_prozent", wert: 1.5, gueltigAb: "2026-01-01" },
+      { schluessel: "sonstige_ag_kosten_prozent", wert: 1, gueltigAb: "2026-01-01" },
+      { schluessel: "gemeinkosten_prozent", wert: 15, gueltigAb: "2026-01-01" },
+      { schluessel: "zielmarge_prozent", wert: 20, gueltigAb: "2026-01-01" },
+      { schluessel: "regelbesteuerung_standardsatz", wert: 19, gueltigAb: "2026-01-01" },
+      { schluessel: "kilometersatz", wert: 0.7, gueltigAb: "2026-01-01" },
+      { schluessel: "steuerreserve_est_gesellschafter_prozent", wert: 35, gueltigAb: "2026-01-01" },
+      { schluessel: "private_kv_reserve_prozent", wert: 12, gueltigAb: "2026-01-01" },
+      { schluessel: "private_altersvorsorge_reserve_prozent", wert: 5, gueltigAb: "2026-01-01" }
+    ];
+    taxProfiles = [];
 
-    // Objekt-Kalkulator: Unterkalkulations-Warnung
-    var okWarn = berechneObjektKosten({
-      arbeitszeitProEinsatz: "2", anzahlMitarbeiter: "1", manuellerStundensatz: "25",
-      materialkostenProEinsatz: "0", verbrauchsmaterialProEinsatz: "0", fahrtkostenProEinsatz: "0",
-      geraetekostenProEinsatz: "0", verwaltungskostenProEinsatz: "0", risikozuschlagProzent: "0",
-      gewinnmargeProzent: "20", reinigungsintervall: "Wöchentlich", istPreisProEinsatz: "30"
+    // Lohnrechner: Excel-Beispiel 2.600€ Bruttolohn -> Netto 1.667,90€, AG-Gesamtkosten 3.263,52€ (exakt).
+    var lr = berechneMitarbeiterKosten({
+      lohnArt: "monat", monatsbrutto: "2600", wochenstunden: "40",
+      lohnsteuerProzent: "15", kirchensteuerProzent: "0", kinderlosenPvZuschlagProzent: "0.6",
+      kvZusatzbeitragAnProzent: "1.45", sonstigeAnAbzuegeProzent: "0", agZuschussMonatlich: "0"
     });
-    assertEqual("Objekt-Kalk: Ist-Preis 30€ < Selbstkosten 50€ -> Warnung", okWarn && okWarn.unterkalkuliert, true);
+    assertClose("Lohnrechner: Netto-Auszahlung = 1.667,90€ (Excel-Beispiel)", lr && lr.lohnrechner && lr.lohnrechner.nettoAuszahlung, 1667.90, 0.01);
+    assertClose("Lohnrechner: AG-Gesamtkosten = 3.263,52€ (Excel-Beispiel)", lr && lr.lohnrechner && lr.lohnrechner.agGesamtkosten, 3263.52, 0.01);
+    assertClose("Lohnrechner: Nettoquote ≈ 64,15%", lr && lr.lohnrechner && lr.lohnrechner.nettoquote * 100, 64.15, 0.05);
+
+    // Objekt-Kalkulator: Excel-Beispiel (150m² × 0,68€ entspricht 18,828€/Std. AG-Kosten, 2 Std., 6€ Material, 8km Fahrt)
+    // -> Gesamtkosten 56,6444€, Mindestpreis bei 20% Zielmarge 70,8055€ (exakt wie Excel H6/E17).
+    var ok = berechneObjektKosten({
+      arbeitszeitProEinsatz: "2", anzahlMitarbeiter: "1", employeeCalcId: "", manuellerStundensatz: "18.828",
+      materialkostenProEinsatz: "6", verbrauchsmaterialProEinsatz: "0", fahrtstreckeKm: "8", fahrtkostenProEinsatz: "0",
+      geraetekostenProEinsatz: "0", verwaltungskostenProEinsatz: "0", rabattProzent: "0", risikozuschlagProzent: "0", zahlungspauschale: "0",
+      gewinnmargeProzent: "20", reinigungsintervall: "1x pro Woche", istPreisProEinsatz: ""
+    });
+    assertClose("Objekt-Kalk: Fahrtkosten automatisch = 8km × 0,70€", ok && ok.fahrtkosten, 5.6, 0.001);
+    assertClose("Objekt-Kalk: Gesamtkosten = 56,6444€ (Excel-Beispiel)", ok && ok.gesamtkosten, 56.6444, 0.01);
+    assertClose("Objekt-Kalk: Mindestpreis bei 20% Zielmarge = 70,8055€ (Excel-Beispiel)", ok && ok.mindestpreisProEinsatz, 70.8055, 0.01);
+
+    // Objekt-Kalkulator: Unterkalkulations-Warnung gegen den neuen Mindestpreis
+    var okWarn = berechneObjektKosten({
+      arbeitszeitProEinsatz: "2", anzahlMitarbeiter: "1", manuellerStundensatz: "18.828",
+      materialkostenProEinsatz: "6", verbrauchsmaterialProEinsatz: "0", fahrtstreckeKm: "8", fahrtkostenProEinsatz: "0",
+      geraetekostenProEinsatz: "0", verwaltungskostenProEinsatz: "0", rabattProzent: "0", risikozuschlagProzent: "0", zahlungspauschale: "0",
+      gewinnmargeProzent: "20", reinigungsintervall: "1x pro Woche", istPreisProEinsatz: "30"
+    });
+    assertEqual("Objekt-Kalk: Ist-Preis 30€ < Mindestpreis 70,81€ -> Warnung", okWarn && okWarn.unterkalkuliert, true);
+
+    // Objekt-Kalkulator: keine doppelte USt in der Monats-Hochrechnung bei Regelbesteuerung (Fehler aus der Excel-Datei korrigiert)
+    taxProfiles = [{ modus: "Regelbesteuerung", gueltigAb: "2026-01-01", status: "aktiv" }];
+    var okUst = berechneObjektKosten({
+      arbeitszeitProEinsatz: "2", anzahlMitarbeiter: "1", manuellerStundensatz: "18.828",
+      materialkostenProEinsatz: "6", verbrauchsmaterialProEinsatz: "0", fahrtstreckeKm: "8", fahrtkostenProEinsatz: "0",
+      geraetekostenProEinsatz: "0", verwaltungskostenProEinsatz: "0", rabattProzent: "0", risikozuschlagProzent: "0", zahlungspauschale: "0",
+      gewinnmargeProzent: "20", reinigungsintervall: "1x pro Woche", istPreisProEinsatz: ""
+    });
+    assertClose("Objekt-Kalk: Monatspreis brutto = Monatspreis netto × 1,19 (nicht × 1,19²)", okUst && (okUst.monatspreisBrutto / okUst.monatspreisNetto), 1.19, 0.001);
+    taxProfiles = [];
+
+    // Gesellschafter-Entnahme: Excel-Beispiel 3.000€ Gewinnanteil -> 1.440€ verfügbar (exakt)
+    var ge = berechneGesellschafterEntnahme(3000);
+    assertClose("Gesellschafter-Entnahme: verfügbar = 1.440€ (Excel-Beispiel)", ge && ge.entnahmeVerfuegbar, 1440, 0.01);
 
     // Steuern-Engine: bezahlte/offene Rechnungen korrekt getrennt, Rücklagen ohne Parameter = keine_daten
-    var origDocs = allDocuments, origAusgaben = ausgaben, origParams = taxParameters, origProfile = taxProfiles;
     allDocuments = [
       { typ: "Rechnung", status: "Bezahlt", brutto: 1000, netto: 1000, datum: "2026-01-15" },
       { typ: "Rechnung", status: "Offen", brutto: 500, netto: 500, datum: "2026-01-20" },
