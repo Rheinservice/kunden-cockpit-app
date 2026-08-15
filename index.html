@@ -68,8 +68,8 @@
   .login-card p.sub { text-align: center; color: var(--accent); font-size: 0.78rem; margin: 3px 0 22px; }
   .login-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
   .login-field span { font-size: 0.72rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.03em; }
-  .login-field input { border: 1px solid var(--border); border-radius: var(--r-s); padding: 11px 12px; background: var(--surface); color: var(--ink); width: 100%; }
-  .login-field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .login-field input { border: 1px solid var(--border); border-radius: var(--r-s); padding: 11px 12px; background: var(--surface); color: var(--ink); width: 100%; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+  .login-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   .login-error { background: var(--danger-soft); color: var(--danger); font-size: 0.8rem; padding: 9px 12px; border-radius: var(--r-s); margin-bottom: 14px; display: none; }
   .login-error.show { display: block; }
   .login-submit { width: 100%; padding: 12px; border: none; border-radius: var(--r-s); background: var(--brand-surface); color: var(--brand-surface-contrast); font-weight: 700; font-size: 0.9rem; }
@@ -94,9 +94,10 @@
 
   .stats { display: flex; gap: 10px; overflow-x: auto; padding: 14px 16px 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .stats::-webkit-scrollbar { display: none; }
-  .stat { flex: 0 0 auto; min-width: 128px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-m); padding: 10px 14px; box-shadow: var(--shadow-s); }
+  .stat { flex: 0 0 auto; min-width: 128px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-m); padding: 10px 14px; box-shadow: var(--shadow-s); transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease; }
   .stat.clickable { cursor: pointer; }
-  .stat.clickable:active { background: var(--surface-2); }
+  .stat.clickable:active { background: var(--surface-2); transform: scale(0.98); }
+  @media (hover: hover) { .stat.clickable:hover { border-color: var(--accent); box-shadow: var(--shadow-m); transform: translateY(-1px); } }
   .filter-banner { margin: 10px 16px 0; padding: 9px 12px; border-radius: var(--r-s); background: var(--accent-soft); color: var(--accent-ink); font-size: 0.78rem; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .filter-banner button { border: none; background: var(--surface); color: inherit; border-radius: var(--r-s); padding: 5px 10px; font-weight: 700; font-size: 0.72rem; }
   .stat .lbl { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 600; }
@@ -105,8 +106,8 @@
   .toolbar { padding: 10px 16px 4px; display: flex; flex-direction: column; gap: 10px; }
   .search { position: relative; }
   .search svg.icn { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); }
-  .search input { width: 100%; padding: 11px 14px 11px 36px; border-radius: var(--r-m); border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
-  .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .search input { width: 100%; padding: 11px 14px 11px 36px; border-radius: var(--r-m); border: 1px solid var(--border); background: var(--surface); color: var(--ink); transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+  .search input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
   .chips::-webkit-scrollbar { display: none; }
   .chip { flex: 0 0 auto; padding: 7px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); }
@@ -175,7 +176,8 @@
   .sidebar-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--brand-surface); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; overflow: hidden; }
   .sidebar-mark img { width: 100%; height: 100%; object-fit: cover; }
   .sidebar-brand b { font-size: 12.5px; letter-spacing: 0.03em; }
-  .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; color: rgba(255,255,255,0.75); background: none; border: none; border-left: 3px solid transparent; font-size: 0.82rem; font-weight: 600; text-align: left; cursor: pointer; width: 100%; }
+  .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; color: rgba(255,255,255,0.75); background: none; border: none; border-left: 3px solid transparent; font-size: 0.82rem; font-weight: 600; text-align: left; cursor: pointer; width: 100%; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
+  @media (hover: hover) { .sidebar-link:hover { background: rgba(255,255,255,0.06); color: #fff; } }
   .sidebar-link svg.icn { width: 18px; height: 18px; flex-shrink: 0; }
   .sidebar-link:active { background: rgba(255,255,255,0.06); }
   .sidebar-link[aria-selected="true"] { color: #fff; background: rgba(255,255,255,0.09); border-left-color: var(--accent); }
@@ -207,15 +209,15 @@
   .toast.show { opacity: 1; }
   .toast.err { background: var(--danger); }
 
-  .overlay { position: fixed; inset: 0; background: rgba(8,20,32,0.45); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
+  .overlay { position: fixed; inset: 0; background: rgba(8,20,32,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
   .overlay.open { display: flex; }
   @media (min-width: 640px) { .overlay { align-items: center; } }
-  @media (prefers-reduced-motion: no-preference) { .overlay.open .sheet { animation: rise 0.22s ease-out; } }
-  @keyframes rise { from { transform: translateY(24px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
+  @media (prefers-reduced-motion: no-preference) { .overlay.open .sheet { animation: rise 0.25s cubic-bezier(0.22, 1, 0.36, 1); } }
+  @keyframes rise { from { transform: translateY(28px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-  .sheet { background: var(--surface); width: 100%; max-width: 640px; border-radius: var(--r-l) var(--r-l) 0 0; max-height: calc(92vh - var(--safe-t)); display: flex; flex-direction: column; overflow: hidden; }
+  .sheet { background: var(--surface); width: 100%; max-width: 640px; border-radius: var(--r-l) var(--r-l) 0 0; max-height: calc(92vh - var(--safe-t)); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -8px 40px -12px rgba(8,20,32,0.35); }
   .sheet > form { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-  @media (min-width: 640px) { .sheet { border-radius: var(--r-l); max-height: 88vh; margin: 16px; } }
+  @media (min-width: 640px) { .sheet { border-radius: var(--r-l); max-height: 88vh; margin: 16px; box-shadow: 0 24px 60px -16px rgba(8,20,32,0.4); } }
   .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .sheet-head h2 { font-size: 1.05rem; color: var(--brand); }
   .sheet-head button { background: var(--surface-2); border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ink-soft); }
@@ -224,12 +226,15 @@
   .field { display: flex; flex-direction: column; gap: 5px; }
   .field.full { grid-column: 1 / -1; }
   .field span { font-size: 0.72rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.03em; }
-  .field input, .field select, .field textarea { border: 1px solid var(--border); border-radius: var(--r-s); padding: 10px 12px; background: var(--surface); color: var(--ink); width: 100%; }
-  .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .field input, .field select, .field textarea { border: 1px solid var(--border); border-radius: var(--r-s); padding: 10px 12px; background: var(--surface); color: var(--ink); width: 100%; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   .field textarea { resize: vertical; min-height: 64px; }
   .sheet-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 18px calc(14px + var(--safe-b)); border-top: 1px solid var(--border); flex-shrink: 0; }
   .btn { border-radius: var(--r-s); padding: 11px 18px; font-size: 0.86rem; font-weight: 700; border: none; transition: opacity 0.15s ease, transform 0.1s ease; }
   .btn:active { transform: scale(0.97); }
+  button:focus-visible, .sidebar-link:focus-visible, .tab-btn:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-s);
+  }
   .btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--border); }
   .btn-primary { background: var(--brand-surface); color: var(--brand-surface-contrast); }
   .btn-danger { background: var(--danger); color: white; }
@@ -384,7 +389,7 @@
       <svg class="icn" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Team
     </button>
-    <div class="sidebar-group">Mehr</div>
+    <div class="sidebar-group">Verwaltung</div>
     <button type="button" class="sidebar-link" id="sbTabCatalog" aria-selected="false">
       <svg class="icn" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Katalog
@@ -401,22 +406,24 @@
       <svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg>
       Tickets
     </button>
-    <button type="button" class="sidebar-link" id="sbTabDocs" aria-selected="false">
-      <svg class="icn" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Belege
-    </button>
-    <button type="button" class="sidebar-link" id="sbTabDokumente" aria-selected="false">
-      <svg class="icn" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Dokumente
-    </button>
     <button type="button" class="sidebar-link" id="sbTabKeys" aria-selected="false">
       <svg class="icn" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5L18 5l2.5 2.5L18 10"/></svg>
       Schlüssel
+    </button>
+    <div class="sidebar-group">Finanzen</div>
+    <button type="button" class="sidebar-link" id="sbTabDocs" aria-selected="false">
+      <svg class="icn" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Angebote &amp; Rechnungen
+    </button>
+    <button type="button" class="sidebar-link" id="sbTabDokumente" aria-selected="false">
+      <svg class="icn" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Dateien
     </button>
     <button type="button" class="sidebar-link" id="sbTabSteuern" aria-selected="false">
       <svg class="icn" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Steuern &amp; Rücklagen
     </button>
+    <div class="sidebar-group">Kalkulatoren</div>
     <button type="button" class="sidebar-link" id="sbTabMitarbeiterKalk" aria-selected="false">
       <svg class="icn" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Mitarbeiter-Kalkulator
@@ -467,8 +474,11 @@
 
   <div id="dashboardView" hidden>
     <div class="stats" id="dashStats"></div>
-    <h3 class="section-title" style="padding:0 16px;margin:14px 0 4px;">Steuern &amp; Rücklagen</h3>
-    <div class="stats" id="dashStatsSteuern"></div>
+    <button type="button" id="dashSteuernToggle" style="display:flex;align-items:center;justify-content:space-between;width:calc(100% - 32px);margin:14px 16px 4px;background:none;border:none;padding:6px 0;cursor:pointer;">
+      <h3 class="section-title" style="margin:0;">Steuern &amp; Rücklagen</h3>
+      <span id="dashSteuernToggleIcon">▾</span>
+    </button>
+    <div class="stats" id="dashStatsSteuern" hidden></div>
     <div class="todo-card" id="todoCard" hidden>
       <h3>Zu erledigen</h3>
       <div class="todo-list" id="todoList"></div>
@@ -690,6 +700,7 @@
 
   <div id="moreView" hidden>
     <div class="more-grid" id="moreGrid">
+      <h3 class="section-title" style="grid-column:1/-1;margin:0;">Verwaltung</h3>
       <button type="button" class="more-card" data-view="catalog">
         <svg class="icn" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         <div class="more-card-text"><strong>Katalog</strong><span>Leistungen &amp; Preisstufen verwalten</span></div>
@@ -706,22 +717,24 @@
         <svg class="icn" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg>
         <div class="more-card-text"><strong>Tickets</strong><span>Mängel &amp; Aufgaben mit Priorität</span></div>
       </button>
-      <button type="button" class="more-card" data-view="docs">
-        <svg class="icn" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <div class="more-card-text"><strong>Belege</strong><span>Alle Angebote &amp; Rechnungen</span></div>
-      </button>
-      <button type="button" class="more-card" data-view="dokumente">
-        <svg class="icn" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <div class="more-card-text"><strong>Dokumente</strong><span>Hochgeladene Belege &amp; Verträge, alle Kunden</span></div>
-      </button>
       <button type="button" class="more-card" data-view="keys">
         <svg class="icn" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5L18 5l2.5 2.5L18 10"/></svg>
         <div class="more-card-text"><strong>Schlüssel</strong><span>Wer hat welchen Schlüssel</span></div>
+      </button>
+      <h3 class="section-title" style="grid-column:1/-1;margin:8px 0 0;">Finanzen</h3>
+      <button type="button" class="more-card" data-view="docs">
+        <svg class="icn" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <div class="more-card-text"><strong>Angebote &amp; Rechnungen</strong><span>Alle Belege, kundenübergreifend</span></div>
+      </button>
+      <button type="button" class="more-card" data-view="dokumente">
+        <svg class="icn" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="more-card-text"><strong>Dateien</strong><span>Hochgeladene Verträge &amp; Belege, alle Kunden</span></div>
       </button>
       <button type="button" class="more-card" data-view="steuern">
         <svg class="icn" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         <div class="more-card-text"><strong>Steuern &amp; Rücklagen</strong><span>Umsatz, Rücklagen, Steuertermine — nur Admin</span></div>
       </button>
+      <h3 class="section-title" style="grid-column:1/-1;margin:8px 0 0;">Kalkulatoren</h3>
       <button type="button" class="more-card" data-view="mitarbeiterKalk">
         <svg class="icn" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <div class="more-card-text"><strong>Mitarbeiter-Kalkulator</strong><span>Was ein Mitarbeiter wirklich kostet — nur Admin</span></div>
@@ -1338,11 +1351,13 @@
         <h2 id="objectCalcTitle">Neue Objekt-Kalkulation</h2>
         <button id="objectCalcClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
+      <div class="path-bar" id="objectCalcPath"></div>
       <form id="objectCalcForm">
         <div class="detail-body">
-          <div class="job-form">
+
+          <div class="calc-step job-form" data-step="1">
             <label class="field"><span>Kunde</span><select name="customerId"><option value="">Kein Kunde / Neuakquise</option></select></label>
-            <label class="field"><span>Objektname *</span><input name="objektname" required /></label>
+            <label class="field"><span>Objektname *</span><input name="objektname" /></label>
             <label class="field full"><span>Objektadresse</span><input name="objektadresse" /></label>
             <label class="field"><span>Objektart</span><select name="objektart"><option>Büro</option><option>Praxis</option><option>Treppenhaus</option><option>Wohnanlage</option><option>Gewerbeobjekt</option><option>Sonstiges</option></select></label>
             <label class="field"><span>Quadratmeter</span><input name="qm" type="number" min="0" step="1" /></label>
@@ -1353,15 +1368,26 @@
             <label class="field"><span>Bodenarten</span><input name="bodenarten" placeholder="z. B. Fliesen, Teppich" /></label>
             <label class="field"><span>Verschmutzungsgrad</span><select name="verschmutzungsgrad"><option>Gering</option><option>Mittel</option><option>Hoch</option></select></label>
             <label class="field"><span>Personen-/Besucherverkehr</span><select name="verkehr"><option>Gering</option><option>Mittel</option><option>Hoch</option></select></label>
+          </div>
+
+          <div class="calc-step job-form" data-step="2" hidden>
             <label class="field"><span>Reinigungstage</span><input name="reinigungstage" placeholder="z. B. Mo, Mi, Fr" /></label>
             <label class="field"><span>Reinigungsintervall</span>
               <select name="reinigungsintervall"><option>Täglich (Werktage)</option><option>Wöchentlich</option><option>2x wöchentlich</option><option>14-tägig</option><option>Monatlich</option></select>
             </label>
             <label class="field"><span>Gewünschte Uhrzeit</span><input name="uhrzeit" type="time" /></label>
-            <label class="field"><span>Arbeitszeit pro Einsatz (Std.) *</span><input name="arbeitszeitProEinsatz" type="number" min="0.1" step="0.1" required /></label>
+            <label class="field"><span>Arbeitszeit pro Einsatz (Std.) *</span><input name="arbeitszeitProEinsatz" type="number" min="0.1" step="0.1" /></label>
             <label class="field"><span>Anzahl Mitarbeiter</span><input name="anzahlMitarbeiter" type="number" min="1" step="1" value="1" /></label>
             <label class="field"><span>Mitarbeiter-Kalkulation (Stundensatz)</span><select name="employeeCalcId"><option value="">Manuell eingeben</option></select></label>
             <label class="field"><span>Manueller Stundensatz (€, falls keine Kalkulation gewählt)</span><input name="manuellerStundensatz" type="number" min="0" step="0.01" /></label>
+            <label class="field full"><span>Sonderleistungen</span><input name="sonderleistungen" /></label>
+            <div class="field full">
+              <span>Leistungen aus dem Leistungsverzeichnis</span>
+              <div id="objectCalcServices" class="job-list" style="margin-top:6px;"></div>
+            </div>
+          </div>
+
+          <div class="calc-step job-form" data-step="3" hidden>
             <label class="field"><span>Fahrtstrecke (km, einfach)</span><input name="fahrtstreckeKm" type="number" min="0" step="0.1" /></label>
             <label class="field"><span>Fahrtkosten pro Einsatz (€)</span><input name="fahrtkostenProEinsatz" type="number" min="0" step="0.01" value="0" placeholder="z. B. km × 0,30 €" /></label>
             <label class="field"><span>Materialkosten pro Einsatz (€)</span><input name="materialkostenProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
@@ -1370,19 +1396,20 @@
             <label class="field"><span>Verwaltungskosten pro Einsatz (€)</span><input name="verwaltungskostenProEinsatz" type="number" min="0" step="0.01" value="0" /></label>
             <label class="field"><span>Risikozuschlag (%)</span><input name="risikozuschlagProzent" type="number" min="0" step="0.1" value="0" /></label>
             <label class="field"><span>Gewünschte Gewinnmarge (%)</span><input name="gewinnmargeProzent" type="number" min="0" step="0.1" value="20" /></label>
-            <label class="field full"><span>Sonderleistungen</span><input name="sonderleistungen" /></label>
             <label class="field"><span>Angebotener/Ist-Preis je Einsatz (€, optional)</span><input name="istPreisProEinsatz" type="number" min="0" step="0.01" /></label>
           </div>
-          <div style="padding:12px 16px 0;">
-            <h3 class="section-title">Leistungen aus dem Leistungsverzeichnis</h3>
-            <div id="objectCalcServices" class="job-list" style="margin-top:6px;"></div>
+
+          <div class="calc-step" data-step="4" hidden>
+            <div id="objectCalcResult"></div>
           </div>
-          <div id="objectCalcResult" style="margin-top:14px;"></div>
+
         </div>
         <div class="sheet-foot">
           <button type="button" class="btn btn-ghost" id="objectCalcCancel">Abbrechen</button>
-          <button type="button" class="btn btn-ghost" id="objectCalcMakeOffer">Angebot erstellen</button>
-          <button type="submit" class="btn btn-primary">Speichern</button>
+          <button type="button" class="btn btn-ghost" id="objectCalcBack" hidden>Zurück</button>
+          <button type="button" class="btn btn-primary" id="objectCalcNext">Weiter</button>
+          <button type="button" class="btn btn-ghost" id="objectCalcMakeOffer" hidden>Angebot erstellen</button>
+          <button type="submit" class="btn btn-primary" id="objectCalcSubmit" hidden>Speichern</button>
         </div>
       </form>
     </div>
@@ -1560,7 +1587,7 @@
       </div>
       <div class="search" style="margin:0 18px 4px;">
         <svg class="icn" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="globalSearchInput" type="search" placeholder="Kunden, Aufträge, Belege, Tickets, Material …" autocomplete="off" />
+        <input id="globalSearchInput" type="search" placeholder="Kunden, Aufträge, Rechnungen, Tickets, Material …" autocomplete="off" />
       </div>
       <div class="sheet-body" id="globalSearchResults" style="padding-top:8px;"></div>
     </div>
@@ -1579,7 +1606,7 @@
         <div class="help-item"><strong>Angebote &amp; Rechnungen</strong><span>In der Kundendetailansicht über „Neues Angebot"/„Neue Rechnung" erstellen. Wird ein Angebot auf „Angenommen" gesetzt, entsteht automatisch ein Rechnungsentwurf (noch ohne Nummer). Beim Ändern des Status weg von „Entwurf" bekommt die Rechnung ihre fortlaufende Nummer. Überfällige Rechnungen bekommen automatisch einen Mahnung-Button.</span></div>
         <div class="help-item"><strong>Kalender</strong><span>Echter Monatskalender. Tage mit Terminen zeigen einen Punkt. Tag antippen zeigt die Termine darunter; ein Termin antippen springt zum zugehörigen Kunden.</span></div>
         <div class="help-item"><strong>Team</strong><span>Mitarbeiterliste mit Kontaktdaten. Einen Mitarbeiter antippen für Abwesenheiten (Urlaub/Krank/Sonstiges) und den Stundenzettel-Ausdruck je Monat.</span></div>
-        <div class="help-item"><strong>Mehr</strong><span>Sammelstelle für seltener genutzte Bereiche: Katalog (Leistungen &amp; Preise), Material, Fuhrpark, Tickets (Mängel), Belege (alle Angebote/Rechnungen kundenübergreifend) und Schlüssel.</span></div>
+        <div class="help-item"><strong>Mehr</strong><span>Sammelstelle für seltener genutzte Bereiche, gruppiert nach Verwaltung (Katalog, Material, Fuhrpark, Tickets, Schlüssel), Finanzen (Angebote &amp; Rechnungen kundenübergreifend, Dateien, Steuern &amp; Rücklagen) und Kalkulatoren.</span></div>
         <div class="help-item"><strong>Allgemein</strong><span>Überall wo ein Stift-Symbol erscheint, kann bearbeitet werden; ein Papierkorb-Symbol löscht (mit Sicherheitsabfrage). Der Plus-Button unten rechts legt jeweils einen neuen Eintrag an.</span></div>
       </div>
       <div class="sheet-foot">
@@ -3669,6 +3696,11 @@
     if (!stat) return;
     navigateByDashKey(stat.dataset.key);
   });
+  document.getElementById("dashSteuernToggle").addEventListener("click", function () {
+    var el = document.getElementById("dashStatsSteuern");
+    el.hidden = !el.hidden;
+    document.getElementById("dashSteuernToggleIcon").textContent = el.hidden ? "▾" : "▴";
+  });
   document.getElementById("todoList").addEventListener("click", function (e) {
     var item = e.target.closest(".todo-item");
     if (!item) return;
@@ -3734,7 +3766,7 @@
       return '<div class="job-row search-hit" data-kind="customer" data-id="' + c.id + '"><div class="job-title">' + esc(c.name) + '</div><div class="job-meta">' + esc(c.address || "") + '</div></div>';
     }) });
     var docMatches = allDocuments.filter(function (d) { return (d.nummer || "").toLowerCase().indexOf(q) !== -1; });
-    if (docMatches.length) groups.push({ title: "Belege", html: rowsFor(docMatches, function (d) {
+    if (docMatches.length) groups.push({ title: "Angebote & Rechnungen", html: rowsFor(docMatches, function (d) {
       var cust = customers.find(function (c) { return c.id === d.customerId; });
       return '<div class="job-row search-hit" data-kind="doc" data-customer="' + d.customerId + '"><div class="job-title">' + esc(d.typ) + ' ' + esc(d.nummer || "") + '</div><div class="job-meta">' + esc(cust ? cust.name : "") + ' · ' + fmtEUR(d.brutto) + '</div></div>';
     }) });
@@ -3767,7 +3799,7 @@
         (f.documentDate || "").indexOf(q) !== -1 ||
         (f.amount != null && String(f.amount).indexOf(q) !== -1);
     });
-    if (dokMatches.length) groups.push({ title: "Dokumente", html: rowsFor(dokMatches, function (f) {
+    if (dokMatches.length) groups.push({ title: "Dateien", html: rowsFor(dokMatches, function (f) {
       return '<div class="job-row search-hit" data-kind="dokument"><div class="job-title">' + esc(f.name) + '</div><div class="job-meta">' +
         esc(DOKUMENT_TYP_LABEL[f.documentType] || "") + (f.resolvedCustomerName ? ' · ' + esc(f.resolvedCustomerName) : "") + '</div></div>';
     }) });
@@ -3977,6 +4009,7 @@
     var p = getTaxParam(paramKey, atDate);
     if (!p) return metricFehlend(bezeichnung + ": kein Parameter \"" + taxParamLabel(paramKey) + "\" konfiguriert. Bitte unter „Steuerparameter\" anlegen.");
     if (basis == null) return metricFehlend(bezeichnung + ": Gewinnschätzung fehlt.");
+    if (basis <= 0) return metricOk(0, bezeichnung + ": kein Gewinn in diesem Zeitraum (" + fmtEUR(basis) + ") — keine Rücklage fällig.");
     var wert = basis * (p.wert / 100);
     return metricOk(wert, bezeichnung + " = Gewinnschätzung (" + fmtEUR(basis) + ") × " + p.wert + "% (Quelle: " + esc(p.quelle || "–") + ", gültig ab " + fmtDate(p.gueltigAb) + ") = " + fmtEUR(wert));
   }
@@ -4723,6 +4756,25 @@
         return '<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:0.85rem;"><input type="checkbox" value="' + s.id + '"' + (selectedLeistungen.indexOf(s.id) !== -1 ? " checked" : "") + ' />' + esc(s.label) + '</label>';
       }).join("");
   }
+  var objectCalcStep = 1;
+  var OBJECT_CALC_STEPS = ["Objekt & Kunde", "Reinigungsplan & Personal", "Kosten & Marge", "Ergebnis"];
+  function renderObjectCalcPath() {
+    document.getElementById("objectCalcPath").innerHTML = OBJECT_CALC_STEPS.map(function (s, i) {
+      var n = i + 1;
+      var cls = n < objectCalcStep ? "done" : (n === objectCalcStep ? "current" : "");
+      return '<button type="button" class="path-step ' + cls + '" disabled>' + n + '. ' + s + '</button>';
+    }).join("");
+  }
+  function showObjectCalcStep(n) {
+    objectCalcStep = n;
+    document.querySelectorAll("#objectCalcForm .calc-step").forEach(function (el) { el.hidden = parseInt(el.dataset.step, 10) !== n; });
+    renderObjectCalcPath();
+    document.getElementById("objectCalcBack").hidden = n === 1;
+    document.getElementById("objectCalcNext").hidden = n === 4;
+    document.getElementById("objectCalcMakeOffer").hidden = n !== 4;
+    document.getElementById("objectCalcSubmit").hidden = n !== 4;
+    if (n === 4) renderObjectCalcResult();
+  }
   function openObjectCalcForm(p) {
     var data = p || emptyObjectCalc();
     editingObjectCalcId = data.id || null;
@@ -4732,15 +4784,22 @@
       if (k === "id" || k === "ausgewaehlteLeistungen") return;
       if (objectCalcForm.elements[k]) objectCalcForm.elements[k].value = data[k] != null ? data[k] : emptyObjectCalc()[k];
     });
-    renderObjectCalcResult();
+    showObjectCalcStep(1);
     objectCalcOverlay.classList.add("open");
   }
   document.getElementById("addObjectCalcBtn").addEventListener("click", function () { openObjectCalcForm(null); });
   document.getElementById("objectCalcClose").addEventListener("click", function () { objectCalcOverlay.classList.remove("open"); });
   document.getElementById("objectCalcCancel").addEventListener("click", function () { objectCalcOverlay.classList.remove("open"); });
   objectCalcOverlay.addEventListener("click", function (e) { if (e.target === objectCalcOverlay) objectCalcOverlay.classList.remove("open"); });
-  objectCalcForm.addEventListener("input", renderObjectCalcResult);
-  objectCalcForm.addEventListener("change", renderObjectCalcResult);
+  objectCalcForm.addEventListener("input", function () { if (objectCalcStep === 4) renderObjectCalcResult(); });
+  objectCalcForm.addEventListener("change", function () { if (objectCalcStep === 4) renderObjectCalcResult(); });
+  document.getElementById("objectCalcBack").addEventListener("click", function () { if (objectCalcStep > 1) showObjectCalcStep(objectCalcStep - 1); });
+  document.getElementById("objectCalcNext").addEventListener("click", function () {
+    var f = readObjectCalcForm();
+    if (objectCalcStep === 1 && !f.objektname.trim()) { showToast("Bitte einen Objektnamen angeben", true); return; }
+    if (objectCalcStep === 2 && !(parseFloat(f.arbeitszeitProEinsatz) > 0)) { showToast("Bitte Arbeitszeit pro Einsatz angeben", true); return; }
+    showObjectCalcStep(objectCalcStep + 1);
+  });
   objectCalcForm.addEventListener("submit", function (e) {
     e.preventDefault();
     var f = readObjectCalcForm();
@@ -6049,7 +6108,7 @@
     var el = document.getElementById("docsGlobalList");
     var filtered = docsTypeFilter === "Alle" ? allDocuments : allDocuments.filter(function (d) { return d.typ === docsTypeFilter; });
     if (filtered.length === 0) {
-      el.innerHTML = '<div class="empty"><div class="t">Keine Belege gefunden</div><div class="s">Angebote/Rechnungen werden je Kunde in der Kundenansicht erstellt.</div></div>';
+      el.innerHTML = '<div class="empty"><div class="t">Keine Einträge gefunden</div><div class="s">Angebote/Rechnungen werden je Kunde in der Kundenansicht erstellt.</div></div>';
       return;
     }
     var sorted = filtered.slice().sort(function (a, b) { return (b.datum || "").localeCompare(a.datum || ""); });
