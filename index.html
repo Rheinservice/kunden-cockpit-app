@@ -10,6 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="qrcode.min.js"></script>
 <style>
   :root {
     --bg: #F8F7F3;
@@ -1789,11 +1790,12 @@
   // (Klassifizierung nur per Dateiname-Heuristik, Extraktion liefert leere Felder) und
   // sind bewusst so geschnitten, dass extract() später durch einen echten Anbieter
   // (z. B. via Cloud Function) ersetzt werden kann, ohne die Aufrufer anzufassen.
-  var DOKUMENT_TYPEN = ["Rechnung", "Angebot", "Kostenvoranschlag", "Beleg", "Gutschrift", "Lieferschein", "Vertrag", "Leistungsverzeichnis", "Auftragsbestaetigung", "Sonstiges"];
+  var DOKUMENT_TYPEN = ["Rechnung", "Angebot", "Kostenvoranschlag", "Beleg", "Gutschrift", "Lieferschein", "Vertrag", "Leistungsverzeichnis", "Auftragsbestaetigung", "Objektuebergabeprotokoll", "Sonstiges"];
   var DOKUMENT_TYP_LABEL = {
     Rechnung: "Rechnung", Angebot: "Angebot", Kostenvoranschlag: "Kostenvoranschlag", Beleg: "Beleg",
     Gutschrift: "Gutschrift", Lieferschein: "Lieferschein", Vertrag: "Vertrag",
-    Leistungsverzeichnis: "Leistungsverzeichnis", Auftragsbestaetigung: "Auftragsbestätigung", Sonstiges: "Sonstiges"
+    Leistungsverzeichnis: "Leistungsverzeichnis", Auftragsbestaetigung: "Auftragsbestätigung",
+    Objektuebergabeprotokoll: "Objektübergabeprotokoll", Sonstiges: "Sonstiges"
   };
 
   var DocumentClassificationService = {
@@ -3280,13 +3282,36 @@
     return '<div style="text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#667085;margin-top:32px;padding-top:12px;border-top:2px solid ' + PRINT_GOLD + ';">' +
       esc(COMPANY.name) + ' · ' + esc(COMPANY.address) + ' · ' + esc(COMPANY.phone) + ' · ' + esc(COMPANY.email) + '</div>';
   }
-  function docHeaderHtml(d) {
-    return '<div style="display:flex;align-items:center;gap:16px;padding-bottom:14px;border-bottom:2px solid ' + PRINT_GOLD + ';margin-bottom:28px;">' +
+  function docHeaderHtml(d, qrHtml) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:2px solid ' + PRINT_GOLD + ';margin-bottom:28px;">' +
+      '<div style="display:flex;align-items:center;gap:16px;">' +
       '<img src="logo.png" alt="M&I-RheinService" style="height:60px;width:60px;border-radius:50%;object-fit:cover;flex-shrink:0;" />' +
       '<div><div style="font-size:19px;font-weight:800;color:' + PRINT_NAVY + ';letter-spacing:0.01em;">M&amp;I-RHEINSERVICE</div>' +
       '<div style="font-size:13px;font-style:italic;font-weight:600;color:' + PRINT_GOLD + ';">' + esc(d.typ) + '</div></div></div>' +
+      (qrHtml || '') + '</div>' +
       '<div style="font-size:27px;font-weight:800;color:' + PRINT_NAVY + ';letter-spacing:0.02em;margin-bottom:2px;">' + esc(d.typ).toUpperCase() + '</div>' +
       (d.nummer ? '<div style="font-style:italic;font-weight:600;color:' + PRINT_GOLD + ';font-size:15px;margin-bottom:22px;">Nr. ' + esc(d.nummer) + '</div>' : '<div style="margin-bottom:22px;"></div>');
+  }
+  function girocodeDataUrl(d) {
+    if (typeof qrcode === "undefined") return null;
+    var bicRaw = COMPANY.bic.replace(/\s+/g, "");
+    var bic = bicRaw + (bicRaw.length === 8 ? "XXX" : "");
+    var iban = COMPANY.iban.replace(/[^A-Z0-9]/gi, "");
+    var betrag = (d.brutto || 0).toFixed(2);
+    var payload = ["BCD", "002", "1", "SCT", bic, COMPANY.kontoinhaber, iban, "EUR" + betrag, "", "", "Rechnung Nr. " + (d.nummer || "")].join("\n");
+    try {
+      var qr = qrcode(0, "M");
+      qr.addData(payload);
+      qr.make();
+      return qr.createDataURL(4, 4);
+    } catch (e) { return null; }
+  }
+  function girocodeHtml(d) {
+    var url = girocodeDataUrl(d);
+    if (!url) return "";
+    return '<div style="text-align:center;flex-shrink:0;">' +
+      '<img src="' + url + '" alt="GiroCode zur Zahlung per Banking-App" style="width:96px;height:96px;image-rendering:pixelated;" />' +
+      '<div style="font-size:9px;color:#667085;max-width:100px;margin-top:2px;">Mit Banking-App scannen &amp; bezahlen</div></div>';
   }
   function metaBoxHtml(cols) {
     return '<div style="display:flex;border:1px solid #E4E7EC;border-radius:4px;overflow:hidden;margin-bottom:26px;">' +
@@ -3333,6 +3358,8 @@
     var isPrivate = c && c.type === "Privat";
     var metaBox = metaBoxHtml([
       { l: "Rechnungsdatum", v: fmtDate(d.datum) },
+      { l: "Fälligkeitsdatum", v: d.gueltigFaellig ? fmtDate(d.gueltigFaellig) : "–" },
+      { l: "Zahlungsart", v: "SEPA-Überweisung" },
       { l: "Leistungszeitraum", v: d.leistungszeitraum ? esc(d.leistungszeitraum) : "–" },
       { l: "Leistungsort", v: d.leistungsort ? esc(d.leistungsort) : "–" }
     ]);
@@ -3341,7 +3368,7 @@
       '<strong style="display:block;color:' + PRINT_NAVY + ';margin-bottom:6px;">Pflichthinweise (nur bei privaten Auftraggebern relevant)</strong>' +
       'Aufbewahrungspflicht: Da es sich um eine Leistung im Zusammenhang mit einem Grundstück handelt, sind Sie als privater Auftraggeber verpflichtet, diese Rechnung, einen Zahlungsbeleg oder eine andere beweiskräftige Unterlage zwei Jahre lang aufzubewahren (§ 14b Abs. 1 Satz 5 UStG).</div>' : '';
     var html = '<div style="padding:44px;font-family:Arial,Helvetica,sans-serif;color:#17212B;max-width:720px;margin:0 auto;">' +
-      docHeaderHtml(d) +
+      docHeaderHtml(d, girocodeHtml(d)) +
       '<div style="display:flex;justify-content:space-between;gap:24px;font-size:13px;margin-bottom:24px;">' +
       '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Rechnungsempfänger</div>' + esc(c.name) + (c.address ? '<br/>' + esc(c.address) : '') + '</div>' +
       '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Rechnungssteller</div>' +
@@ -3426,9 +3453,134 @@
     document.getElementById("printArea").innerHTML = html;
     window.print();
   }
+  function printSectionHtml(title, bodyHtml) {
+    return '<div style="font-size:13px;margin-top:26px;">' +
+      '<div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid ' + PRINT_GOLD + ';">' + esc(title) + '</div>' +
+      bodyHtml + '</div>';
+  }
+  function printBulletListHtml(title, items) {
+    return printSectionHtml(title, '<ul style="margin:0;padding-left:18px;line-height:1.7;">' +
+      items.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join("") + '</ul>');
+  }
+  function printBlankLineHtml(label) {
+    return '<div style="display:flex;align-items:flex-end;gap:8px;margin-top:14px;font-size:12.5px;">' +
+      (label ? '<span style="flex-shrink:0;color:' + PRINT_NAVY + ';font-weight:700;">' + esc(label) + ':</span>' : '') +
+      '<span style="flex:1;border-bottom:1px solid #999;height:16px;"></span></div>';
+  }
+  function printSignatureBlockHtml() {
+    return '<div style="display:flex;justify-content:space-between;gap:24px;margin-top:48px;font-size:12px;color:#667085;">' +
+      '<div style="flex:1;border-top:1px solid #999;padding-top:6px;">Ort, Datum – Auftraggeber</div>' +
+      '<div style="flex:1;border-top:1px solid #999;padding-top:6px;">Ort, Datum – M&amp;I-RheinService GbR</div></div>';
+  }
+  function printAuftragsbestaetigung(d) {
+    var c = detailCustomer;
+    var metaBox = metaBoxHtml([
+      { l: "Datum", v: fmtDate(d.datum) },
+      { l: "Beginn", v: d.gueltigFaellig ? fmtDate(d.gueltigFaellig) : "–" },
+      { l: "Turnus", v: d.leistungszeitraum ? esc(d.leistungszeitraum) : "–" },
+      { l: "Reinigungsobjekt", v: d.leistungsort ? esc(d.leistungsort) : "–" }
+    ]);
+    var html = '<div style="padding:44px;font-family:Arial,Helvetica,sans-serif;color:#17212B;max-width:720px;margin:0 auto;">' +
+      docHeaderHtml(d) +
+      '<div style="font-size:13px;margin-bottom:20px;">Vielen Dank für Ihr Vertrauen. Mit diesem Schreiben bestätigen wir die Beauftragung auf Grundlage unseres Angebots. Bitte prüfen Sie die nachfolgenden Angaben sorgfältig und bestätigen Sie den Auftrag schriftlich.</div>' +
+      '<div style="display:flex;justify-content:space-between;gap:24px;font-size:13px;margin-bottom:24px;">' +
+      '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Auftraggeber</div>' + esc(c.name) + (c.address ? '<br/>' + esc(c.address) : '') + (c.contactName ? '<br/>Ansprechpartner: ' + esc(c.contactName) : '') + '</div>' +
+      '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Auftragnehmer</div>' +
+      esc(COMPANY.name) + '<br/>' + esc(COMPANY.owners) + '<br/>' + esc(COMPANY.address) + '</div></div>' +
+      metaBox +
+      positionsTableHtml(d) +
+      totalsHtml(d, "Vereinbarte Vergütung") +
+      printSectionHtml("Zugang und Durchführung", 'Die Reinigung findet während des laufenden Betriebs beziehungsweise in den vereinbarten Pausen statt. Eine Schlüsselübergabe ist daher nicht vorgesehen. Der Auftraggeber stellt sicher, dass die Reinigungskräfte zu den vereinbarten Zeiten Zugang zu den zu reinigenden Bereichen erhalten, und informiert sie über betriebliche Besonderheiten, Gefahrenstellen und sensible Bereiche.') +
+      printBulletListHtml("Qualität und Sicherheit", [
+        "Betriebshaftpflichtversicherung für den gesamten Auftragszeitraum",
+        "Dokumentierte Qualitätskontrollen",
+        "Fester Ansprechpartner für alle Rückfragen",
+        "Geschultes, zuverlässiges Personal in professioneller Arbeitskleidung",
+        "Moderne Reinigungsverfahren und hochwertige Reinigungsmittel",
+        "DSGVO-konforme Arbeitsweise"
+      ]) +
+      (d.notizen ? '<div style="margin-top:18px;font-size:12px;color:#667085;white-space:pre-wrap;">' + esc(d.notizen) + '</div>' : "") +
+      printSignatureBlockHtml() +
+      companyFooter() + '</div>';
+    document.getElementById("printArea").innerHTML = html;
+    window.print();
+  }
+  function printLeistungsverzeichnis(d) {
+    var c = detailCustomer;
+    var metaBox = metaBoxHtml([
+      { l: "Datum", v: fmtDate(d.datum) },
+      { l: "Reinigungstage", v: d.leistungszeitraum ? esc(d.leistungszeitraum) : "–" },
+      { l: "Objekt", v: d.leistungsort ? esc(d.leistungsort) : "–" }
+    ]);
+    var hatPositionen = (d.positionen || []).some(function (p) { return p.bezeichnung && p.bezeichnung.trim(); });
+    var html = '<div style="padding:44px;font-family:Arial,Helvetica,sans-serif;color:#17212B;max-width:720px;margin:0 auto;">' +
+      docHeaderHtml(d) +
+      '<div style="display:flex;justify-content:space-between;gap:24px;font-size:13px;margin-bottom:24px;">' +
+      '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Für</div>' + esc(c.name) + (c.address ? '<br/>' + esc(c.address) : '') + '</div>' +
+      '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Erstellt von</div>' + esc(COMPANY.name) + '</div></div>' +
+      metaBox +
+      '<div style="font-size:13px;margin-bottom:16px;">Dieses Leistungsverzeichnis beschreibt den vereinbarten Standardumfang. Nicht aufgeführte Sonder-, Grund- oder Zusatzleistungen werden nur nach vorheriger Abstimmung ausgeführt.</div>' +
+      (hatPositionen ? positionsTableHtml(d) : "") +
+      printBulletListHtml("Regelmäßige Reinigungsleistungen", [
+        "Büro- und Verkehrsflächen saugen bzw. feucht wischen",
+        "Abfallbehälter leeren und Abfall ordnungsgemäß bereitstellen",
+        "Oberflächen und frei zugängliche Ablagen staubwischen",
+        "Tische und Arbeitsflächen nur nach Freigabe beziehungsweise entsprechend den betrieblichen Vorgaben reinigen",
+        "Türgriffe, Lichtschalter und häufig berührte Kontaktflächen reinigen",
+        "Küche bzw. Aufenthaltsbereich reinigen: Arbeitsflächen, Spüle und sichtbare Verschmutzungen",
+        "Sanitärräume reinigen und nach Bedarf desinfizierend pflegen",
+        "Verbrauchsmaterialien in den Sanitärräumen kontrollieren und nach Vereinbarung auffüllen",
+        "Sichtbare Auffälligkeiten oder Schäden dem Ansprechpartner mitteilen"
+      ]) +
+      printBulletListHtml("Nicht automatisch enthalten", [
+        "Fenster- und Rahmenreinigung",
+        "Grund- und Bauendreinigung",
+        "Teppich- oder Polsterreinigung",
+        "Reinigung von Außenflächen",
+        "Arbeiten an hochgelegenen oder besonders gefährlichen Stellen",
+        "Entfernung außergewöhnlicher Verschmutzungen oder Sonderabfälle"
+      ]) +
+      (d.notizen ? '<div style="margin-top:18px;font-size:12px;color:#667085;white-space:pre-wrap;">' + esc(d.notizen) + '</div>' : "") +
+      printSignatureBlockHtml() +
+      companyFooter() + '</div>';
+    document.getElementById("printArea").innerHTML = html;
+    window.print();
+  }
+  function printObjektuebergabeprotokoll(d) {
+    var c = detailCustomer;
+    var metaBox = metaBoxHtml([
+      { l: "Datum der Einweisung", v: fmtDate(d.datum) },
+      { l: "Objektadresse", v: d.leistungsort ? esc(d.leistungsort) : "–" },
+      { l: "Ansprechpartner Kunde", v: c.contactName ? esc(c.contactName) : "–" }
+    ]);
+    var html = '<div style="padding:44px;font-family:Arial,Helvetica,sans-serif;color:#17212B;max-width:720px;margin:0 auto;">' +
+      docHeaderHtml(d) +
+      '<div style="font-size:13px;margin-bottom:20px;">Dieses Protokoll dokumentiert die organisatorische Einweisung vor Beginn der Reinigung. Es werden keine Schlüssel übergeben.</div>' +
+      '<div style="font-size:13px;margin-bottom:24px;"><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Kunde/Objekt</div>' + esc(c.name) + (c.address ? '<br/>' + esc(c.address) : '') + '</div>' +
+      metaBox +
+      printSectionHtml("Zugang während des Betriebs", '<ul style="margin:0;padding-left:18px;line-height:1.7;">' +
+        '<li>Die Reinigung erfolgt während des laufenden Betriebs beziehungsweise innerhalb der vereinbarten Pausen.</li>' +
+        '<li>Der Kunde stellt zu den vereinbarten Zeiten den Zugang zu den Reinigungsbereichen sicher.</li>' +
+        '<li>Eine Schlüssel-, Transponder- oder Alarmanlagenübergabe findet nicht statt.</li>' +
+        '<li>Bereiche, die nicht betreten werden dürfen, werden vor Beginn eindeutig benannt.</li></ul>') +
+      printSectionHtml("Einweisung und Besonderheiten (vor Ort auszufüllen)",
+        printBlankLineHtml("Zutritt/Anmeldung") + printBlankLineHtml("Sensible Bereiche") + printBlankLineHtml("Gefahrenstellen") +
+        printBlankLineHtml("Wasser-/Stromanschlüsse") + printBlankLineHtml("Abfallstandort") + printBlankLineHtml("Abstellmöglichkeit Reinigungsmittel") +
+        printBlankLineHtml("Notfallkontakt")) +
+      printSectionHtml("Zustand bei Beginn", '<div style="font-size:12.5px;color:#667085;margin-bottom:8px;">Vorhandene Schäden, besondere Verschmutzungen oder empfindliche Oberflächen:</div>' +
+        printBlankLineHtml("") + printBlankLineHtml("") + printBlankLineHtml("")) +
+      (d.notizen ? '<div style="margin-top:18px;font-size:12px;color:#667085;white-space:pre-wrap;">' + esc(d.notizen) + '</div>' : "") +
+      printSignatureBlockHtml() +
+      companyFooter() + '</div>';
+    document.getElementById("printArea").innerHTML = html;
+    window.print();
+  }
   function printDocument(d) {
     if (d.typ === "Angebot") printOffer(d);
     else if (d.typ === "Kostenvoranschlag") printKostenvoranschlag(d);
+    else if (d.typ === "Auftragsbestaetigung") printAuftragsbestaetigung(d);
+    else if (d.typ === "Leistungsverzeichnis") printLeistungsverzeichnis(d);
+    else if (d.typ === "Objektuebergabeprotokoll") printObjektuebergabeprotokoll(d);
     else printInvoice(d);
   }
   function daysBetween(fromStr, toStr) {
