@@ -213,6 +213,7 @@
   .overlay { position: fixed; inset: 0; background: rgba(8,20,32,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
   .overlay.open { display: flex; }
   @media (min-width: 640px) { .overlay { align-items: center; } }
+  #infoOverlay { z-index: 55; }
   @media (prefers-reduced-motion: no-preference) { .overlay.open .sheet { animation: rise 0.25s cubic-bezier(0.22, 1, 0.36, 1); } }
   @keyframes rise { from { transform: translateY(28px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -1427,7 +1428,7 @@
           <div class="calc-step job-form" data-step="2" hidden>
             <label class="field"><span>Reinigungstage</span><input name="reinigungstage" placeholder="z. B. Mo, Mi, Fr" /></label>
             <label class="field"><span>Reinigungsintervall</span>
-              <select name="reinigungsintervall"><option>Einmalig (kein Wiederholungsintervall)</option><option>1x pro Woche</option><option>2x pro Woche</option><option>3x pro Woche</option><option>4x pro Woche</option><option>5x pro Woche (täglich, Mo–Fr)</option><option>14-tägig (alle 2 Wochen)</option><option>1x pro Monat</option></select>
+              <select name="reinigungsintervall"></select>
             </label>
             <label class="field"><span>Gewünschte Uhrzeit</span><input name="uhrzeit" type="time" /></label>
             <label class="field"><span>Arbeitszeit pro Einsatz (Std.) *</span><input name="arbeitszeitProEinsatz" type="number" min="0.1" step="0.1" /></label>
@@ -1465,7 +1466,9 @@
           <button type="button" class="btn btn-ghost" id="objectCalcCancel">Abbrechen</button>
           <button type="button" class="btn btn-ghost" id="objectCalcBack" hidden>Zurück</button>
           <button type="button" class="btn btn-primary" id="objectCalcNext">Weiter</button>
+          <button type="button" class="btn btn-ghost" id="objectCalcMakeEstimate" hidden>Kostenvoranschlag erstellen</button>
           <button type="button" class="btn btn-ghost" id="objectCalcMakeOffer" hidden>Angebot erstellen</button>
+          <button type="button" class="btn btn-ghost" id="objectCalcMakeInvoice" hidden>Rechnung erstellen</button>
           <button type="submit" class="btn btn-primary" id="objectCalcSubmit" hidden>Speichern</button>
         </div>
       </form>
@@ -1725,7 +1728,10 @@
   var TIP_KEY = "mi-kunden-cockpit-tip-dismissed";
 
   var OBJEKTARTEN = ["Büro", "Praxis/Kanzlei", "Wohnanlage", "Gewerbe/Industrie", "Privat", "Sonstiges"];
-  var TURNI = ["täglich", "2x wöchentlich", "wöchentlich", "14-tägig", "monatlich", "nach Bedarf"];
+  // Einheitliche Turnus-Bezeichnungen — dieselbe Liste wird bei Kunde (TURNI), Auftrag/Vorlage (RHYTHMEN)
+  // und Objekt-Kalkulator (REINIGUNGSINTERVALL_EINSAETZE) verwendet, damit die Begriffe überall gleich sind.
+  var TURNUS_LISTE = ["Einmalig", "1x pro Woche", "2x pro Woche", "3x pro Woche", "4x pro Woche", "Täglich (Werktage)", "14-tägig", "1x pro Monat", "Quartalsweise", "Halbjährlich", "Jährlich", "Nach Bedarf"];
+  var TURNI = TURNUS_LISTE;
   var STATUS = {
     "Anfrage": { bg: "#EEF0F2", fg: "#5B6470", dot: "#9AA3AC", bgDark: "#1B2733", fgDark: "#AEB8C2", dotDark: "#7C8894" },
     "Angebot": { bg: "#F4E8CF", fg: "#8A6A1A", dot: "#A8791E", bgDark: "#2B2312", fgDark: "#E3B458", dotDark: "#E3B458" },
@@ -1765,7 +1771,7 @@
     return '<svg class="icn" viewBox="0 0 24 24">' + paths[name] + '</svg>';
   }
   function emptyCustomer() {
-    return { id: "", name: "", address: "", type: OBJEKTARTEN[0], contactName: "", phone: "", email: "", services: "", turnus: TURNI[2], price: "", status: "Anfrage", startDate: "", nextDate: "", notes: "" };
+    return { id: "", name: "", address: "", type: OBJEKTARTEN[0], contactName: "", phone: "", email: "", services: "", turnus: TURNI[1], price: "", status: "Anfrage", startDate: "", nextDate: "", notes: "" };
   }
   function uid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -2349,7 +2355,7 @@
     formTitle.textContent = editingId ? "Kunde bearbeiten" : "Neuer Kunde";
     Object.keys(emptyCustomer()).forEach(function (k) {
       if (k === "id") return;
-      if (form.elements[k]) form.elements[k].value = c[k] || (k === "type" ? OBJEKTARTEN[0] : k === "status" ? "Anfrage" : k === "turnus" ? TURNI[2] : "");
+      if (form.elements[k]) form.elements[k].value = c[k] || (k === "type" ? OBJEKTARTEN[0] : k === "status" ? "Anfrage" : k === "turnus" ? TURNI[1] : "");
     });
     overlay.classList.add("open");
     setTimeout(function () { form.name.focus(); }, 50);
@@ -2540,7 +2546,7 @@
   var jobsUnsub = null;
   var recurringTemplates = [];
   var recurringUnsub = null;
-  var RHYTHMEN = ["täglich", "wöchentlich", "14-tägig", "monatlich", "quartalsweise", "halbjährlich", "jährlich"];
+  var RHYTHMEN = TURNUS_LISTE.filter(function (t) { return t !== "Einmalig" && t !== "Nach Bedarf"; });
   var docs = [];
   var docsUnsub = null;
   var customerMovements = [];
@@ -2623,13 +2629,18 @@
 
   function addInterval(dateStr, rhythmus, n) {
     var d = new Date(dateStr + "T00:00:00");
-    if (rhythmus === "täglich") d.setDate(d.getDate() + n);
-    else if (rhythmus === "wöchentlich") d.setDate(d.getDate() + n * 7);
+    // Aktuelle, einheitliche Bezeichnungen (TURNUS_LISTE) plus alte, kleingeschriebene Werte
+    // als Fallback, damit bereits gespeicherte Vorlagen unverändert weiter funktionieren.
+    if (rhythmus === "Täglich (Werktage)" || rhythmus === "täglich") d.setDate(d.getDate() + n);
+    else if (rhythmus === "1x pro Woche" || rhythmus === "wöchentlich") d.setDate(d.getDate() + n * 7);
+    else if (rhythmus === "2x pro Woche" || rhythmus === "2x wöchentlich") d.setDate(d.getDate() + Math.round(n * 7 / 2));
+    else if (rhythmus === "3x pro Woche") d.setDate(d.getDate() + Math.round(n * 7 / 3));
+    else if (rhythmus === "4x pro Woche") d.setDate(d.getDate() + Math.round(n * 7 / 4));
     else if (rhythmus === "14-tägig") d.setDate(d.getDate() + n * 14);
-    else if (rhythmus === "monatlich") d.setMonth(d.getMonth() + n);
-    else if (rhythmus === "quartalsweise") d.setMonth(d.getMonth() + n * 3);
-    else if (rhythmus === "halbjährlich") d.setMonth(d.getMonth() + n * 6);
-    else if (rhythmus === "jährlich") d.setFullYear(d.getFullYear() + n);
+    else if (rhythmus === "1x pro Monat" || rhythmus === "monatlich") d.setMonth(d.getMonth() + n);
+    else if (rhythmus === "Quartalsweise" || rhythmus === "quartalsweise") d.setMonth(d.getMonth() + n * 3);
+    else if (rhythmus === "Halbjährlich" || rhythmus === "halbjährlich") d.setMonth(d.getMonth() + n * 6);
+    else if (rhythmus === "Jährlich" || rhythmus === "jährlich") d.setFullYear(d.getFullYear() + n);
     return d.toISOString().slice(0, 10);
   }
 
@@ -5185,10 +5196,15 @@
   // ---- Objekt-Kalkulator ----
   // Exakte Werte aus Excel-Blatt Einstellungen, Frequenztabelle für Monats-Hochrechnung (52 Wochen / 12 Monate = 4,3333 Wochen/Monat).
   var REINIGUNGSINTERVALL_EINSAETZE = {
-    "Einmalig (kein Wiederholungsintervall)": 0, "1x pro Woche": 4.345, "2x pro Woche": 8.69, "3x pro Woche": 13.035,
-    "4x pro Woche": 17.38, "5x pro Woche (täglich, Mo–Fr)": 21.725, "14-tägig (alle 2 Wochen)": 2.1725, "1x pro Monat": 1.0,
-    // Alte Bezeichnungen (vor Excel-Import) — nur für bereits gespeicherte Kalkulationen, nicht mehr im Auswahlfeld:
-    "Täglich (Werktage)": 21.725, "Wöchentlich": 4.345, "2x wöchentlich": 8.69, "14-tägig": 2.1725, "Monatlich": 1.0
+    // Einheitliche Bezeichnungen (TURNUS_LISTE). Werte 1x-4x pro Woche/Täglich/14-tägig/1x pro Monat: Excel-Quelle
+    // "Professionelle Preis- und Lohnkalkulation 2026". Quartalsweise/Halbjährlich/Jährlich: mathematisch abgeleitet
+    // (1/3, 1/6, 1/12 Einsätze/Monat) — keine Excel-Quelle, aber keine erfundene Marktannahme, sondern Kalenderrechnung.
+    "Einmalig": 0, "1x pro Woche": 4.345, "2x pro Woche": 8.69, "3x pro Woche": 13.035,
+    "4x pro Woche": 17.38, "Täglich (Werktage)": 21.725, "14-tägig": 2.1725, "1x pro Monat": 1.0,
+    "Quartalsweise": 1 / 3, "Halbjährlich": 1 / 6, "Jährlich": 1 / 12,
+    // Alte Bezeichnungen (vor der Vereinheitlichung) — nur für bereits gespeicherte Kalkulationen, nicht mehr im Auswahlfeld:
+    "Einmalig (kein Wiederholungsintervall)": 0, "5x pro Woche (täglich, Mo–Fr)": 21.725, "14-tägig (alle 2 Wochen)": 2.1725,
+    "Wöchentlich": 4.345, "2x wöchentlich": 8.69, "Monatlich": 1.0
   };
   function emptyObjectCalc() {
     var zielmarge = getTaxParam("zielmarge_prozent");
@@ -5326,6 +5342,9 @@
   var objectCalcForm = document.getElementById("objectCalcForm");
   var objectCalcOverlay = document.getElementById("objectCalcOverlay");
   function populateObjectCalcSelects(selected) {
+    objectCalcForm.elements.reinigungsintervall.innerHTML = TURNUS_LISTE
+      .filter(function (t) { return t !== "Nach Bedarf"; })
+      .map(function (t) { return '<option>' + esc(t) + '</option>'; }).join("");
     var custSel = objectCalcForm.elements.customerId;
     custSel.innerHTML = '<option value="">Kein Kunde / Neuakquise</option>' +
       customers.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
@@ -5398,6 +5417,8 @@
     document.getElementById("objectCalcBack").hidden = n === 1;
     document.getElementById("objectCalcNext").hidden = n === 4;
     document.getElementById("objectCalcMakeOffer").hidden = n !== 4;
+    document.getElementById("objectCalcMakeInvoice").hidden = n !== 4;
+    document.getElementById("objectCalcMakeEstimate").hidden = n !== 4;
     document.getElementById("objectCalcSubmit").hidden = n !== 4;
     if (n === 4) renderObjectCalcResult();
   }
@@ -5442,7 +5463,7 @@
       .then(function () { showToast("Gespeichert"); objectCalcOverlay.classList.remove("open"); })
       .catch(function (err) { setBanner("Speichern fehlgeschlagen: " + err.message); });
   });
-  document.getElementById("objectCalcMakeOffer").addEventListener("click", function () {
+  function objectCalcMakeDocument(typ) {
     var f = readObjectCalcForm();
     if (!f.customerId) { showToast("Bitte zuerst einen Kunden auswählen", true); return; }
     var r = berechneObjektKosten(f);
@@ -5452,14 +5473,17 @@
     objectCalcOverlay.classList.remove("open");
     showView("customers");
     openDetail(cust);
-    openDocForm("Angebot", null);
+    openDocForm(typ, null);
     currentPositions = [{
       bezeichnung: "Unterhaltsreinigung " + f.objektname + " (" + f.reinigungsintervall + ")",
       menge: 1, preis: r.empfohlenerMonatspreis, einheit: "Pauschal"
     }];
     renderPosRows();
     showToast("Kalkulation übernommen — bitte prüfen und speichern");
-  });
+  }
+  document.getElementById("objectCalcMakeOffer").addEventListener("click", function () { objectCalcMakeDocument("Angebot"); });
+  document.getElementById("objectCalcMakeInvoice").addEventListener("click", function () { objectCalcMakeDocument("Rechnung"); });
+  document.getElementById("objectCalcMakeEstimate").addEventListener("click", function () { objectCalcMakeDocument("Kostenvoranschlag"); });
   function renderObjectCalcList() {
     var el = document.getElementById("objectCalcList");
     if (objectCalculations.length === 0) { el.innerHTML = '<div class="empty"><div class="t">Noch keine Kalkulation erfasst</div><div class="s">Mit dem Plus-Button die erste Kalkulation anlegen.</div></div>'; return; }
@@ -7455,6 +7479,10 @@
       gewinnmargeProzent: "20", reinigungsintervall: "1x pro Woche", istPreisProEinsatz: ""
     });
     assertClose("Objekt-Kalk: Fahrtkosten automatisch = 8km × 0,70€", ok && ok.fahrtkosten, 5.6, 0.001);
+    assertClose("Turnus: Quartalsweise = 1/3 Einsätze/Monat", REINIGUNGSINTERVALL_EINSAETZE["Quartalsweise"], 1 / 3, 0.0001);
+    assertClose("Turnus: Halbjährlich = 1/6 Einsätze/Monat", REINIGUNGSINTERVALL_EINSAETZE["Halbjährlich"], 1 / 6, 0.0001);
+    assertClose("Turnus: Jährlich = 1/12 Einsätze/Monat", REINIGUNGSINTERVALL_EINSAETZE["Jährlich"], 1 / 12, 0.0001);
+    assertEqual("Turnus: TURNI und RHYTHMEN aus gemeinsamer Liste (TURNI[1] = RHYTHMEN[0])", TURNI[1], RHYTHMEN[0]);
     assertClose("Objekt-Kalk: Gesamtkosten = 56,6444€ (Excel-Beispiel)", ok && ok.gesamtkosten, 56.6444, 0.01);
     assertClose("Objekt-Kalk: Mindestpreis bei 20% Zielmarge = 70,8055€ (Excel-Beispiel)", ok && ok.mindestpreisProEinsatz, 70.8055, 0.01);
 
