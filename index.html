@@ -231,7 +231,7 @@
   .field input, .field select, .field textarea { border: 1px solid var(--border); border-radius: var(--r-s); padding: 10px 12px; background: var(--surface); color: var(--ink); width: 100%; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
   .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   .field textarea { resize: vertical; min-height: 64px; }
-  .sheet-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 18px calc(14px + var(--safe-b)); border-top: 1px solid var(--border); flex-shrink: 0; }
+  .sheet-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding: 14px 18px calc(14px + var(--safe-b)); border-top: 1px solid var(--border); flex-shrink: 0; }
   .btn { border-radius: var(--r-s); padding: 11px 18px; font-size: 0.86rem; font-weight: 700; border: none; transition: opacity 0.15s ease, transform 0.1s ease; }
   .btn:active { transform: scale(0.97); }
   button:focus-visible, .sidebar-link:focus-visible, .tab-btn:focus-visible, a:focus-visible {
@@ -1466,9 +1466,9 @@
           <button type="button" class="btn btn-ghost" id="objectCalcCancel">Abbrechen</button>
           <button type="button" class="btn btn-ghost" id="objectCalcBack" hidden>Zurück</button>
           <button type="button" class="btn btn-primary" id="objectCalcNext">Weiter</button>
-          <button type="button" class="btn btn-ghost" id="objectCalcMakeEstimate" hidden>Kostenvoranschlag erstellen</button>
-          <button type="button" class="btn btn-ghost" id="objectCalcMakeOffer" hidden>Angebot erstellen</button>
-          <button type="button" class="btn btn-ghost" id="objectCalcMakeInvoice" hidden>Rechnung erstellen</button>
+          <button type="button" class="btn btn-ghost" id="objectCalcMakeEstimate" hidden>Als Kostenvoranschlag</button>
+          <button type="button" class="btn btn-ghost" id="objectCalcMakeOffer" hidden>Als Angebot</button>
+          <button type="button" class="btn btn-ghost" id="objectCalcMakeInvoice" hidden>Als Rechnung</button>
           <button type="submit" class="btn btn-primary" id="objectCalcSubmit" hidden>Speichern</button>
         </div>
       </form>
@@ -7535,6 +7535,74 @@
     });
     return results;
   }
+  // ---- Handy-/Browser-Zurück-Taste: schließt das zuletzt geöffnete Fenster statt die App zu verlassen ----
+  var navStack = [];
+  var navSuppressRelease = false; // true während wir gerade auf ein echtes popstate reagieren (verhindert doppeltes history.back())
+  function navPush(closer) {
+    navStack.push(closer);
+    history.pushState({ navDepth: navStack.length }, "", location.href);
+  }
+  window.addEventListener("popstate", function () {
+    navSuppressRelease = true;
+    var closer = navStack.pop();
+    if (closer) closer();
+    setTimeout(function () { navSuppressRelease = false; }, 0);
+  });
+  // Mehrstufige Assistenten (Objekt-Kalkulator, Rücklagen-Assistent): ein Zurück-Druck geht genau einen
+  // Schritt zurück statt das ganze Formular zu schließen. Dieselbe Schließen-Funktion legt sich bei jedem
+  // Zurück-Schritt selbst wieder auf den Stapel, damit der nächste Zurück-Druck wieder greift.
+  var OVERLAY_CLOSERS = {
+    formOverlay: closeForm, deleteOverlay: closeDelete, detailOverlay: closeDetail,
+    docOverlay: closeDocForm, employeeOverlay: closeEmployeeForm, employeeDeleteOverlay: closeEmployeeDelete,
+    employeeDetailOverlay: closeEmployeeDetail, serviceOverlay: closeServiceForm, serviceDeleteOverlay: closeServiceDelete,
+    materialOverlay: closeMaterialForm, materialAssignOverlay: closeMaterialAssignForm, materialReturnOverlay: closeMaterialReturn,
+    importPreviewOverlay: discardPendingImport,
+    infoOverlay: function () { document.getElementById("infoOverlay").classList.remove("open"); },
+    ausgabeOverlay: closeAusgabeForm,
+    ausgabeDeleteOverlay: function () { document.getElementById("ausgabeDeleteOverlay").classList.remove("open"); deleteAusgabeTarget = null; },
+    taxParamOverlay: closeTaxParamForm, taxDeadlineOverlay: closeTaxDeadlineForm,
+    taxProfileChangeOverlay: function () { taxProfileChangeOverlay.classList.remove("open"); },
+    reserveWizardOverlay: function () {
+      var el = document.getElementById("reserveWizardOverlay");
+      if (!el.classList.contains("open")) return;
+      if (wizardStep > 1) { wizardStep--; renderReserveWizard(); navPush(OVERLAY_CLOSERS.reserveWizardOverlay); }
+      else el.classList.remove("open");
+    },
+    entnahmeRechnerOverlay: function () { document.getElementById("entnahmeRechnerOverlay").classList.remove("open"); },
+    employeeCalcOverlay: function () { employeeCalcOverlay.classList.remove("open"); },
+    objectCalcOverlay: function () {
+      var el = document.getElementById("objectCalcOverlay");
+      if (!el.classList.contains("open")) return;
+      if (objectCalcStep > 1) { showObjectCalcStep(objectCalcStep - 1); navPush(OVERLAY_CLOSERS.objectCalcOverlay); }
+      else el.classList.remove("open");
+    },
+    protectedEditOverlay: closeProtectedEdit,
+    movementEditOverlay: closeMovementEdit, materialDeleteOverlay: closeMaterialDelete,
+    vehicleOverlay: closeVehicleForm, vehicleDeleteOverlay: closeVehicleDelete,
+    ticketOverlay: closeTicketForm, ticketDeleteOverlay: closeTicketDelete,
+    keyOverlay: closeKeyForm, keyDeleteOverlay: closeKeyDelete,
+    searchOverlay: closeGlobalSearch,
+    helpOverlay: function () { document.getElementById("helpOverlay").classList.remove("open"); },
+    docStornoOverlay: closeDocStorno,
+    jobCompleteOverlay: function () { closeJobCompleteDialog(true); }
+  };
+  var overlayObserver = new MutationObserver(function (mutations) {
+    mutations.forEach(function (m) {
+      var el = m.target;
+      var isOpen = el.classList.contains("open");
+      if (isOpen && OVERLAY_CLOSERS[el.id]) {
+        navPush(OVERLAY_CLOSERS[el.id]);
+      } else if (!isOpen && navStack.length > 0 && !navSuppressRelease) {
+        // Fenster wurde nicht über die Zurück-Taste geschlossen (z. B. Abbrechen/Speichern) ->
+        // reservierten Verlaufseintrag freigeben, damit der Stapel nicht aus dem Takt gerät.
+        history.back();
+      }
+    });
+  });
+  document.querySelectorAll(".overlay").forEach(function (el) {
+    overlayObserver.observe(el, { attributes: true, attributeFilter: ["class"] });
+  });
+
   window.runSelfTests = runSelfTests;
 })();
 </script>
