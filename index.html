@@ -297,10 +297,11 @@
   .pos-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
   .pos-row input, .pos-row select { border: 1px solid var(--border); border-radius: var(--r-s); padding: 8px 9px; background: var(--surface); color: var(--ink); font-size: 0.82rem; }
   .pos-row .pos-bez { width: 100%; }
-  .pos-row-fields { display: flex; gap: 6px; align-items: center; }
+  .pos-row-fields { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .pos-row .pos-einheit { flex: 1; min-width: 68px; }
   .pos-row .pos-menge { width: 64px; flex-shrink: 0; }
   .pos-row .pos-preis { flex: 1; min-width: 74px; }
+  .pos-row .pos-turnus { flex: 1; min-width: 120px; }
   .pos-row .pos-del { background: transparent; border: none; color: var(--danger); width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .pos-row .pos-del:active { background: var(--surface-2); }
 
@@ -817,16 +818,16 @@
     </div>
   </div>
 
-  <div class="overlay confirm" id="deleteOverlay">
+  <div class="overlay confirm" id="genericDeleteOverlay">
     <div class="sheet">
       <div class="sheet-head">
-        <h2>Kunde löschen?</h2>
-        <button id="deleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <h2 id="genericDeleteTitle">Löschen?</h2>
+        <button id="genericDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
-      <p><strong id="deleteName"></strong> wird endgültig aus dem Cockpit entfernt. Das kann nicht rückgängig gemacht werden.</p>
+      <p><strong id="genericDeleteName"></strong> <span id="genericDeleteHint"></span></p>
       <div class="sheet-foot">
-        <button type="button" class="btn btn-ghost" id="deleteCancel">Abbrechen</button>
-        <button type="button" class="btn btn-danger" id="deleteConfirm">Löschen</button>
+        <button type="button" class="btn btn-ghost" id="genericDeleteCancel">Abbrechen</button>
+        <button type="button" class="btn btn-danger" id="genericDeleteConfirm">Löschen</button>
       </div>
     </div>
   </div>
@@ -978,19 +979,6 @@
     </div>
   </div>
 
-  <div class="overlay confirm" id="employeeDeleteOverlay">
-    <div class="sheet">
-      <div class="sheet-head">
-        <h2>Mitarbeiter löschen?</h2>
-        <button id="employeeDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <p><strong id="employeeDeleteName"></strong> wird endgültig aus dem Team entfernt.</p>
-      <div class="sheet-foot">
-        <button type="button" class="btn btn-ghost" id="employeeDeleteCancel">Abbrechen</button>
-        <button type="button" class="btn btn-danger" id="employeeDeleteConfirm">Löschen</button>
-      </div>
-    </div>
-  </div>
 
   <div class="overlay" id="employeeDetailOverlay">
     <div class="sheet" role="dialog" aria-modal="true">
@@ -1060,19 +1048,6 @@
     </div>
   </div>
 
-  <div class="overlay confirm" id="serviceDeleteOverlay">
-    <div class="sheet">
-      <div class="sheet-head">
-        <h2>Leistung löschen?</h2>
-        <button id="serviceDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <p><strong id="serviceDeleteName"></strong> wird aus dem Katalog entfernt.</p>
-      <div class="sheet-foot">
-        <button type="button" class="btn btn-ghost" id="serviceDeleteCancel">Abbrechen</button>
-        <button type="button" class="btn btn-danger" id="serviceDeleteConfirm">Löschen</button>
-      </div>
-    </div>
-  </div>
 
   <div class="overlay" id="materialOverlay">
     <div class="sheet" role="dialog" aria-modal="true">
@@ -1213,19 +1188,6 @@
     </div>
   </div>
 
-  <div class="overlay confirm" id="ausgabeDeleteOverlay">
-    <div class="sheet">
-      <div class="sheet-head">
-        <h2>Ausgabe löschen?</h2>
-        <button id="ausgabeDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <p><strong id="ausgabeDeleteName"></strong> wird endgültig entfernt.</p>
-      <div class="sheet-foot">
-        <button type="button" class="btn btn-ghost" id="ausgabeDeleteCancel">Abbrechen</button>
-        <button type="button" class="btn btn-danger" id="ausgabeDeleteConfirm">Löschen</button>
-      </div>
-    </div>
-  </div>
 
   <div class="overlay" id="taxParamOverlay">
     <div class="sheet" role="dialog" aria-modal="true">
@@ -1508,19 +1470,6 @@
     </div>
   </div>
 
-  <div class="overlay confirm" id="materialDeleteOverlay">
-    <div class="sheet">
-      <div class="sheet-head">
-        <h2>Material löschen?</h2>
-        <button id="materialDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <p><strong id="materialDeleteName"></strong> wird endgültig entfernt.</p>
-      <div class="sheet-foot">
-        <button type="button" class="btn btn-ghost" id="materialDeleteCancel">Abbrechen</button>
-        <button type="button" class="btn btn-danger" id="materialDeleteConfirm">Löschen</button>
-      </div>
-    </div>
-  </div>
 
   <div class="overlay" id="vehicleOverlay">
     <div class="sheet" role="dialog" aria-modal="true">
@@ -1547,19 +1496,6 @@
     </div>
   </div>
 
-  <div class="overlay confirm" id="vehicleDeleteOverlay">
-    <div class="sheet">
-      <div class="sheet-head">
-        <h2>Eintrag löschen?</h2>
-        <button id="vehicleDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <p><strong id="vehicleDeleteName"></strong> wird endgültig entfernt.</p>
-      <div class="sheet-foot">
-        <button type="button" class="btn btn-ghost" id="vehicleDeleteCancel">Abbrechen</button>
-        <button type="button" class="btn btn-danger" id="vehicleDeleteConfirm">Löschen</button>
-      </div>
-    </div>
-  </div>
 
   <div class="overlay" id="ticketOverlay">
     <div class="sheet" role="dialog" aria-modal="true">
@@ -1586,19 +1522,6 @@
     </div>
   </div>
 
-  <div class="overlay confirm" id="ticketDeleteOverlay">
-    <div class="sheet">
-      <div class="sheet-head">
-        <h2>Ticket löschen?</h2>
-        <button id="ticketDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <p><strong id="ticketDeleteName"></strong> wird endgültig entfernt.</p>
-      <div class="sheet-foot">
-        <button type="button" class="btn btn-ghost" id="ticketDeleteCancel">Abbrechen</button>
-        <button type="button" class="btn btn-danger" id="ticketDeleteConfirm">Löschen</button>
-      </div>
-    </div>
-  </div>
 
   <div class="overlay" id="keyOverlay">
     <div class="sheet" role="dialog" aria-modal="true">
@@ -1625,19 +1548,6 @@
     </div>
   </div>
 
-  <div class="overlay confirm" id="keyDeleteOverlay">
-    <div class="sheet">
-      <div class="sheet-head">
-        <h2>Eintrag löschen?</h2>
-        <button id="keyDeleteClose" aria-label="Schließen"><svg class="icn" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <p><strong id="keyDeleteName"></strong> wird endgültig entfernt.</p>
-      <div class="sheet-foot">
-        <button type="button" class="btn btn-ghost" id="keyDeleteCancel">Abbrechen</button>
-        <button type="button" class="btn btn-danger" id="keyDeleteConfirm">Löschen</button>
-      </div>
-    </div>
-  </div>
 
   <div class="overlay" id="searchOverlay">
     <div class="sheet" role="dialog" aria-modal="true">
@@ -1886,7 +1796,6 @@
   var statusFilter = "Alle";
   var sortMode = "name";
   var editingId = null;
-  var deleteTarget = null;
   var toastTimer = null;
   var unsubscribe = null;
   var allProperties = {};
@@ -1901,7 +1810,6 @@
   var employees = [];
   var employeesUnsub = null;
   var editingEmployeeId = null;
-  var deleteEmployeeTarget = null;
   var OWNER_EMAILS = ["info@mi-rheinservice.de"];
   var currentRole = null;
   var myMitarbeiterId = null;
@@ -1917,12 +1825,10 @@
   var services = [];
   var servicesUnsub = null;
   var editingServiceId = null;
-  var deleteServiceTarget = null;
   var servicesSeeded = false;
   var material = [];
   var materialUnsub = null;
   var editingMaterialId = null;
-  var deleteMaterialTarget = null;
   var currentCostPerUnit = null;
   var materialFilterLow = false;
   var expandedMatGroups = {};
@@ -1931,16 +1837,13 @@
   var vehicles = [];
   var vehiclesUnsub = null;
   var editingVehicleId = null;
-  var deleteVehicleTarget = null;
   var tickets = [];
   var ticketsUnsub = null;
   var editingTicketId = null;
-  var deleteTicketTarget = null;
   var docsTypeFilter = "Alle";
   var keys = [];
   var keysUnsub = null;
   var editingKeyId = null;
-  var deleteKeyTarget = null;
   var currentAbsences = {};
   var currentAbsencesUnsub = null;
   var allDocuments = [];
@@ -2382,12 +2285,24 @@
   document.getElementById("formCancel").addEventListener("click", closeForm);
   overlay.addEventListener("click", function (e) { if (e.target === overlay) closeForm(); });
 
-  var delOverlay = document.getElementById("deleteOverlay");
-  function openDelete(c) { deleteTarget = c; document.getElementById("deleteName").textContent = c.name; delOverlay.classList.add("open"); }
-  function closeDelete() { delOverlay.classList.remove("open"); deleteTarget = null; }
-  document.getElementById("deleteClose").addEventListener("click", closeDelete);
-  document.getElementById("deleteCancel").addEventListener("click", closeDelete);
-  delOverlay.addEventListener("click", function (e) { if (e.target === delOverlay) closeDelete(); });
+  var genericDeleteOverlay = document.getElementById("genericDeleteOverlay");
+  var genericDeleteCb = null;
+  function closeGenericDelete() { genericDeleteOverlay.classList.remove("open"); genericDeleteCb = null; }
+  document.getElementById("genericDeleteClose").addEventListener("click", closeGenericDelete);
+  document.getElementById("genericDeleteCancel").addEventListener("click", closeGenericDelete);
+  genericDeleteOverlay.addEventListener("click", function (e) { if (e.target === genericDeleteOverlay) closeGenericDelete(); });
+  document.getElementById("genericDeleteConfirm").addEventListener("click", function () {
+    var cb = genericDeleteCb;
+    closeGenericDelete();
+    if (cb) cb();
+  });
+  function confirmDelete(titel, name, hinweis, onConfirm) {
+    document.getElementById("genericDeleteTitle").textContent = titel;
+    document.getElementById("genericDeleteName").textContent = name;
+    document.getElementById("genericDeleteHint").textContent = hinweis;
+    genericDeleteCb = onConfirm;
+    genericDeleteOverlay.classList.add("open");
+  }
 
   function chunkArray(arr, size) {
     var out = [];
@@ -2433,22 +2348,21 @@
       return custRef.delete();
     });
   }
-  document.getElementById("deleteConfirm").addEventListener("click", function () {
-    if (!deleteTarget) return;
-    var id = deleteTarget.id;
-    closeDelete();
-    showToast("Kunde wird vollständig gelöscht…");
-    deleteCustomerCascade(id)
-      .then(function () { showToast("Kunde und alle zugehörigen Daten gelöscht"); })
-      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
-  });
+  function confirmDeleteCustomer(c) {
+    confirmDelete("Kunde löschen?", c.name, "wird endgültig aus dem Cockpit entfernt. Das kann nicht rückgängig gemacht werden.", function () {
+      showToast("Kunde wird vollständig gelöscht…");
+      deleteCustomerCascade(c.id)
+        .then(function () { showToast("Kunde und alle zugehörigen Daten gelöscht"); })
+        .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+    });
+  }
 
   document.getElementById("list").addEventListener("click", function (e) {
     var editBtn = e.target.closest(".edit");
     var delBtn = e.target.closest(".del");
     var card = e.target.closest(".card");
     if (editBtn) { var c1 = customers.find(function (c) { return c.id === editBtn.dataset.id; }); if (c1) openForm(c1); }
-    else if (delBtn) { var c2 = customers.find(function (c) { return c.id === delBtn.dataset.id; }); if (c2) openDelete(c2); }
+    else if (delBtn) { var c2 = customers.find(function (c) { return c.id === delBtn.dataset.id; }); if (c2) confirmDeleteCustomer(c2); }
     else if (card) { var c3 = customers.find(function (c) { return c.id === card.dataset.id; }); if (c3) openDetail(c3); }
   });
 
@@ -2826,7 +2740,7 @@
   document.getElementById("detailClose").addEventListener("click", closeDetail);
   detailOverlay.addEventListener("click", function (e) { if (e.target === detailOverlay) closeDetail(); });
   document.getElementById("detailEdit").addEventListener("click", function () { if (detailCustomer) { closeDetail(); openForm(detailCustomer); } });
-  document.getElementById("detailDelete").addEventListener("click", function () { if (detailCustomer) { closeDetail(); openDelete(detailCustomer); } });
+  document.getElementById("detailDelete").addEventListener("click", function () { if (detailCustomer) { closeDetail(); confirmDeleteCustomer(detailCustomer); } });
 
   propertyForm.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -3003,7 +2917,7 @@
   // ---- Angebote & Rechnungen ----
   var EINHEITEN = ["Std.", "m²", "Stück", "Pauschal"];
   function fmtEUR(n) { return (n || 0).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
-  function emptyPosition() { return { bezeichnung: "", menge: 1, preis: 0, einheit: "Std." }; }
+  function emptyPosition() { return { bezeichnung: "", menge: 1, preis: 0, einheit: "Std.", turnus: "" }; }
   function positionTotal(p) {
     var preis = parseFloat(p.preis) || 0;
     return p.einheit === "Pauschal" ? preis : (parseFloat(p.menge) || 0) * preis;
@@ -3024,6 +2938,8 @@
         '<select class="pos-einheit">' + EINHEITEN.map(function (u) { return '<option' + (p.einheit === u ? ' selected' : '') + '>' + u + '</option>'; }).join("") + '</select>' +
         (isPauschal ? '' : '<input class="pos-menge" type="number" step="0.01" value="' + p.menge + '" placeholder="Menge" />') +
         '<input class="pos-preis" type="number" step="0.01" value="' + p.preis + '" placeholder="' + (isPauschal ? "Preis gesamt" : "Preis/Einheit") + '" />' +
+        (isPauschal ? '' : '<select class="pos-turnus" title="Turnus (füllt Menge automatisch, änderbar)"><option value="">Kein Turnus</option>' +
+          TURNUS_LISTE.filter(function (t) { return t !== "Nach Bedarf"; }).map(function (t) { return '<option' + (p.turnus === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join("") + '</select>') +
         '<button type="button" class="pos-del" aria-label="Entfernen">' + icon("trash") + '</button>' +
         '</div></div>';
     }).join("");
@@ -3046,12 +2962,22 @@
     recomputeTotals();
   });
   document.getElementById("posRows").addEventListener("change", function (e) {
-    if (!e.target.classList.contains("pos-einheit")) return;
     var row = e.target.closest(".pos-row"); if (!row) return;
     var idx = parseInt(row.dataset.idx, 10);
-    currentPositions[idx].einheit = e.target.value;
-    if (e.target.value === "Pauschal") currentPositions[idx].menge = 1;
-    renderPosRows();
+    if (e.target.classList.contains("pos-einheit")) {
+      currentPositions[idx].einheit = e.target.value;
+      if (e.target.value === "Pauschal") currentPositions[idx].menge = 1;
+      renderPosRows();
+      return;
+    }
+    if (e.target.classList.contains("pos-turnus")) {
+      var turnus = e.target.value;
+      currentPositions[idx].turnus = turnus;
+      if (turnus && REINIGUNGSINTERVALL_EINSAETZE[turnus] != null) {
+        currentPositions[idx].menge = Math.round(REINIGUNGSINTERVALL_EINSAETZE[turnus] * 100) / 100;
+      }
+      renderPosRows();
+    }
   });
   document.getElementById("posRows").addEventListener("click", function (e) {
     var delBtn = e.target.closest(".pos-del"); if (!delBtn) return;
@@ -3092,7 +3018,7 @@
       docForm.elements.notizen.value = existingDoc.notizen || "";
       mwstInput.value = existingDoc.mwstSatz != null ? existingDoc.mwstSatz : 19;
       currentPositions = (existingDoc.positionen && existingDoc.positionen.length) ?
-        existingDoc.positionen.map(function (p) { return { bezeichnung: p.bezeichnung, menge: p.menge, preis: p.preis, einheit: p.einheit || "Std." }; }) : [emptyPosition()];
+        existingDoc.positionen.map(function (p) { return { bezeichnung: p.bezeichnung, menge: p.menge, preis: p.preis, einheit: p.einheit || "Std.", turnus: p.turnus || "" }; }) : [emptyPosition()];
     } else {
       docForm.reset();
       docForm.elements.datum.value = new Date().toISOString().slice(0, 10);
@@ -3200,7 +3126,7 @@
     e.preventDefault();
     if (!detailCustomer) return;
     var positionen = currentPositions
-      .map(function (p) { return { bezeichnung: (p.bezeichnung || "").toString().trim(), menge: parseFloat(p.menge) || 0, preis: parseFloat(p.preis) || 0, einheit: p.einheit || "Std." }; })
+      .map(function (p) { return { bezeichnung: (p.bezeichnung || "").toString().trim(), menge: parseFloat(p.menge) || 0, preis: parseFloat(p.preis) || 0, einheit: p.einheit || "Std.", turnus: p.turnus || "" }; })
       .filter(function (p) { return p.bezeichnung; });
     var mwstSatz = parseFloat(mwstInput.value) || 0;
     var netto = positionen.reduce(function (sum, p) { return sum + positionTotal(p); }, 0);
@@ -3313,10 +3239,13 @@
       '<div style="font-size:27px;font-weight:800;color:' + PRINT_NAVY + ';letter-spacing:0.02em;margin-bottom:2px;">' + esc(d.typ).toUpperCase() + '</div>' +
       (d.nummer ? '<div style="font-style:italic;font-weight:600;color:' + PRINT_GOLD + ';font-size:15px;margin-bottom:22px;">Nr. ' + esc(d.nummer) + '</div>' : '<div style="margin-bottom:22px;"></div>');
   }
+  function fullBic() {
+    var bicRaw = COMPANY.bic.replace(/\s+/g, "");
+    return bicRaw + (bicRaw.length === 8 ? "XXX" : "");
+  }
   function girocodeDataUrl(d) {
     if (typeof qrcode === "undefined") return null;
-    var bicRaw = COMPANY.bic.replace(/\s+/g, "");
-    var bic = bicRaw + (bicRaw.length === 8 ? "XXX" : "");
+    var bic = fullBic();
     var iban = COMPANY.iban.replace(/[^A-Z0-9]/gi, "");
     var betrag = (d.brutto || 0).toFixed(2);
     var payload = ["BCD", "002", "1", "SCT", bic, COMPANY.kontoinhaber, iban, "EUR" + betrag, "", "", "Rechnung Nr. " + (d.nummer || "")].join("\n");
@@ -3334,6 +3263,19 @@
       '<img src="' + url + '" alt="GiroCode zur Zahlung per Banking-App" style="width:96px;height:96px;image-rendering:pixelated;" />' +
       '<div style="font-size:9px;color:#667085;max-width:100px;margin-top:2px;">Mit Banking-App scannen &amp; bezahlen</div></div>';
   }
+  function metaListHtml(rows) {
+    return '<div style="font-size:13px;text-align:right;">' +
+      rows.map(function (m) {
+        return '<div style="margin-bottom:5px;"><span style="color:#667085;">' + esc(m.l) + ':</span> <span style="font-weight:700;color:' + PRINT_NAVY + ';">' + m.v + '</span></div>';
+      }).join("") + '</div>';
+  }
+  function invoiceFooterHtml() {
+    return '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-top:32px;padding-top:12px;border-top:2px solid ' + PRINT_GOLD + ';font-family:Arial,Helvetica,sans-serif;font-size:10.5px;color:#667085;line-height:1.6;">' +
+      '<div>' + esc(COMPANY.name) + '<br/>' + esc(COMPANY.address) + '</div>' +
+      '<div>IBAN: ' + esc(COMPANY.iban.replace(/\s*\(.*\)\s*/, "")) + '<br/>BIC: ' + esc(fullBic()) + '</div>' +
+      '<div>E-Mail: ' + esc(COMPANY.email) + '<br/>Tel.: ' + esc(COMPANY.phone) + '</div>' +
+      '</div>';
+  }
   function metaBoxHtml(cols) {
     return '<div style="display:flex;border:1px solid #E4E7EC;border-radius:4px;overflow:hidden;margin-bottom:26px;">' +
       cols.map(function (m, i) {
@@ -3346,12 +3288,14 @@
     var rows = (d.positionen || []).map(function (p, i) {
       var isPauschal = p.einheit === "Pauschal";
       var mengeCell = isPauschal ? "Pauschal" : (p.menge + (p.einheit ? " " + esc(p.einheit) : ""));
+      if (p.turnus) mengeCell += ' <span style="color:#667085;font-size:11px;">(' + esc(p.turnus) + ')</span>';
       var bg = i % 2 === 1 ? "#FAF6EA" : "#FFFFFF";
       return '<tr style="background:' + bg + ';">' +
         '<td style="padding:9px 10px;border-bottom:1px solid #E4E7EC;">' + (i + 1) + '</td>' +
         '<td style="padding:9px 10px;border-bottom:1px solid #E4E7EC;">' + esc(p.bezeichnung) + '</td>' +
         '<td style="padding:9px 10px;border-bottom:1px solid #E4E7EC;">' + mengeCell + '</td>' +
         '<td style="padding:9px 10px;border-bottom:1px solid #E4E7EC;">' + fmtEUR(p.preis) + '</td>' +
+        '<td style="padding:9px 10px;border-bottom:1px solid #E4E7EC;">' + (d.mwstSatz || 0) + ' %</td>' +
         '<td style="padding:9px 10px;border-bottom:1px solid #E4E7EC;font-weight:700;">' + fmtEUR(positionTotal(p)) + '</td></tr>';
     }).join("");
     return '<table style="width:100%;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:12.5px;color:#17212B;">' +
@@ -3359,6 +3303,7 @@
       '<th style="text-align:left;padding:9px 10px;font-size:12px;font-weight:700;">Beschreibung</th>' +
       '<th style="text-align:left;padding:9px 10px;font-size:12px;font-weight:700;">Menge/Turnus</th>' +
       '<th style="text-align:left;padding:9px 10px;font-size:12px;font-weight:700;">Einzelpreis</th>' +
+      '<th style="text-align:left;padding:9px 10px;font-size:12px;font-weight:700;">USt %</th>' +
       '<th style="text-align:left;padding:9px 10px;font-size:12px;font-weight:700;">Gesamt</th></tr></thead>' +
       '<tbody>' + rows + '</tbody></table>';
   }
@@ -3377,36 +3322,38 @@
   function printInvoice(d) {
     var c = detailCustomer;
     var isPrivate = c && c.type === "Privat";
-    var metaBox = metaBoxHtml([
+    var metaList = metaListHtml([
       { l: "Rechnungsdatum", v: fmtDate(d.datum) },
       { l: "Fälligkeitsdatum", v: d.gueltigFaellig ? fmtDate(d.gueltigFaellig) : "–" },
       { l: "Zahlungsart", v: "SEPA-Überweisung" },
-      { l: "Leistungszeitraum", v: d.leistungszeitraum ? esc(d.leistungszeitraum) : "–" },
-      { l: "Leistungsort", v: d.leistungsort ? esc(d.leistungsort) : "–" }
+      { l: "Leistungszeitraum", v: d.leistungszeitraum ? esc(d.leistungszeitraum) : "–" }
     ]);
+    var beschreibung = d.notizen ? esc(d.notizen) :
+      ((d.positionen && d.positionen[0] && d.positionen[0].bezeichnung) ? esc(d.positionen[0].bezeichnung) : "");
     var pflichthinweise = isPrivate ?
       '<div style="margin-top:20px;padding:14px 16px;background:' + PRINT_GOLD_BG + ';border-radius:4px;font-family:Arial,Helvetica,sans-serif;font-size:11.5px;color:#3A3120;line-height:1.55;">' +
       '<strong style="display:block;color:' + PRINT_NAVY + ';margin-bottom:6px;">Pflichthinweise (nur bei privaten Auftraggebern relevant)</strong>' +
       'Aufbewahrungspflicht: Da es sich um eine Leistung im Zusammenhang mit einem Grundstück handelt, sind Sie als privater Auftraggeber verpflichtet, diese Rechnung, einen Zahlungsbeleg oder eine andere beweiskräftige Unterlage zwei Jahre lang aufzubewahren (§ 14b Abs. 1 Satz 5 UStG).</div>' : '';
     var html = '<div style="padding:44px;font-family:Arial,Helvetica,sans-serif;color:#17212B;max-width:720px;margin:0 auto;">' +
       docHeaderHtml(d, girocodeHtml(d)) +
-      '<div style="display:flex;justify-content:space-between;gap:24px;font-size:13px;margin-bottom:24px;">' +
-      '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Rechnungsempfänger</div>' + esc(c.name) + (c.address ? '<br/>' + esc(c.address) : '') + '</div>' +
-      '<div><div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:4px;">Rechnungssteller</div>' +
-      esc(COMPANY.name) + '<br/>' + esc(COMPANY.owners) + '<br/>' + esc(COMPANY.address) +
-      '<br/><span style="color:#667085;">Steuernummer: ' + (COMPANY.steuernummer ? esc(COMPANY.steuernummer) : "wird ergänzt") + '</span></div></div>' +
-      metaBox +
+      '<div style="display:flex;justify-content:space-between;gap:24px;font-size:13px;margin-bottom:20px;">' +
+      '<div><div style="font-size:11px;color:#667085;margin-bottom:8px;">' + esc(COMPANY.name) + ' · ' + esc(COMPANY.address) +
+      (COMPANY.steuernummer ? ' · St.-Nr. ' + esc(COMPANY.steuernummer) : '') + '</div>' +
+      '<div style="font-weight:700;color:' + PRINT_NAVY + ';">' + esc(c.name) + '</div>' + (c.address ? esc(c.address) : '') + '</div>' +
+      metaList + '</div>' +
+      (beschreibung ? '<div style="font-size:13px;margin-bottom:16px;">' + beschreibung + '</div>' : '') +
       positionsTableHtml(d) +
-      totalsHtml(d, "Rechnungsbetrag") +
-      '<div style="font-size:13px;margin-top:26px;">' +
-      '<div style="font-weight:700;color:' + PRINT_NAVY + ';margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid ' + PRINT_GOLD + ';">Zahlungsbedingungen</div>' +
-      'Zahlungsziel: 14 Tage netto ab Rechnungsdatum' + (d.gueltigFaellig ? ", fällig bis " + fmtDate(d.gueltigFaellig) : "") + '.<br/><br/>' +
-      'Bankverbindung: ' + esc(COMPANY.iban) + ' · BIC: ' + esc(COMPANY.bic) + ' · Empfänger: ' + esc(COMPANY.kontoinhaber) + '<br/>' +
-      '<span style="color:#667085;font-size:11.5px;font-style:italic;">Hinweis: Dieses Konto unterstützt ausschließlich SEPA-Überweisungen.</span></div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-top:18px;">' +
+      '<div style="font-size:12px;color:#667085;max-width:340px;">Zahlbar innerhalb von 14 Tagen nach Rechnungsdatum ohne Abzug' +
+      (d.gueltigFaellig ? ', fällig bis ' + fmtDate(d.gueltigFaellig) : '') + '. Die Zahlung erfolgt per SEPA-Überweisung auf das unten genannte Geschäftskonto.</div>' +
+      '<div style="text-align:right;">' +
+      (d.mwstSatz ? '<div style="font-size:12px;color:#667085;">Nettobetrag&nbsp;&nbsp;<strong style="color:' + PRINT_NAVY + ';">' + fmtEUR(d.netto) + '</strong></div>' : '') +
+      '<div style="font-size:30px;font-weight:800;color:' + PRINT_NAVY + ';margin-top:4px;">' + fmtEUR(d.brutto) + '</div>' +
+      (!d.mwstSatz ? '<div style="font-size:10.5px;color:#667085;font-style:italic;margin-top:2px;">Gemäß § 19 UStG keine Umsatzsteuer</div>' : '') +
+      '</div></div>' +
       pflichthinweise +
-      (d.notizen ? '<div style="margin-top:18px;font-size:12px;color:#667085;white-space:pre-wrap;">' + esc(d.notizen) + '</div>' : "") +
       '<div style="margin-top:22px;font-size:13px;">Vielen Dank für Ihr Vertrauen in M&amp;I-RheinService.</div>' +
-      companyFooter() + '</div>';
+      invoiceFooterHtml() + '</div>';
     document.getElementById("printArea").innerHTML = html;
     window.print();
   }
@@ -3673,7 +3620,7 @@
     pendingConversionSource = sourceDoc;
     openDocForm("Rechnung", null);
     currentPositions = (sourceDoc.positionen && sourceDoc.positionen.length) ?
-      sourceDoc.positionen.map(function (p) { return { bezeichnung: p.bezeichnung, menge: p.menge, preis: p.preis, einheit: p.einheit || "Std." }; }) : [emptyPosition()];
+      sourceDoc.positionen.map(function (p) { return { bezeichnung: p.bezeichnung, menge: p.menge, preis: p.preis, einheit: p.einheit || "Std.", turnus: p.turnus || "" }; }) : [emptyPosition()];
     docForm.elements.leistungsort.value = sourceDoc.leistungsort || docForm.elements.leistungsort.value;
     docForm.elements.notizen.value = sourceDoc.notizen || "";
     renderPosRows();
@@ -4168,7 +4115,7 @@
     var previewBtn = e.target.closest(".emp-preview");
     var card = e.target.closest(".card");
     if (editBtn) { var m1 = employees.find(function (m) { return m.id === editBtn.dataset.id; }); if (m1) openEmployeeForm(m1); }
-    else if (delBtn) { var m2 = employees.find(function (m) { return m.id === delBtn.dataset.id; }); if (m2) { deleteEmployeeTarget = m2; document.getElementById("employeeDeleteName").textContent = m2.name; document.getElementById("employeeDeleteOverlay").classList.add("open"); } }
+    else if (delBtn) { var m2 = employees.find(function (m) { return m.id === delBtn.dataset.id; }); if (m2) confirmDeleteEmployee(m2); }
     else if (previewBtn) {
       var m4 = employees.find(function (m) { return m.id === previewBtn.dataset.id; });
       if (m4) enterEmployeePreview(m4);
@@ -4185,19 +4132,13 @@
       if (m3) openEmployeeDetail(m3);
     }
   });
-  var employeeDeleteOverlay = document.getElementById("employeeDeleteOverlay");
-  function closeEmployeeDelete() { employeeDeleteOverlay.classList.remove("open"); deleteEmployeeTarget = null; }
-  document.getElementById("employeeDeleteClose").addEventListener("click", closeEmployeeDelete);
-  document.getElementById("employeeDeleteCancel").addEventListener("click", closeEmployeeDelete);
-  employeeDeleteOverlay.addEventListener("click", function (e) { if (e.target === employeeDeleteOverlay) closeEmployeeDelete(); });
-  document.getElementById("employeeDeleteConfirm").addEventListener("click", function () {
-    if (!deleteEmployeeTarget) return;
-    var id = deleteEmployeeTarget.id;
-    closeEmployeeDelete();
-    db.collection("mitarbeiter").doc(id).delete()
-      .then(function () { showToast("Gelöscht"); })
-      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
-  });
+  function confirmDeleteEmployee(m) {
+    confirmDelete("Mitarbeiter löschen?", m.name, "wird endgültig aus dem Team entfernt.", function () {
+      db.collection("mitarbeiter").doc(m.id).delete()
+        .then(function () { showToast("Gelöscht"); })
+        .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+    });
+  }
 
   var overdueCheckDone = {};
   function markOverdueInvoices() {
@@ -4488,7 +4429,6 @@
   var AUSGABEN_KATEGORIEN = ["Material", "Fahrzeuge", "Versicherungen", "Software", "Telefon/Internet", "Werbung", "Löhne", "Fremdleistungen", "Sonstige Betriebsausgaben"];
   function emptyAusgabe() { return { id: "", kategorie: AUSGABEN_KATEGORIEN[0], betrag: "", datum: todayStr(), status: "Offen", zahlungsart: "", mwstSatz: "", beschreibung: "", notiz: "" }; }
   var editingAusgabeId = null;
-  var deleteAusgabeTarget = null;
   var ausgabeForm = document.getElementById("ausgabeForm");
   var ausgabeOverlay = document.getElementById("ausgabeOverlay");
   function openAusgabeForm(a) {
@@ -4544,23 +4484,15 @@
     if (delBtn) {
       var a = ausgaben.find(function (x) { return x.id === delBtn.dataset.id; });
       if (!a) return;
-      deleteAusgabeTarget = a;
-      document.getElementById("ausgabeDeleteName").textContent = a.beschreibung;
-      document.getElementById("ausgabeDeleteOverlay").classList.add("open");
+      confirmDelete("Ausgabe löschen?", a.beschreibung, "wird endgültig entfernt.", function () {
+        db.collection("ausgaben").doc(a.id).delete()
+          .then(function () { showToast("Gelöscht"); })
+          .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      });
       return;
     }
     var row = e.target.closest(".job-row");
     if (row) { var a2 = ausgaben.find(function (x) { return x.id === row.dataset.id; }); if (a2) openAusgabeForm(a2); }
-  });
-  document.getElementById("ausgabeDeleteClose").addEventListener("click", function () { document.getElementById("ausgabeDeleteOverlay").classList.remove("open"); });
-  document.getElementById("ausgabeDeleteCancel").addEventListener("click", function () { document.getElementById("ausgabeDeleteOverlay").classList.remove("open"); });
-  document.getElementById("ausgabeDeleteConfirm").addEventListener("click", function () {
-    if (!deleteAusgabeTarget) return;
-    db.collection("ausgaben").doc(deleteAusgabeTarget.id).delete()
-      .then(function () { showToast("Gelöscht"); })
-      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
-    document.getElementById("ausgabeDeleteOverlay").classList.remove("open");
-    deleteAusgabeTarget = null;
   });
 
   // ---- Steuerparameter ----
@@ -5686,9 +5618,7 @@
     if (!detailEmployee) return;
     var m = detailEmployee;
     closeEmployeeDetail();
-    deleteEmployeeTarget = m;
-    document.getElementById("employeeDeleteName").textContent = m.name;
-    document.getElementById("employeeDeleteOverlay").classList.add("open");
+    confirmDeleteEmployee(m);
   });
 
   absenceForm.addEventListener("submit", function (e) {
@@ -5863,21 +5793,12 @@
     if (editBtn) { var s1 = services.find(function (s) { return s.id === editBtn.dataset.id; }); if (s1) openServiceForm(s1); }
     else if (delBtn) {
       var s2 = services.find(function (s) { return s.id === delBtn.dataset.id; });
-      if (s2) { deleteServiceTarget = s2; document.getElementById("serviceDeleteName").textContent = s2.label; document.getElementById("serviceDeleteOverlay").classList.add("open"); }
+      if (s2) confirmDelete("Leistung löschen?", s2.label, "wird aus dem Katalog entfernt.", function () {
+        db.collection("services").doc(s2.id).delete()
+          .then(function () { showToast("Gelöscht"); })
+          .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      });
     }
-  });
-  var serviceDeleteOverlay = document.getElementById("serviceDeleteOverlay");
-  function closeServiceDelete() { serviceDeleteOverlay.classList.remove("open"); deleteServiceTarget = null; }
-  document.getElementById("serviceDeleteClose").addEventListener("click", closeServiceDelete);
-  document.getElementById("serviceDeleteCancel").addEventListener("click", closeServiceDelete);
-  serviceDeleteOverlay.addEventListener("click", function (e) { if (e.target === serviceDeleteOverlay) closeServiceDelete(); });
-  document.getElementById("serviceDeleteConfirm").addEventListener("click", function () {
-    if (!deleteServiceTarget) return;
-    var id = deleteServiceTarget.id;
-    closeServiceDelete();
-    db.collection("services").doc(id).delete()
-      .then(function () { showToast("Gelöscht"); })
-      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
   });
 
   // ---- Material/Inventar ----
@@ -6042,7 +5963,11 @@
     if (editBtn) { var m1 = material.find(function (m) { return m.id === editBtn.dataset.id; }); if (m1) openMaterialForm(m1); }
     else if (delBtn) {
       var m2 = material.find(function (m) { return m.id === delBtn.dataset.id; });
-      if (m2) { deleteMaterialTarget = m2; document.getElementById("materialDeleteName").textContent = m2.name; document.getElementById("materialDeleteOverlay").classList.add("open"); }
+      if (m2) confirmDelete("Material löschen?", m2.name, "wird endgültig entfernt.", function () {
+        db.collection("material").doc(m2.id).delete()
+          .then(function () { showToast("Gelöscht"); })
+          .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      });
     }
   });
 
@@ -6127,19 +6052,6 @@
       showToast("Material zugewiesen");
       closeMaterialAssignForm();
     }).catch(function (err) { showToast(err.message || "Zuweisung fehlgeschlagen", true); });
-  });
-  var materialDeleteOverlay = document.getElementById("materialDeleteOverlay");
-  function closeMaterialDelete() { materialDeleteOverlay.classList.remove("open"); deleteMaterialTarget = null; }
-  document.getElementById("materialDeleteClose").addEventListener("click", closeMaterialDelete);
-  document.getElementById("materialDeleteCancel").addEventListener("click", closeMaterialDelete);
-  materialDeleteOverlay.addEventListener("click", function (e) { if (e.target === materialDeleteOverlay) closeMaterialDelete(); });
-  document.getElementById("materialDeleteConfirm").addEventListener("click", function () {
-    if (!deleteMaterialTarget) return;
-    var id = deleteMaterialTarget.id;
-    closeMaterialDelete();
-    db.collection("material").doc(id).delete()
-      .then(function () { showToast("Gelöscht"); })
-      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
   });
 
   // ---- Kundendetail: Material & Inventar (Bestand aus Bewegungen) ----
@@ -6598,21 +6510,12 @@
     if (editBtn) { var v1 = vehicles.find(function (v) { return v.id === editBtn.dataset.id; }); if (v1) openVehicleForm(v1); }
     else if (delBtn) {
       var v2 = vehicles.find(function (v) { return v.id === delBtn.dataset.id; });
-      if (v2) { deleteVehicleTarget = v2; document.getElementById("vehicleDeleteName").textContent = v2.name; document.getElementById("vehicleDeleteOverlay").classList.add("open"); }
+      if (v2) confirmDelete("Eintrag löschen?", v2.name, "wird endgültig entfernt.", function () {
+        db.collection("ressourcen").doc(v2.id).delete()
+          .then(function () { showToast("Gelöscht"); })
+          .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      });
     }
-  });
-  var vehicleDeleteOverlay = document.getElementById("vehicleDeleteOverlay");
-  function closeVehicleDelete() { vehicleDeleteOverlay.classList.remove("open"); deleteVehicleTarget = null; }
-  document.getElementById("vehicleDeleteClose").addEventListener("click", closeVehicleDelete);
-  document.getElementById("vehicleDeleteCancel").addEventListener("click", closeVehicleDelete);
-  vehicleDeleteOverlay.addEventListener("click", function (e) { if (e.target === vehicleDeleteOverlay) closeVehicleDelete(); });
-  document.getElementById("vehicleDeleteConfirm").addEventListener("click", function () {
-    if (!deleteVehicleTarget) return;
-    var id = deleteVehicleTarget.id;
-    closeVehicleDelete();
-    db.collection("ressourcen").doc(id).delete()
-      .then(function () { showToast("Gelöscht"); })
-      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
   });
 
   // ---- Mängelmanagement/Tickets ----
@@ -6748,21 +6651,12 @@
     if (editBtn) { var t1 = tickets.find(function (t) { return t.id === editBtn.dataset.id; }); if (t1) openTicketForm(t1); }
     else if (delBtn) {
       var t2 = tickets.find(function (t) { return t.id === delBtn.dataset.id; });
-      if (t2) { deleteTicketTarget = t2; document.getElementById("ticketDeleteName").textContent = t2.titel; document.getElementById("ticketDeleteOverlay").classList.add("open"); }
+      if (t2) confirmDelete("Ticket löschen?", t2.titel, "wird endgültig entfernt.", function () {
+        db.collection("tickets").doc(t2.id).delete()
+          .then(function () { showToast("Gelöscht"); })
+          .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      });
     }
-  });
-  var ticketDeleteOverlay = document.getElementById("ticketDeleteOverlay");
-  function closeTicketDelete() { ticketDeleteOverlay.classList.remove("open"); deleteTicketTarget = null; }
-  document.getElementById("ticketDeleteClose").addEventListener("click", closeTicketDelete);
-  document.getElementById("ticketDeleteCancel").addEventListener("click", closeTicketDelete);
-  ticketDeleteOverlay.addEventListener("click", function (e) { if (e.target === ticketDeleteOverlay) closeTicketDelete(); });
-  document.getElementById("ticketDeleteConfirm").addEventListener("click", function () {
-    if (!deleteTicketTarget) return;
-    var id = deleteTicketTarget.id;
-    closeTicketDelete();
-    db.collection("tickets").doc(id).delete()
-      .then(function () { showToast("Gelöscht"); })
-      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
   });
 
   // ---- Belege (konsolidierte Angebote/Rechnungen) ----
@@ -7041,21 +6935,12 @@
     if (editBtn) { var k1 = keys.find(function (k) { return k.id === editBtn.dataset.id; }); if (k1) openKeyForm(k1); }
     else if (delBtn) {
       var k2 = keys.find(function (k) { return k.id === delBtn.dataset.id; });
-      if (k2) { deleteKeyTarget = k2; document.getElementById("keyDeleteName").textContent = k2.bezeichnung; document.getElementById("keyDeleteOverlay").classList.add("open"); }
+      if (k2) confirmDelete("Eintrag löschen?", k2.bezeichnung, "wird endgültig entfernt.", function () {
+        db.collection("schluessel").doc(k2.id).delete()
+          .then(function () { showToast("Gelöscht"); })
+          .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      });
     }
-  });
-  var keyDeleteOverlay = document.getElementById("keyDeleteOverlay");
-  function closeKeyDelete() { keyDeleteOverlay.classList.remove("open"); deleteKeyTarget = null; }
-  document.getElementById("keyDeleteClose").addEventListener("click", closeKeyDelete);
-  document.getElementById("keyDeleteCancel").addEventListener("click", closeKeyDelete);
-  keyDeleteOverlay.addEventListener("click", function (e) { if (e.target === keyDeleteOverlay) closeKeyDelete(); });
-  document.getElementById("keyDeleteConfirm").addEventListener("click", function () {
-    if (!deleteKeyTarget) return;
-    var id = deleteKeyTarget.id;
-    closeKeyDelete();
-    db.collection("schluessel").doc(id).delete()
-      .then(function () { showToast("Gelöscht"); })
-      .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
   });
 
   populateSelects();
@@ -7552,14 +7437,13 @@
   // Schritt zurück statt das ganze Formular zu schließen. Dieselbe Schließen-Funktion legt sich bei jedem
   // Zurück-Schritt selbst wieder auf den Stapel, damit der nächste Zurück-Druck wieder greift.
   var OVERLAY_CLOSERS = {
-    formOverlay: closeForm, deleteOverlay: closeDelete, detailOverlay: closeDetail,
-    docOverlay: closeDocForm, employeeOverlay: closeEmployeeForm, employeeDeleteOverlay: closeEmployeeDelete,
-    employeeDetailOverlay: closeEmployeeDetail, serviceOverlay: closeServiceForm, serviceDeleteOverlay: closeServiceDelete,
+    formOverlay: closeForm, genericDeleteOverlay: closeGenericDelete, detailOverlay: closeDetail,
+    docOverlay: closeDocForm, employeeOverlay: closeEmployeeForm,
+    employeeDetailOverlay: closeEmployeeDetail, serviceOverlay: closeServiceForm,
     materialOverlay: closeMaterialForm, materialAssignOverlay: closeMaterialAssignForm, materialReturnOverlay: closeMaterialReturn,
     importPreviewOverlay: discardPendingImport,
     infoOverlay: function () { document.getElementById("infoOverlay").classList.remove("open"); },
     ausgabeOverlay: closeAusgabeForm,
-    ausgabeDeleteOverlay: function () { document.getElementById("ausgabeDeleteOverlay").classList.remove("open"); deleteAusgabeTarget = null; },
     taxParamOverlay: closeTaxParamForm, taxDeadlineOverlay: closeTaxDeadlineForm,
     taxProfileChangeOverlay: function () { taxProfileChangeOverlay.classList.remove("open"); },
     reserveWizardOverlay: function () {
@@ -7577,10 +7461,10 @@
       else el.classList.remove("open");
     },
     protectedEditOverlay: closeProtectedEdit,
-    movementEditOverlay: closeMovementEdit, materialDeleteOverlay: closeMaterialDelete,
-    vehicleOverlay: closeVehicleForm, vehicleDeleteOverlay: closeVehicleDelete,
-    ticketOverlay: closeTicketForm, ticketDeleteOverlay: closeTicketDelete,
-    keyOverlay: closeKeyForm, keyDeleteOverlay: closeKeyDelete,
+    movementEditOverlay: closeMovementEdit,
+    vehicleOverlay: closeVehicleForm,
+    ticketOverlay: closeTicketForm,
+    keyOverlay: closeKeyForm,
     searchOverlay: closeGlobalSearch,
     helpOverlay: function () { document.getElementById("helpOverlay").classList.remove("open"); },
     docStornoOverlay: closeDocStorno,
@@ -7602,6 +7486,30 @@
   document.querySelectorAll(".overlay").forEach(function (el) {
     overlayObserver.observe(el, { attributes: true, attributeFilter: ["class"] });
   });
+
+  // Wisch-Geste zum Schließen: an der Kopfzeile eines Sheets nach unten ziehen schließt es,
+  // genau wie der bestehende Schließen-Button (gleicher OVERLAY_CLOSERS-Mechanismus).
+  (function () {
+    var startX = null, startY = null, swipeSheet = null;
+    document.addEventListener("touchstart", function (e) {
+      var head = e.target.closest(".sheet-head");
+      if (!head || e.touches.length !== 1) { swipeSheet = null; return; }
+      swipeSheet = head.closest(".sheet");
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener("touchend", function (e) {
+      if (!swipeSheet || startY == null) return;
+      var touch = e.changedTouches[0];
+      var deltaY = touch.clientY - startY;
+      var deltaX = Math.abs(touch.clientX - startX);
+      if (deltaY > 80 && deltaX < 60) {
+        var overlay = swipeSheet.closest(".overlay");
+        if (overlay && OVERLAY_CLOSERS[overlay.id]) OVERLAY_CLOSERS[overlay.id]();
+      }
+      swipeSheet = null; startY = null; startX = null;
+    }, { passive: true });
+  })();
 
   window.runSelfTests = runSelfTests;
 })();
