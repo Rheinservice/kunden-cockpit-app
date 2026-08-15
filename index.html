@@ -2643,7 +2643,7 @@
         '<div class="job-row-top"><div><div class="job-title">' + esc(t.titel) + pausedBadge + '</div><div class="job-meta">' + metaParts + '</div></div>' +
         '<button type="button" class="recurring-del" data-id="' + t.id + '" aria-label="Vorlage löschen">' + icon("trash") + '</button></div>' +
         '<div class="job-actions">' +
-        '<button type="button" class="recurring-generate" data-id="' + t.id + '">Termine erzeugen</button>' +
+        '<button type="button" class="recurring-generate" data-id="' + t.id + '">Weitere Termine erzeugen</button>' +
         '<button type="button" class="recurring-toggle" data-id="' + t.id + '">' + (t.aktiv === false ? "Aktivieren" : "Pausieren") + '</button>' +
         '</div></div>';
     }).join("");
@@ -2695,29 +2695,20 @@
         body = '<div class="prop-expand">' +
           '<form class="job-form prop-job-form" data-prop="' + p.id + '">' +
           '<input name="titel" class="full" placeholder="z. B. Treppenhausreinigung" required />' +
-          '<input name="datum" type="date" value="' + new Date().toISOString().slice(0, 10) + '" />' +
+          '<label style="grid-column:1/-1;display:flex;flex-direction:column;gap:3px;font-size:0.72rem;color:var(--ink-soft);">Wiederholung' +
+          '<select name="rhythmus" style="width:100%;"><option value="">Einmalig</option>' + RHYTHMEN.map(function (r) { return '<option>' + r + '</option>'; }).join("") + '</select></label>' +
+          '<input name="datum" type="date" value="' + new Date().toISOString().slice(0, 10) + '" title="Datum bzw. Beginn bei Wiederholung" />' +
           '<input name="uhrzeit" type="time" />' +
+          '<input name="endDatum" type="date" title="Ende (nur bei Wiederholung, optional)" />' +
           '<input name="dauerMinuten" type="number" min="0" step="5" placeholder="Dauer (Min., optional)" />' +
           '<select name="mitarbeiterId"><option value="">Mitarbeiter (optional)</option>' +
           employees.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
             .map(function (m) { return '<option value="' + esc(m.id) + '">' + esc(m.name) + '</option>'; }).join("") +
           '</select>' +
-          '<button type="submit">Auftrag hinzufügen</button>' +
+          '<button type="submit">Termin hinzufügen</button>' +
           '</form>' +
           '<div class="job-list">' + jobsHtml(jobs) + '</div>' +
           '<div class="section-head" style="margin-top:4px;"><h3 class="section-title">Wiederkehrende Aufträge</h3></div>' +
-          '<form class="job-form recurring-form" data-prop="' + p.id + '">' +
-          '<input name="titel" class="full" placeholder="z. B. Treppenhausreinigung" required />' +
-          '<select name="rhythmus">' + RHYTHMEN.map(function (r) { return '<option>' + r + '</option>'; }).join("") + '</select>' +
-          '<input name="uhrzeit" type="time" />' +
-          '<input name="startDatum" type="date" value="' + new Date().toISOString().slice(0, 10) + '" title="Beginn" />' +
-          '<input name="endDatum" type="date" title="Ende (optional)" />' +
-          '<select name="mitarbeiterId"><option value="">Mitarbeiter (optional)</option>' +
-          employees.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
-            .map(function (m) { return '<option value="' + esc(m.id) + '">' + esc(m.name) + '</option>'; }).join("") +
-          '</select>' +
-          '<button type="submit">Vorlage anlegen</button>' +
-          '</form>' +
           '<div class="job-list">' + recurringHtml(recurringTemplates) + '</div>' +
           '<button type="button" class="btn btn-ghost prop-del-btn" data-prop="' + p.id + '">Objekt löschen</button>' +
           '</div>';
@@ -2846,54 +2837,49 @@
     e.preventDefault();
     var propId = form.dataset.prop;
     var titel = form.elements.titel.value.trim();
-    if (!titel) return;
+    var datum = form.elements.datum.value;
+    if (!titel || !datum) return;
     var mitarbeiterId = form.elements.mitarbeiterId.value;
     var employee = employees.find(function (m) { return m.id === mitarbeiterId; });
     var property = properties.find(function (p) { return p.id === propId; });
-    var data = {
-      id: uid(), titel: titel, datum: form.elements.datum.value, uhrzeit: form.elements.uhrzeit.value,
-      dauerMinuten: parseInt(form.elements.dauerMinuten.value, 10) || 0,
-      mitarbeiterId: mitarbeiterId, mitarbeiter: employee ? employee.name : "",
-      status: "Offen", erledigtVon: "", erledigtAm: null,
-      customerId: detailCustomer.id, customerName: detailCustomer.name,
-      propertyId: propId, propertyName: property ? property.name : "", propertyAddress: property ? property.address : ""
-    };
-    db.collection("customers").doc(detailCustomer.id).collection("objekte").doc(propId)
-      .collection("auftraege").doc(data.id).set(data)
-      .then(function () { showToast("Auftrag hinzugefügt"); })
-      .catch(function (err) { setBanner("Auftrag konnte nicht gespeichert werden: " + err.message); });
-  });
-
-  propertyList.addEventListener("submit", function (e) {
-    var form = e.target.closest(".recurring-form");
-    if (!form || !detailCustomer) return;
-    e.preventDefault();
-    var propId = form.dataset.prop;
-    var titel = form.elements.titel.value.trim();
-    var startDatum = form.elements.startDatum.value;
-    if (!titel || !startDatum) return;
-    var mitarbeiterId = form.elements.mitarbeiterId.value;
-    var employee = employees.find(function (m) { return m.id === mitarbeiterId; });
-    var data = {
-      id: uid(), titel: titel, rhythmus: form.elements.rhythmus.value,
-      uhrzeit: form.elements.uhrzeit.value, startDatum: startDatum, endDatum: form.elements.endDatum.value,
+    var rhythmus = form.elements.rhythmus.value;
+    var dauerMinuten = parseInt(form.elements.dauerMinuten.value, 10) || 0;
+    if (!rhythmus) {
+      var data = {
+        id: uid(), titel: titel, datum: datum, uhrzeit: form.elements.uhrzeit.value,
+        dauerMinuten: dauerMinuten,
+        mitarbeiterId: mitarbeiterId, mitarbeiter: employee ? employee.name : "",
+        status: "Offen", erledigtVon: "", erledigtAm: null,
+        customerId: detailCustomer.id, customerName: detailCustomer.name,
+        propertyId: propId, propertyName: property ? property.name : "", propertyAddress: property ? property.address : ""
+      };
+      db.collection("customers").doc(detailCustomer.id).collection("objekte").doc(propId)
+        .collection("auftraege").doc(data.id).set(data)
+        .then(function () { showToast("Termin hinzugefügt"); })
+        .catch(function (err) { setBanner("Termin konnte nicht gespeichert werden: " + err.message); });
+      return;
+    }
+    var template = {
+      id: uid(), titel: titel, rhythmus: rhythmus, dauerMinuten: dauerMinuten,
+      uhrzeit: form.elements.uhrzeit.value, startDatum: datum, endDatum: form.elements.endDatum.value,
       mitarbeiterId: mitarbeiterId, mitarbeiter: employee ? employee.name : "", aktiv: true
     };
     db.collection("customers").doc(detailCustomer.id).collection("objekte").doc(propId)
-      .collection("wiederkehrend").doc(data.id).set(data)
+      .collection("wiederkehrend").doc(template.id).set(template)
       .then(function () {
-        showToast("Vorlage angelegt");
+        showToast("Wiederkehrender Termin angelegt");
         form.reset();
-        form.elements.startDatum.value = new Date().toISOString().slice(0, 10);
+        form.elements.datum.value = new Date().toISOString().slice(0, 10);
+        generateRecurringInstances(template);
       })
-      .catch(function (err) { setBanner("Vorlage konnte nicht gespeichert werden: " + err.message); });
+      .catch(function (err) { setBanner("Termin konnte nicht gespeichert werden: " + err.message); });
   });
 
   function generateRecurringInstances(t) {
     if (!detailCustomer || !expandedPropId) return;
     var property = properties.find(function (p) { return p.id === expandedPropId; });
     var today = new Date().toISOString().slice(0, 10);
-    var horizon = addInterval(today, "täglich", 60);
+    var horizon = addInterval(today, "täglich", 180);
     var endLimit = t.endDatum && t.endDatum < horizon ? t.endDatum : horizon;
     var existingDates = jobs.filter(function (j) { return j.recurringTemplateId === t.id; }).map(function (j) { return j.datum; });
     var batch = db.batch();
@@ -2940,9 +2926,18 @@
       }
       return;
     } else if (recDelBtn) {
-      db.collection("customers").doc(detailCustomer.id).collection("objekte").doc(expandedPropId)
-        .collection("wiederkehrend").doc(recDelBtn.dataset.id).delete()
-        .catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
+      var tDel = recurringTemplates.find(function (x) { return x.id === recDelBtn.dataset.id; });
+      var offeneTermine = jobs.filter(function (j) { return j.recurringTemplateId === recDelBtn.dataset.id && j.status !== "Erledigt"; });
+      var delMsg = offeneTermine.length > 0 ?
+        "Wiederkehrenden Termin \"" + (tDel ? tDel.titel : "") + "\" löschen? " + offeneTermine.length + " noch offene(r) geplante(r) Termin(e) werden dabei mit gelöscht. Bereits erledigte Termine bleiben erhalten." :
+        "Wiederkehrenden Termin wirklich löschen?";
+      if (!confirm(delMsg)) return;
+      var delBatch = db.batch();
+      delBatch.delete(db.collection("customers").doc(detailCustomer.id).collection("objekte").doc(expandedPropId).collection("wiederkehrend").doc(recDelBtn.dataset.id));
+      offeneTermine.forEach(function (j) {
+        delBatch.delete(db.collection("customers").doc(detailCustomer.id).collection("objekte").doc(expandedPropId).collection("auftraege").doc(j.id));
+      });
+      delBatch.commit().catch(function (err) { setBanner("Löschen fehlgeschlagen: " + err.message); });
       return;
     }
     if (!detailCustomer) return;
