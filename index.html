@@ -304,6 +304,8 @@
   .pos-row .pos-turnus { flex: 1; min-width: 120px; }
   .pos-row .pos-del { background: transparent; border: none; color: var(--danger); width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .pos-row .pos-del:active { background: var(--surface-2); }
+  .pos-row-total { font-size: 0.78rem; color: var(--ink-soft); }
+  .pos-row-total strong { color: var(--ink); }
 
   .doc-row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .doc-actions { display: flex; gap: 4px; }
@@ -2918,9 +2920,14 @@
   var EINHEITEN = ["Std.", "m²", "Stück", "Pauschal"];
   function fmtEUR(n) { return (n || 0).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
   function emptyPosition() { return { bezeichnung: "", menge: 1, preis: 0, einheit: "Std.", turnus: "" }; }
+  function turnusFaktor(p) {
+    return (p.turnus && REINIGUNGSINTERVALL_EINSAETZE[p.turnus] != null) ? REINIGUNGSINTERVALL_EINSAETZE[p.turnus] : null;
+  }
   function positionTotal(p) {
     var preis = parseFloat(p.preis) || 0;
-    return p.einheit === "Pauschal" ? preis : (parseFloat(p.menge) || 0) * preis;
+    var basis = p.einheit === "Pauschal" ? preis : (parseFloat(p.menge) || 0) * preis;
+    var faktor = turnusFaktor(p);
+    return faktor != null ? basis * faktor : basis;
   }
 
   var docOverlay = document.getElementById("docOverlay");
@@ -2932,16 +2939,19 @@
     var el = document.getElementById("posRows");
     el.innerHTML = currentPositions.map(function (p, i) {
       var isPauschal = p.einheit === "Pauschal";
+      var faktor = turnusFaktor(p);
       return '<div class="pos-row" data-idx="' + i + '">' +
         '<input class="pos-bez" placeholder="Bezeichnung" value="' + esc(p.bezeichnung) + '" />' +
         '<div class="pos-row-fields">' +
         '<select class="pos-einheit">' + EINHEITEN.map(function (u) { return '<option' + (p.einheit === u ? ' selected' : '') + '>' + u + '</option>'; }).join("") + '</select>' +
         (isPauschal ? '' : '<input class="pos-menge" type="number" step="0.01" value="' + p.menge + '" placeholder="Menge" />') +
         '<input class="pos-preis" type="number" step="0.01" value="' + p.preis + '" placeholder="' + (isPauschal ? "Preis gesamt" : "Preis/Einheit") + '" />' +
-        (isPauschal ? '' : '<select class="pos-turnus" title="Turnus (füllt Menge automatisch, änderbar)"><option value="">Kein Turnus</option>' +
-          TURNUS_LISTE.filter(function (t) { return t !== "Nach Bedarf"; }).map(function (t) { return '<option' + (p.turnus === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join("") + '</select>') +
+        '<select class="pos-turnus" title="Turnus (zusätzlicher Faktor auf den Gesamtpreis dieser Position)"><option value="">Kein Turnus</option>' +
+          TURNUS_LISTE.filter(function (t) { return t !== "Nach Bedarf"; }).map(function (t) { return '<option' + (p.turnus === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join("") + '</select>' +
         '<button type="button" class="pos-del" aria-label="Entfernen">' + icon("trash") + '</button>' +
-        '</div></div>';
+        '</div>' +
+        (faktor != null ? '<div class="pos-row-total">' + (isPauschal ? "Pauschale" : (p.menge + " " + p.einheit)) + ' × ' + fmtEUR(p.preis) + ' × ' + faktor.toLocaleString("de-DE", { maximumFractionDigits: 2 }) + '×/Monat = <strong>' + fmtEUR(positionTotal(p)) + '</strong></div>' : '') +
+        '</div>';
     }).join("");
     recomputeTotals();
   }
@@ -2971,11 +2981,7 @@
       return;
     }
     if (e.target.classList.contains("pos-turnus")) {
-      var turnus = e.target.value;
-      currentPositions[idx].turnus = turnus;
-      if (turnus && REINIGUNGSINTERVALL_EINSAETZE[turnus] != null) {
-        currentPositions[idx].menge = Math.round(REINIGUNGSINTERVALL_EINSAETZE[turnus] * 100) / 100;
-      }
+      currentPositions[idx].turnus = e.target.value;
       renderPosRows();
     }
   });
@@ -3232,7 +3238,7 @@
   function docHeaderHtml(d, qrHtml) {
     return '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:2px solid ' + PRINT_GOLD + ';margin-bottom:28px;">' +
       '<div style="display:flex;align-items:center;gap:16px;">' +
-      '<img src="logo.png" alt="M&I-RheinService" style="height:60px;width:60px;border-radius:50%;object-fit:cover;flex-shrink:0;" />' +
+      '<img src="logo.png" alt="M&I-RheinService" style="height:88px;width:88px;border-radius:50%;object-fit:cover;flex-shrink:0;" />' +
       '<div><div style="font-size:19px;font-weight:800;color:' + PRINT_NAVY + ';letter-spacing:0.01em;">M&amp;I-RHEINSERVICE</div>' +
       '<div style="font-size:13px;font-style:italic;font-weight:600;color:' + PRINT_GOLD + ';">' + esc(d.typ) + '</div></div></div>' +
       (qrHtml || '') + '</div>' +
@@ -3288,7 +3294,8 @@
     var rows = (d.positionen || []).map(function (p, i) {
       var isPauschal = p.einheit === "Pauschal";
       var mengeCell = isPauschal ? "Pauschal" : (p.menge + (p.einheit ? " " + esc(p.einheit) : ""));
-      if (p.turnus) mengeCell += ' <span style="color:#667085;font-size:11px;">(' + esc(p.turnus) + ')</span>';
+      var faktor = turnusFaktor(p);
+      if (p.turnus) mengeCell += ' <span style="color:#667085;font-size:11px;">(' + esc(p.turnus) + (faktor != null ? ", ≈ ×" + faktor.toLocaleString("de-DE", { maximumFractionDigits: 2 }) + "/Monat" : "") + ')</span>';
       var bg = i % 2 === 1 ? "#FAF6EA" : "#FFFFFF";
       return '<tr style="background:' + bg + ';">' +
         '<td style="padding:9px 10px;border-bottom:1px solid #E4E7EC;">' + (i + 1) + '</td>' +
@@ -7368,6 +7375,8 @@
     assertClose("Turnus: Halbjährlich = 1/6 Einsätze/Monat", REINIGUNGSINTERVALL_EINSAETZE["Halbjährlich"], 1 / 6, 0.0001);
     assertClose("Turnus: Jährlich = 1/12 Einsätze/Monat", REINIGUNGSINTERVALL_EINSAETZE["Jährlich"], 1 / 12, 0.0001);
     assertEqual("Turnus: TURNI und RHYTHMEN aus gemeinsamer Liste (TURNI[1] = RHYTHMEN[0])", TURNI[1], RHYTHMEN[0]);
+    assertClose("Rechnungsposition: 150m² × 0,45€ × 2x pro Woche = Menge×Preis×Turnusfaktor (nicht nur Turnusfaktor×Preis)", positionTotal({ menge: 150, preis: 0.45, einheit: "m²", turnus: "2x pro Woche" }), 150 * 0.45 * REINIGUNGSINTERVALL_EINSAETZE["2x pro Woche"], 0.01);
+    assertClose("Rechnungsposition: ohne Turnus bleibt Menge × Preis unverändert", positionTotal({ menge: 150, preis: 0.45, einheit: "m²", turnus: "" }), 67.5, 0.01);
     assertClose("Objekt-Kalk: Gesamtkosten = 56,6444€ (Excel-Beispiel)", ok && ok.gesamtkosten, 56.6444, 0.01);
     assertClose("Objekt-Kalk: Mindestpreis bei 20% Zielmarge = 70,8055€ (Excel-Beispiel)", ok && ok.mindestpreisProEinsatz, 70.8055, 0.01);
 
