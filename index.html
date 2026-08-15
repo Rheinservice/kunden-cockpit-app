@@ -275,6 +275,7 @@
   .job-empty { font-size: 0.8rem; color: var(--ink-soft); text-align: center; padding: 16px; }
   .job-row { border: 1px solid var(--border); border-radius: var(--r-m); padding: 11px 12px; display: flex; flex-direction: column; gap: 7px; background: var(--surface); transition: border-color 0.15s ease; }
   .job-row:hover { border-color: var(--accent); }
+  .job-row:has(input[type="checkbox"]:checked) { border-color: var(--accent); background: var(--accent-soft); }
   .job-row-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .job-title { font-weight: 700; font-size: 0.85rem; color: var(--ink); }
   .job-meta { font-size: 0.74rem; color: var(--ink-soft); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -1352,8 +1353,8 @@
             <label class="field"><span>Lohnbasis</span>
               <select name="lohnArt"><option value="monat">Monatsbrutto</option><option value="stunde">Stundenlohn</option></select>
             </label>
-            <label class="field"><span>Monatsbrutto (€)</span><input name="monatsbrutto" type="number" min="0" step="0.01" /></label>
-            <label class="field"><span>Stundenlohn (€)</span><input name="stundenlohn" type="number" min="0" step="0.01" /></label>
+            <label class="field" id="monatsbruttoField"><span>Monatsbrutto (€)</span><input name="monatsbrutto" type="number" min="0" step="0.01" /></label>
+            <label class="field" id="stundenlohnField" hidden><span>Stundenlohn (€)</span><input name="stundenlohn" type="number" min="0" step="0.01" /></label>
             <label class="field"><span>Wochenstunden *</span><input name="wochenstunden" type="number" min="0.1" step="0.1" required /></label>
             <div class="field full"><span>Lohnrechner (exakte AN-/AG-Abzüge, wie in der Excel-Kalkulation)</span></div>
             <label class="field"><span>Lohnsteuer-Schätzung (%)</span><input name="lohnsteuerProzent" type="number" min="0" step="0.1" value="15" /></label>
@@ -1400,6 +1401,7 @@
 
           <div class="calc-step job-form" data-step="1">
             <label class="field"><span>Kunde</span><select name="customerId"><option value="">Kein Kunde / Neuakquise</option></select></label>
+            <label class="field"><span>Vorhandenes Objekt (optional)</span><select name="objectPick"><option value="">— manuell eingeben —</option></select></label>
             <label class="field"><span>Objektname *</span><input name="objektname" /></label>
             <label class="field full"><span>Objektadresse</span><input name="objektadresse" /></label>
             <label class="field"><span>Objektart</span><select name="objektart"><option>Büro</option><option>Praxis</option><option>Treppenhaus</option><option>Wohnanlage</option><option>Gewerbeobjekt</option><option>Sonstiges</option></select></label>
@@ -1422,7 +1424,7 @@
             <label class="field"><span>Arbeitszeit pro Einsatz (Std.) *</span><input name="arbeitszeitProEinsatz" type="number" min="0.1" step="0.1" /></label>
             <label class="field"><span>Anzahl Mitarbeiter</span><input name="anzahlMitarbeiter" type="number" min="1" step="1" value="1" /></label>
             <label class="field"><span>Mitarbeiter-Kalkulation (Stundensatz)</span><select name="employeeCalcId"><option value="">Manuell eingeben</option></select></label>
-            <label class="field"><span>Manueller Stundensatz (€, falls keine Kalkulation gewählt)</span><input name="manuellerStundensatz" type="number" min="0" step="0.01" /></label>
+            <label class="field"><span id="manuellerStundensatzLabel">Manueller Stundensatz (€, falls keine Kalkulation gewählt)</span><input name="manuellerStundensatz" type="number" min="0" step="0.01" /></label>
             <label class="field full"><span>Sonderleistungen</span><input name="sonderleistungen" /></label>
             <div class="field full">
               <span>Leistungen aus dem Leistungsverzeichnis</span>
@@ -4888,9 +4890,16 @@
       if (k === "id") return;
       if (employeeCalcForm.elements[k]) employeeCalcForm.elements[k].value = data[k] != null ? data[k] : emptyEmployeeCalc()[k];
     });
+    syncLohnArtFields();
     renderEmployeeCalcResult();
     employeeCalcOverlay.classList.add("open");
   }
+  function syncLohnArtFields() {
+    var istStunde = employeeCalcForm.elements.lohnArt.value === "stunde";
+    document.getElementById("monatsbruttoField").hidden = istStunde;
+    document.getElementById("stundenlohnField").hidden = !istStunde;
+  }
+  employeeCalcForm.elements.lohnArt.addEventListener("change", syncLohnArtFields);
   document.getElementById("addEmployeeCalcBtn").addEventListener("click", function () { openEmployeeCalcForm(null); });
   document.getElementById("employeeCalcClose").addEventListener("click", function () { employeeCalcOverlay.classList.remove("open"); });
   document.getElementById("employeeCalcCancel").addEventListener("click", function () { employeeCalcOverlay.classList.remove("open"); });
@@ -5076,6 +5085,7 @@
     custSel.innerHTML = '<option value="">Kein Kunde / Neuakquise</option>' +
       customers.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
         .map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + '</option>'; }).join("");
+    objectCalcForm.elements.objectPick.innerHTML = '<option value="">— manuell eingeben —</option>';
     var empSel = objectCalcForm.elements.employeeCalcId;
     empSel.innerHTML = '<option value="">Manuell eingeben</option>' +
       employeeCostProfiles.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "de"); })
@@ -5084,9 +5094,49 @@
     document.getElementById("objectCalcServices").innerHTML = services.length === 0 ?
       '<div class="job-empty">Noch keine Leistungen im Katalog erfasst.</div>' :
       services.slice().sort(function (a, b) { return (a.label || "").localeCompare(b.label || "", "de"); }).map(function (s) {
-        return '<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:0.85rem;"><input type="checkbox" value="' + s.id + '"' + (selectedLeistungen.indexOf(s.id) !== -1 ? " checked" : "") + ' />' + esc(s.label) + '</label>';
+        var metaBits = [];
+        if (s.kategorie) metaBits.push(s.kategorie);
+        if (s.standard != null) metaBits.push(fmtPrice(s.standard) + (s.unit ? "/" + s.unit : ""));
+        return '<label class="job-row" style="flex-direction:row;align-items:center;gap:10px;cursor:pointer;padding:9px 12px;">' +
+          '<input type="checkbox" value="' + s.id + '"' + (selectedLeistungen.indexOf(s.id) !== -1 ? " checked" : "") + ' />' +
+          '<span style="flex:1;"><span class="job-title" style="display:block;">' + esc(s.label) + '</span>' +
+          (metaBits.length ? '<span class="job-meta">' + esc(metaBits.join(" · ")) + '</span>' : '') + '</span></label>';
       }).join("");
   }
+  objectCalcForm.elements.customerId.addEventListener("change", function (e) {
+    var custId = e.target.value;
+    var objSelect = objectCalcForm.elements.objectPick;
+    objSelect.innerHTML = '<option value="">— manuell eingeben —</option>';
+    if (!custId) return;
+    var cust = customers.find(function (c) { return c.id === custId; });
+    if (cust && cust.address) objectCalcForm.elements.objektadresse.value = cust.address;
+    db.collection("customers").doc(custId).collection("objekte").get().then(function (snap) {
+      objSelect.innerHTML = '<option value="">— manuell eingeben —</option>' +
+        snap.docs.map(function (d) { return '<option value="' + d.id + '">' + esc(d.data().name) + '</option>'; }).join("");
+      objSelect.dataset.objekte = JSON.stringify(snap.docs.map(function (d) { return d.data(); }));
+    });
+  });
+  objectCalcForm.elements.objectPick.addEventListener("change", function (e) {
+    var objId = e.target.value;
+    if (!objId) return;
+    var objekte = JSON.parse(e.target.dataset.objekte || "[]");
+    var obj = objekte.find(function (o) { return o.id === objId; });
+    if (!obj) return;
+    objectCalcForm.elements.objektname.value = obj.name || "";
+    objectCalcForm.elements.objektadresse.value = obj.address || "";
+  });
+  objectCalcForm.elements.employeeCalcId.addEventListener("change", function (e) {
+    var label = document.getElementById("manuellerStundensatzLabel");
+    var profil = e.target.value ? employeeCostProfiles.find(function (p) { return p.id === e.target.value; }) : null;
+    if (profil && profil.ergebnis && profil.ergebnis.kostenProProduktiverStunde != null) {
+      objectCalcForm.elements.manuellerStundensatz.value = profil.ergebnis.kostenProProduktiverStunde.toFixed(2);
+      label.textContent = "Stundensatz (aus Kalkulation übernommen, anpassbar)";
+    } else {
+      objectCalcForm.elements.manuellerStundensatz.value = "";
+      label.textContent = "Manueller Stundensatz (€, falls keine Kalkulation gewählt)";
+    }
+    if (objectCalcStep === 4) renderObjectCalcResult();
+  });
   var objectCalcStep = 1;
   var OBJECT_CALC_STEPS = ["Objekt & Kunde", "Reinigungsplan & Personal", "Kosten & Marge", "Ergebnis"];
   function renderObjectCalcPath() {
@@ -5115,6 +5165,8 @@
       if (k === "id" || k === "ausgewaehlteLeistungen") return;
       if (objectCalcForm.elements[k]) objectCalcForm.elements[k].value = data[k] != null ? data[k] : emptyObjectCalc()[k];
     });
+    document.getElementById("manuellerStundensatzLabel").textContent = data.employeeCalcId ?
+      "Stundensatz (aus Kalkulation übernommen, anpassbar)" : "Manueller Stundensatz (€, falls keine Kalkulation gewählt)";
     showObjectCalcStep(1);
     objectCalcOverlay.classList.add("open");
   }
